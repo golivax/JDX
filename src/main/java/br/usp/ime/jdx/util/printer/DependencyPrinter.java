@@ -1,4 +1,4 @@
-package br.usp.ime.jdx.util.printer;
+﻿package br.usp.ime.jdx.util.printer;
 
 import br.usp.ime.jdx.entity.Dependency;
 import br.usp.ime.jdx.entity.DependencyReport;

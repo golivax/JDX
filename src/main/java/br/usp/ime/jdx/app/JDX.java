@@ -1,4 +1,4 @@
-package br.usp.ime.jdx.app;
+ï»¿package br.usp.ime.jdx.app;
 
 import java.io.File;
 import java.io.InputStream;
@@ -28,22 +28,22 @@ public class JDX {
 	
 	public DependencyReport calculateDepsFrom(File file, List<File> allFiles) {
 		throw new UnsupportedOperationException(
-				"Essa operação ainda não foi implementada");
+				"This operation has not been implemented yet");
 	}
 	
 	public DependencyReport calculateDepsFrom(InputStream is) {
 		throw new UnsupportedOperationException(
-				"Essa operação ainda não foi implementada");
+				"This operation has not been implemented yet");
 	}
 	
 	public DependencyReport calculateDepsFrom(List<SourceCodeUnit> codeBase) {
 		throw new UnsupportedOperationException(
-				"Essa operação ainda não foi implementada");
+				"This operation has not been implemented yet");
 	}
 	
 	public DependencyReport calculateDepsFrom(SourceCodeUnit sourceCode) {
 		throw new UnsupportedOperationException(
-				"Essa operação ainda não foi implementada");
+				"This operation has not been implemented yet");
 	}
 	
 	public static void main(String[] args) {

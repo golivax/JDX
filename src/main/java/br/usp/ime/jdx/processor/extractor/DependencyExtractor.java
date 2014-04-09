@@ -1,4 +1,4 @@
-package br.usp.ime.jdx.processor.extractor;
+﻿package br.usp.ime.jdx.processor.extractor;
 
 import java.util.List;
 

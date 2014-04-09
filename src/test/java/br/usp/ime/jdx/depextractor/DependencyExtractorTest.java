@@ -1,4 +1,4 @@
-package br.usp.ime.jdx.depextractor;
+﻿package br.usp.ime.jdx.depextractor;
 
 
 public class DependencyExtractorTest {

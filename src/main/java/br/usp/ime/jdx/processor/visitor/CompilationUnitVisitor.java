@@ -1,4 +1,4 @@
-package br.usp.ime.jdx.processor.visitor;
+﻿package br.usp.ime.jdx.processor.visitor;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;

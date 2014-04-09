@@ -1,4 +1,4 @@
-package br.usp.ime.jdx.filter;
+﻿package br.usp.ime.jdx.filter;
 
 public class JavaNativeClassFilter extends Filter{
 

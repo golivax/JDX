@@ -1,4 +1,4 @@
-package br.usp.ime.jdx;
+﻿package br.usp.ime.jdx;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

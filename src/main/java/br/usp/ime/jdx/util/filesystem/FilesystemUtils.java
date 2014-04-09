@@ -1,4 +1,4 @@
-package br.usp.ime.jdx.util.filesystem;
+﻿package br.usp.ime.jdx.util.filesystem;
 
 import java.io.File;
 import java.util.ArrayList;

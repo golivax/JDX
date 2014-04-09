@@ -1,4 +1,4 @@
-package br.usp.ime.jdx.entity;
+﻿package br.usp.ime.jdx.entity;
 
 import java.util.Collection;
 
