@@ -2,6 +2,7 @@
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.FileSystems;
 import java.util.Date;
 import java.util.List;
 
@@ -50,14 +51,10 @@ public class JDX {
 		
 		System.out.println(new Date(System.currentTimeMillis()));
 		
-		String rootDir = "C:\\Users\\Gustavo\\Dropbox\\Documents\\Academia\\IME-USP\\" +
-				"Meus artigos\\Accepted\\Durante doutorado\\CRIWG 2012\\Trabalho\\" +
-				"ant-core\\rev486637\\trunk";
+		String fileSeparator = FileSystems.getDefault().getSeparator();
+		System.out.println(fileSeparator);
 		
-		//String rootDir = "C:\\Users\\Gustavo\\Desktop\\Group\\" +
-		//		"ant-core\\rev486637\\trunk\\src\\main";
-		
-		//String rootDir = "C:\\tmp\\ant\\src\\main";
+		String rootDir = "C:\\tmp\\ant\\src\\main";
 				
 		
 		JDX jdx = new JDX();
@@ -68,6 +65,7 @@ public class JDX {
 		System.out.println(depReport.getDependencies().size());
 		System.out.println(depReport.getDependencies());
 		System.out.println(new Date(System.currentTimeMillis()));
+	
 	}
 		
 }

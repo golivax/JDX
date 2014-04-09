@@ -37,6 +37,7 @@ import br.usp.ime.jdx.entity.DependencyReport;
 import br.usp.ime.jdx.filter.Filter;
 import br.usp.ime.jdx.processor.visitor.BatchCompilationUnitVisitor;
 
+
 public class DependencyExtractor extends BatchCompilationUnitVisitor{
 
 	//TODO: DependencyReport should be [clientType, supplierType] = Strength

@@ -1,4 +1,4 @@
-﻿package br.usp.ime.jdx.depextractor.test;
+﻿package br.usp.ime.jdx;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
