@@ -1,8 +1,10 @@
 ﻿package br.usp.ime.jdx.processor.extractor;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AssertStatement;
 import org.eclipse.jdt.core.dom.Block;
@@ -33,200 +35,186 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
 
+import br.usp.ime.jdx.entity.CompUnit;
 import br.usp.ime.jdx.entity.DependencyReport;
+import br.usp.ime.jdx.entity.Type;
 import br.usp.ime.jdx.filter.Filter;
 import br.usp.ime.jdx.processor.visitor.BatchCompilationUnitVisitor;
 
 
 public class DependencyExtractor extends BatchCompilationUnitVisitor{
 
-	//TODO: DependencyReport should be [clientType, supplierType] = Strength
-	//TODO: DependencyReport should provide a method that returns dependencies between files
-	//(que � o que o JDX cospe hoje)
-	
 	private Filter classFilter;
 	private DependencyReport dependencyReport;
-	private Integer processedTypes;
 	
+	private Map<String,Type> typeCache = 
+			new HashMap<String, Type>();
+		
 	private String sourceDir;
+	
+	private Type clientType;
 	
 	public DependencyExtractor(){
 		super(true);
 	}
 	
 	public void run(String sourceDir, Filter fileFilter, Filter classFilter){
-		this.processedTypes = 0;
 		this.sourceDir = sourceDir;
 		this.classFilter = classFilter;
 		
 		//Creates a new dependency report and extracts the dependencies		
 		dependencyReport = new DependencyReport();
-				
-		super.processCode(sourceDir, fileFilter);
 		
-		System.out.println("Number of types processed: " + processedTypes);	
+		super.processCodebase(sourceDir, fileFilter);
+		
+		System.out.println("Number of types processed: " + typeCache.size());	
 	}
 
 	@Override
-	protected void processCompilationUnit(String sourceDir, 
+	protected void cacheCompilationUnit(String sourceDir,
 			String sourceFilePath, CompilationUnit compilationUnit) {
-								
-		//Obtaining the list of types inside the compilation unit
-		List<TypeDeclaration> typeList = compilationUnit.types();
 		
-		for(TypeDeclaration type : typeList){					
+		CompUnit compUnit = new CompUnit(sourceFilePath);
+		
+		Stack<TypeDeclaration> typeStack = new Stack<TypeDeclaration>();
+		typeStack.addAll(compilationUnit.types());
+		
+		while(!typeStack.isEmpty()){
+			TypeDeclaration typeDeclaration = typeStack.pop();				
 			
-			//One more processed type
-			processedTypes++;
+			String typeName = getTypeName(typeDeclaration);
+			Type type = new Type(typeName,compUnit);
+			typeCache.put(typeName, type);
 			
-			//TypeName (por enquanto n�o vou usar, mas usarei no futuro)
-			String typeName = type.getName().toString(); 
-			if (compilationUnit.getPackage() != null){
-				typeName = compilationUnit.getPackage().getName() + 
-						"." + typeName;
+			for(TypeDeclaration subType : typeDeclaration.getTypes()){
+				typeStack.push(subType);
 			}
-			
-			String currentClass = sourceFilePath.replace(sourceDir, "");
-			System.out.println("Current class: " + currentClass);
-			
-			// handling the method declaration within this class
-			// TODO: Refatorar isso pelo amor de Deus (ficar carregando o
-			// currentClass por todos os m�todos privados abaixo)
-			processMethodDeclarations(type.getMethods(), currentClass);
-			
-			//Do it for subtypes also
-			if (type.getTypes().length > 0){
-				processMethodsFromSubtypes(typeName, type.getTypes());
-			}
-		}		
+		}
 	}
 
-	private void processMethodsFromSubtypes(String typeName, 
-			TypeDeclaration[] nestedTypes){
-
-		//These are usually static nested classes
-		for(TypeDeclaration nestedType : nestedTypes){
-
-			//One more processed type
-			processedTypes++;
+	
+	
+	@Override
+	protected void processCompilationUnit(CompilationUnit compilationUnit) {
+		
+		Stack<TypeDeclaration> typeStack = new Stack<TypeDeclaration>();
+		typeStack.addAll(compilationUnit.types());
+		
+		while(!typeStack.isEmpty()){					
+			TypeDeclaration typeDeclaration = typeStack.pop();
 			
-			String nestedTypeName = typeName + "." + nestedType.getName();
+			this.clientType = getType(getTypeName(typeDeclaration));
 			
-			// getting the method declaration within this class
-			processMethodDeclarations(nestedType.getMethods(), nestedTypeName);
-				
-			//Believe it or not: static nested classes may also have
-			//other static nested classes
-			if (nestedType.getTypes().length > 0){
-				
-				processMethodsFromSubtypes(nestedTypeName, 
-						nestedType.getTypes());				
+			//handling method declarations within this class
+			processMethodDeclarations(typeDeclaration.getMethods());
+			
+			for(TypeDeclaration subTypeDeclaration : typeDeclaration.getTypes()){
+				typeStack.push(subTypeDeclaration);
 			}
 		}
 	}
 	
-	private void processMethodDeclarations(MethodDeclaration[] methods, 
-			String currentClass){
+	private void processMethodDeclarations(MethodDeclaration[] methods){
 
 		for (MethodDeclaration methodDeclaration : methods){
 			// getting the blocks inside the current method
 			Block codeBlock = methodDeclaration.getBody();
-			if (codeBlock != null) processBlock(codeBlock, currentClass);			
+			if (codeBlock != null) processBlock(codeBlock);			
 		}
 	}
 
-	private void processBlock(Block codeBlock, String currentClass){
+	private void processBlock(Block codeBlock){
 		try{
 			List<Statement> statements = codeBlock.statements();
 			for(Statement currentStatement : statements){
-				processStatement(currentStatement, currentClass);
+				processStatement(currentStatement);
 			}
 		} catch (Exception e){
 			e.printStackTrace();
 		}
 	}
 
-	private void processStatement(Statement currentStatement, String currentClass){
+	private void processStatement(Statement currentStatement){
 		switch(currentStatement.getNodeType()){
 
 			case ASTNode.RETURN_STATEMENT: 
 				processReturnStatement(
-						(ReturnStatement) currentStatement, currentClass);
+						(ReturnStatement) currentStatement);
 				break;
 	
 			case ASTNode.EXPRESSION_STATEMENT:
 				processExpressionStatement(
-						(ExpressionStatement) currentStatement, currentClass);
+						(ExpressionStatement) currentStatement);
 				break;
 	
 			case ASTNode.TRY_STATEMENT:
-				processTryStatement((TryStatement) currentStatement, currentClass);
+				processTryStatement((TryStatement) currentStatement);
 				break;
 	
 			case ASTNode.IF_STATEMENT:
-				processIfStatement((IfStatement) currentStatement, currentClass);
+				processIfStatement((IfStatement) currentStatement);
 				break;
 	
 			case ASTNode.FOR_STATEMENT:
-				processForStatement((ForStatement) currentStatement, currentClass);
+				processForStatement((ForStatement) currentStatement);
 				break;
 	
 			case ASTNode.WHILE_STATEMENT:
 				processWhileStatement(
-						(WhileStatement) currentStatement, currentClass);
+						(WhileStatement) currentStatement);
 				break;
 	
 			case ASTNode.BLOCK:
-				processBlock((Block) currentStatement, currentClass);
+				processBlock((Block) currentStatement);
 				break;
 	
 			case ASTNode.VARIABLE_DECLARATION_STATEMENT:
 				processVariableDeclarationStatement(
-						(VariableDeclarationStatement) currentStatement, currentClass);
+						(VariableDeclarationStatement) currentStatement);
 				break;
 	
 			case ASTNode.SWITCH_STATEMENT:
 				processSwitchStatement(
-						(SwitchStatement) currentStatement, currentClass);
+						(SwitchStatement) currentStatement);
 				break;
 	
 			case ASTNode.SYNCHRONIZED_STATEMENT:
 				processSynchronizedStatement(
-						(SynchronizedStatement) currentStatement, currentClass);
+						(SynchronizedStatement) currentStatement);
 				break;
 	
 			case ASTNode.DO_STATEMENT:
 				processDoStatement(
-						(DoStatement) currentStatement, currentClass);
+						(DoStatement) currentStatement);
 				break;
 	
 			case ASTNode.SWITCH_CASE:
-				processSwitchCase((SwitchCase) currentStatement, currentClass);
+				processSwitchCase((SwitchCase) currentStatement);
 				break;
 	
 			case ASTNode.ENHANCED_FOR_STATEMENT:
 				processEnhancedForStatement(
-						(EnhancedForStatement) currentStatement, currentClass);
+						(EnhancedForStatement) currentStatement);
 				break;
 	
 			case ASTNode.ASSERT_STATEMENT:
 				processAssertStatement(
-						(AssertStatement) currentStatement, currentClass);
+						(AssertStatement) currentStatement);
 				break;
 	
 			case ASTNode.LABELED_STATEMENT:
 				processLabeledStatement(
-						(LabeledStatement) currentStatement, currentClass);
+						(LabeledStatement) currentStatement);
 				break;
 	
 			case ASTNode.CONSTRUCTOR_INVOCATION:
 				processConstructorInvocation(
-						(ConstructorInvocation) currentStatement, currentClass);
+						(ConstructorInvocation) currentStatement);
 				break;
 	
 			case ASTNode.TYPE_DECLARATION_STATEMENT:
 				processTypeDeclarationStatement(
-						(TypeDeclarationStatement) currentStatement, currentClass);
+						(TypeDeclarationStatement) currentStatement);
 				break;
 	
 				// do nothing for the following statements/cases
@@ -246,221 +234,208 @@ public class DependencyExtractor extends BatchCompilationUnitVisitor{
 
 	}
 	
-	private void processTypeDeclarationStatement(TypeDeclarationStatement tds, 
-			String currentClass){
+	private void processTypeDeclarationStatement(TypeDeclarationStatement tds){
 		
 		ITypeBinding binding = tds.resolveBinding();
-		processTypeBinding(binding, currentClass);
+		processTypeBinding(binding);
 	}
 
-	private void processTypeBinding(ITypeBinding binding, String currentClass){
+	private void processTypeBinding(ITypeBinding binding){
 		if(binding != null){		
 				
-			String providerClass = 
-					getProviderClass(binding.getDeclaringClass());
+			String providerTypeName = 
+					getProviderTypeName(binding.getDeclaringClass());
 				
-			if (providerClass != null) setUse(currentClass, providerClass);
+			if (providerTypeName != null) setUse(providerTypeName);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	private void processConstructorInvocation(
-			ConstructorInvocation constructorInvocation, String currentClass){
+			ConstructorInvocation constructorInvocation){
 		
 		List<Expression> expressions = constructorInvocation.arguments();
 		
 		for(Expression expression : expressions){
-			processExpression(expression, currentClass);
+			processExpression(expression);
 		}
 		
 		IMethodBinding methodBinding = 
 				constructorInvocation.resolveConstructorBinding();
 		
 		if (methodBinding != null){
-			processMethodBinding(methodBinding, currentClass);	
+			processMethodBinding(methodBinding);	
 		}
 		
 	}
 
-	private void processLabeledStatement(LabeledStatement ls, 
-			String currentClass){
+	private void processLabeledStatement(LabeledStatement ls){
 		
 		Statement body = ls.getBody();
-		processStatement(body, currentClass);
+		processStatement(body);
 	}
 
-	private void processEnhancedForStatement(EnhancedForStatement efs,
-			String currentClass){
+	private void processEnhancedForStatement(EnhancedForStatement efs){
 
 		Statement body = efs.getBody();
 		Expression expression = efs.getExpression();
 
-		processStatement(body, currentClass);
-		processExpression(expression, currentClass);
+		processStatement(body);
+		processExpression(expression);
 
 	}
 
-	private void processDoStatement(DoStatement doStatement,
-			String currentClass){
+	private void processDoStatement(DoStatement doStatement){
 
 		Statement statement = doStatement.getBody();
 		Expression doExpression = doStatement.getExpression();
 
-		processStatement(statement, currentClass);
-		processExpression(doExpression, currentClass);
+		processStatement(statement);
+		processExpression(doExpression);
 
 	}
 
-	private void processWhileStatement(WhileStatement whileStatement,
-			String currentClass){
+	private void processWhileStatement(WhileStatement whileStatement){
 
 		Statement whileBody = whileStatement.getBody();
 		Expression whileExpression = whileStatement.getExpression();
 
-		processStatement(whileBody, currentClass);
-		processExpression(whileExpression, currentClass);
+		processStatement(whileBody);
+		processExpression(whileExpression);
 	}
 
 	@SuppressWarnings("unchecked")
-	private void processSwitchStatement(SwitchStatement switchStatement, 
-			String currentClass){
+	private void processSwitchStatement(SwitchStatement switchStatement){
 		
 		Expression switchExpression = switchStatement.getExpression();
-		processExpression(switchExpression, currentClass);
+		processExpression(switchExpression);
 
 		List<Statement> switchStatements = switchStatement.statements();
 		for(Statement statement : switchStatements){
-			processStatement(statement, currentClass);
+			processStatement(statement);
 		}
 	}
 
-	private void processSwitchCase(SwitchCase switchCase, String currentClass){
+	private void processSwitchCase(SwitchCase switchCase){
 		Expression switchCaseExpression = switchCase.getExpression();
-		processExpression(switchCaseExpression, currentClass);
+		processExpression(switchCaseExpression);
 	}
 
 	@SuppressWarnings("unchecked")
-	private void processForStatement(ForStatement forStatement, 
-			String currentClass){
+	private void processForStatement(ForStatement forStatement){
 		
 		Statement forBody = forStatement.getBody();
 		Expression forExpression = forStatement.getExpression();
 		List<Expression> initializerExpressions = forStatement.initializers();
 		List<Expression> updaterExpressions = forStatement.updaters();
 
-		processStatement(forBody, currentClass);
-		processExpression(forExpression, currentClass);
+		processStatement(forBody);
+		processExpression(forExpression);
 
 		for(Expression initializerExpression : initializerExpressions){
-			processExpression(initializerExpression, currentClass);
+			processExpression(initializerExpression);
 		}
 
 		for(Expression updaterExpression : updaterExpressions){
-			processExpression(updaterExpression, currentClass);
+			processExpression(updaterExpression);
 		}
 	}
 
-	private void processIfStatement(IfStatement ifStatement, 
-			String currentClass){
+	private void processIfStatement(IfStatement ifStatement){
 
 		Expression ifExpression = ifStatement.getExpression();
-		processExpression(ifExpression, currentClass);
+		processExpression(ifExpression);
+
+		Statement thenStatement = ifStatement.getThenStatement();
+		if (thenStatement != null) processStatement(thenStatement);
 		
 		Statement elseStatement = ifStatement.getElseStatement();
-		if (elseStatement != null) processStatement(elseStatement, currentClass);
+		if (elseStatement != null) processStatement(elseStatement);
 
 	}
 
 	private void processExpressionStatement(
-			ExpressionStatement	expressionStatement,String currentClass){
+			ExpressionStatement	expressionStatement){
 
 		Expression expression = expressionStatement.getExpression();
-		processExpression(expression, currentClass);
+		processExpression(expression);
 			
 	}
 
-	private void processReturnStatement(ReturnStatement currentClass, 
-			String currentType){
+	private void processReturnStatement(ReturnStatement returnStatement){
 
-		if(currentClass != null){
-			Expression expression = currentClass.getExpression();
+		if(returnStatement != null){
+			Expression expression = returnStatement.getExpression();
 			if (expression != null){
-				processExpression(expression, currentType);
+				processExpression(expression);
 			}
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	private void processVariableDeclarationStatement(
-			VariableDeclarationStatement currentVariableDeclaration, 
-			String currentClass){
+			VariableDeclarationStatement currentVariableDeclaration){
 	
 		List<VariableDeclarationFragment> fragments = 
 				currentVariableDeclaration.fragments();
 
 		for(VariableDeclarationFragment fragment : fragments){
-			processVariableDeclarationFragment(fragment, currentClass);
+			processVariableDeclarationFragment(fragment);
 		}
 	}
 
 	private void processVariableDeclarationFragment(
-			VariableDeclarationFragment fragment,
-			String currentClass){
+			VariableDeclarationFragment fragment){
 
 		Expression initializer = fragment.getInitializer();
-		processExpression(initializer, currentClass);
+		processExpression(initializer);
 	}
 
 	@SuppressWarnings("unchecked")
-	private void processTryStatement(TryStatement currentStatement,
-			String currentClass){
+	private void processTryStatement(TryStatement currentStatement){
 
 		Block tryBlock = currentStatement.getBody();
-		processBlock(tryBlock, currentClass);
+		processBlock(tryBlock);
 			
 		List<CatchClause> catchBlock = currentStatement.catchClauses();
 		for(CatchClause catchClause : catchBlock){
-			processCatchClause(catchClause, currentClass);
+			processCatchClause(catchClause);
 		}
 			
 		Block finallyBlock = currentStatement.getFinally();			
-		if (finallyBlock != null) processBlock(finallyBlock, currentClass);
+		if (finallyBlock != null) processBlock(finallyBlock);
 	}
 
-	private void processCatchClause(CatchClause catchClause, 
-			String currentClass){
+	private void processCatchClause(CatchClause catchClause){
 		
 		if(catchClause != null){
 			Block catchBlock = catchClause.getBody();
-			processBlock(catchBlock, currentClass);
+			processBlock(catchBlock);
 		}
 	}
 
 	private void processSynchronizedStatement(
-			SynchronizedStatement synchronizedStat, 
-			String currentClass){
+			SynchronizedStatement synchronizedStat){
 
 		if(synchronizedStat != null){
 			Block synchronizedBlock = synchronizedStat.getBody();
 			Expression syncExpression = synchronizedStat.getExpression();
 
-			processBlock(synchronizedBlock, currentClass);
-			processExpression(syncExpression, currentClass);
+			processBlock(synchronizedBlock);
+			processExpression(syncExpression);
 		}
 	}
 
-	private void processAssertStatement(AssertStatement as, 
-			String currentClass){
+	private void processAssertStatement(AssertStatement as){
 		
 		Expression expression = as.getExpression();
-		processExpression(expression, currentClass);
+		processExpression(expression);
 		
 		Expression message = as.getMessage();		
-		processExpression(message, currentClass);		
+		processExpression(message);		
 	}
 
-	private void processExpression(Expression expression, 
-			String currentClass){
+	private void processExpression(Expression expression){
 
 		IMethodBinding methodBinding = null;
 		
@@ -508,48 +483,68 @@ public class DependencyExtractor extends BatchCompilationUnitVisitor{
 		//(JAR files, etc). That is, class files which are not available 
 		//in the provided context (environment)
 		if (methodBinding != null){			
-			processMethodBinding(methodBinding, currentClass);
+			processMethodBinding(methodBinding);
 		}
 	}
 
-	private void processMethodBinding(IMethodBinding binding, 
-			String currentClass){
+	private void processMethodBinding(IMethodBinding binding){
 		
 		if (!binding.getDeclaringClass().isAnonymous()){
 									
-			String providerClass = 
-					getProviderClass(binding.getDeclaringClass());
+			String providerTypeName = 
+					getProviderTypeName(binding.getDeclaringClass());
 			
-			if (providerClass != null) 
-				setUse(currentClass, providerClass);
+			if (providerTypeName != null) 
+				setUse(providerTypeName);
 		}
 	}
 
-	private String getProviderClass(ITypeBinding declaringClass) {
-		String providerClass = null;
-		
-		String key = declaringClass.getKey();
-		if (key.contains(sourceDir)){
-			String compilationUnit = StringUtils.substringAfterLast(key, sourceDir);
-			providerClass = StringUtils.substringBefore(compilationUnit, "~") + ".java";
-		}
-		
-		return providerClass;
+	private String getProviderTypeName(ITypeBinding declaringClass) {
+		return declaringClass.getQualifiedName();
 	}
 
-	private void setUse(String currentClass, String providerClass){
-		
-		if (!currentClass.equals(providerClass) &&
-			!classFilter.matches(providerClass)){
-		
-			System.out.println("Provider class: " + providerClass);
+	private void setUse(String providerTypeName){
+				
+		if (!classFilter.matches(providerTypeName)){			
 			
-			dependencyReport.addDependency(currentClass, providerClass);
+			Type providerType = getType(providerTypeName);
+			if(providerType == null){
+				System.out.println("WARNING: Could not find binding for " + 
+						providerTypeName + " in class " + 
+					clientType.getCompUnit().getName());
+			}
+			else{
+				dependencyReport.addDependency(clientType, providerType);	
+			}
 		}
 	}
 	
 	public DependencyReport getDependencyReport(){
 		return dependencyReport;
 	}
+	
+	private Type getType(String typeName){
+		return typeCache.get(typeName);
+	}
 
+	private String getTypeName(TypeDeclaration typeDeclaration) {
+		
+		String typeName = typeDeclaration.getName().toString();
+		
+		ASTNode node = typeDeclaration.getParent();
+		while(node != null){
+			if(node instanceof TypeDeclaration){
+				TypeDeclaration superType = (TypeDeclaration)node;
+				typeName = superType.getName().toString() + "." + typeName;
+			}
+			if(node instanceof CompilationUnit){
+				CompilationUnit compilationUnit = (CompilationUnit)node;
+				typeName = compilationUnit.getPackage().getName() + 
+						"." + typeName;
+			}
+			node = node.getParent();
+		}
+		
+		return typeName;
+	}	
 }

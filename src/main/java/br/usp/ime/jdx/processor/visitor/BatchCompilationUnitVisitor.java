@@ -1,5 +1,8 @@
 ﻿package br.usp.ime.jdx.processor.visitor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -10,13 +13,16 @@ import br.usp.ime.jdx.util.filesystem.FilesystemUtils;
 
 public abstract class BatchCompilationUnitVisitor {
 
+	private List<CompilationUnit> compilationUnits = 
+			new ArrayList<CompilationUnit>();
+	
 	private boolean resolveBindings;
 	
 	public BatchCompilationUnitVisitor(boolean resolveBindings){
 		this.resolveBindings = resolveBindings;
 	}
 	
-	protected void processCode(final String sourceDir, Filter fileFilter){
+	protected void processCodebase(final String sourceDir, Filter fileFilter){
 				
 		try{
 			
@@ -28,16 +34,18 @@ public abstract class BatchCompilationUnitVisitor {
 			
 			// setting the environment			
 			parser.setEnvironment(null, new String[]{sourceDir}, null, true);
-								
-			// defining the file ast requestor
+			
+			//cache compilation units
 			FileASTRequestor req = new FileASTRequestor() {
 				
 				@Override
 				public void acceptAST(String sourceFilePath, 
 						CompilationUnit compilationUnit) {
 
-					processCompilationUnit(sourceDir, sourceFilePath, 
-							compilationUnit);										
+					compilationUnits.add(compilationUnit);
+					
+					cacheCompilationUnit(sourceDir, sourceFilePath, 
+							compilationUnit);	
 				}
 			};
 			
@@ -46,13 +54,19 @@ public abstract class BatchCompilationUnitVisitor {
 			
 			parser.createASTs(paths, null, new String[0], req, null);
 			
+			for(CompilationUnit compilationUnit : compilationUnits){
+				processCompilationUnit(compilationUnit);
+			}
+			
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		
 	}
 	
-	protected abstract void processCompilationUnit(String sourceDir, 
-			String sourceFilePath,	CompilationUnit compilationUnit);
-	
+	protected abstract void cacheCompilationUnit(String sourceDir,
+			String sourceFilePath, CompilationUnit compilationUnit);
+
+	protected abstract void processCompilationUnit(
+			CompilationUnit compilationUnit);
 }

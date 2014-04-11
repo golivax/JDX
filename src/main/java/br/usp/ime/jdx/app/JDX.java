@@ -62,8 +62,8 @@ public class JDX {
 		DependencyReport depReport = jdx.calculateDepsFrom(
 				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
 		
-		System.out.println(depReport.getDependencies().size());
-		System.out.println(depReport.getDependencies());
+		System.out.println(depReport.getTypeDependencies().size());
+		System.out.println(depReport.getTypeDependencies());
 		System.out.println(new Date(System.currentTimeMillis()));
 	
 	}

@@ -1,8 +1,54 @@
 ﻿package br.usp.ime.jdx.processor.extractor;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.nio.file.Paths;
+import java.util.Iterator;
+
+import org.junit.Test;
+
+import br.usp.ime.jdx.app.JDX;
+import br.usp.ime.jdx.entity.CompUnit;
+import br.usp.ime.jdx.entity.Dependency;
+import br.usp.ime.jdx.entity.DependencyReport;
+import br.usp.ime.jdx.filter.JavaFileFilter;
+import br.usp.ime.jdx.filter.JavaNativeClassFilter;
 
 public class DependencyExtractorTest {
 
+
+	public void shouldFindNoDeps(){
+		String rootDir = Paths.get("").toAbsolutePath()+"\\src\\test\\java\\br\\usp\\ime\\jdx\\processor\\extractor\\proj1";
+		
+		JDX jdx = new JDX();
+		DependencyReport depReport = jdx.calculateDepsFrom(
+				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
+		
+		assertTrue(depReport.getTypeDependencies().isEmpty());		
+	}
+	
+	@Test
+	public void shouldFindLocalVariableInstantiationDeps(){
+		String rootDir = Paths.get("").toAbsolutePath()+"\\src\\test\\java\\br\\usp\\ime\\jdx\\processor\\extractor\\proj2";
+		
+		JDX jdx = new JDX();
+		DependencyReport depReport = jdx.calculateDepsFrom(
+				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
+		
+		System.out.println(depReport);
+		
+		assertEquals(1, depReport.getCompUnitDependencies().size());
+		
+		Iterator<Dependency<CompUnit>> depIterator = 
+				depReport.getCompUnitDependencies().iterator();
+		
+		Dependency<CompUnit> dep = depIterator.next();
+		assertEquals(rootDir + "\\A.java", dep.getClient().getName());
+		assertEquals(rootDir + "\\B.java", dep.getSupplier().getName());
+		assertEquals(new Integer(28), dep.getStrength());
+	}
+	
 	/**
 	@Test
 	public void shouldCountDifferentReferencedTypesInClassAttributes() {
@@ -50,7 +96,7 @@ public class DependencyExtractorTest {
 		metric.calculate(
 				toInputStream(
 						classDeclaration(
-								"public void method1(ClassA a){}\r\n"+
+								")public void method1(ClassA a){}\r\n"+
 								"public void method2(ClassA a){}\r\n"+
 								"public void method3(ClassB b){}\r\n"+
 								"public void method4(ClassC c){}\r\n"

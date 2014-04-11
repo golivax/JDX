@@ -7,7 +7,7 @@ public class DependencyPrinter {
 
 	public static String printCSV(DependencyReport dependencyReport){
 		StringBuilder builder = new StringBuilder();
-		for(Dependency dependency : dependencyReport.getDependencies()){
+		for(Dependency dependency : dependencyReport.getTypeDependencies()){
 			builder.append(
 					dependency.getClient() + ";" + 
 					dependency.getSupplier() + ";" + 

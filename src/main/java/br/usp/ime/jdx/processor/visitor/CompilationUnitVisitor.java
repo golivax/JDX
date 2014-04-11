@@ -19,7 +19,7 @@ public abstract class CompilationUnitVisitor {
 		try{
 			
 			// creating the parser
-			ASTParser parser = ASTParser.newParser(AST.JLS3);
+			ASTParser parser = ASTParser.newParser(AST.JLS4);
 
 			/**Binding information is obtained from the Java model. 
 			 * This means that the compilation unit must be located relative to 
