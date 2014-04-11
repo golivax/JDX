@@ -41,7 +41,7 @@ import br.usp.ime.jdx.entity.CompUnit;
 import br.usp.ime.jdx.entity.DependencyReport;
 import br.usp.ime.jdx.entity.Type;
 import br.usp.ime.jdx.filter.Filter;
-import br.usp.ime.jdx.processor.visitor.BatchCompilationUnitProcessor;
+import br.usp.ime.jdx.processor.BatchCompilationUnitProcessor;
 
 
 public class DependencyExtractor extends FileASTRequestor{
@@ -88,7 +88,7 @@ public class DependencyExtractor extends FileASTRequestor{
 		}
 	}
 	
-	public void run(String[] paths, Filter classFilter){
+	public DependencyReport run(String[] paths, Filter classFilter){
 		this.classFilter = classFilter;
 		
 		//Creates a new dependency report and extracts the dependencies		
@@ -107,6 +107,8 @@ public class DependencyExtractor extends FileASTRequestor{
 		for(CompilationUnit compilationUnit : compilationUnits){
 			processCompilationUnit(compilationUnit);
 		}		
+		
+		return dependencyReport;
 	}
 
 	protected void processCompilationUnit(CompilationUnit compilationUnit) {
@@ -531,10 +533,6 @@ public class DependencyExtractor extends FileASTRequestor{
 				dependencyReport.addDependency(clientType, providerType);	
 			}
 		}
-	}
-	
-	public DependencyReport getDependencyReport(){
-		return dependencyReport;
 	}
 	
 	private Type getType(String typeName){

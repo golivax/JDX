@@ -1,4 +1,4 @@
-﻿package br.usp.ime.jdx.processor.visitor;
+﻿package br.usp.ime.jdx.processor;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.AST;

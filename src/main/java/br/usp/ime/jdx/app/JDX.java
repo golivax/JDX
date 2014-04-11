@@ -28,9 +28,7 @@ public class JDX {
 		String[] paths = FilesystemUtils.getPathsFromFilesRecursively(
 				sourceDir, fileFilter);
 		
-		extractor.run(paths, classFilter);
-		
-		return extractor.getDependencyReport();
+		return extractor.run(paths, classFilter);
 	}
 	
 	public DependencyReport calculateDepsFrom(File file, List<File> allFiles) {

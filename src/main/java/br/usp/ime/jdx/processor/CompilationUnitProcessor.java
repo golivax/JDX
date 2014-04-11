@@ -1,14 +1,14 @@
-﻿package br.usp.ime.jdx.processor.visitor;
+﻿package br.usp.ime.jdx.processor;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
-public abstract class CompilationUnitVisitor {
+public abstract class CompilationUnitProcessor {
 
 	private boolean resolveBindings;
 		
-	public CompilationUnitVisitor(boolean resolveBindings){
+	public CompilationUnitProcessor(boolean resolveBindings){
 		this.resolveBindings = resolveBindings;
 	}
 	
