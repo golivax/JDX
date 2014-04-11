@@ -12,6 +12,7 @@ import br.usp.ime.jdx.filter.Filter;
 import br.usp.ime.jdx.filter.JavaFileFilter;
 import br.usp.ime.jdx.filter.JavaNativeClassFilter;
 import br.usp.ime.jdx.processor.extractor.DependencyExtractor;
+import br.usp.ime.jdx.util.filesystem.FilesystemUtils;
 
 public class JDX {
 	
@@ -19,11 +20,16 @@ public class JDX {
 		
 	}
 	
-	public DependencyReport calculateDepsFrom(String rootDir, 
+	public DependencyReport calculateDepsFrom(String sourceDir, 
 			Filter fileFilter, Filter classFilter) {
 		
 		DependencyExtractor extractor = new DependencyExtractor();
-		extractor.run(rootDir, fileFilter, classFilter);
+		
+		String[] paths = FilesystemUtils.getPathsFromFilesRecursively(
+				sourceDir, fileFilter);
+		
+		extractor.run(paths, classFilter);
+		
 		return extractor.getDependencyReport();
 	}
 	

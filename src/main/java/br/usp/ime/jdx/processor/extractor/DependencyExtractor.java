@@ -1,5 +1,6 @@
 ﻿package br.usp.ime.jdx.processor.extractor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import org.eclipse.jdt.core.dom.DoStatement;
 import org.eclipse.jdt.core.dom.EnhancedForStatement;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
+import org.eclipse.jdt.core.dom.FileASTRequestor;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -39,12 +41,15 @@ import br.usp.ime.jdx.entity.CompUnit;
 import br.usp.ime.jdx.entity.DependencyReport;
 import br.usp.ime.jdx.entity.Type;
 import br.usp.ime.jdx.filter.Filter;
-import br.usp.ime.jdx.processor.visitor.BatchCompilationUnitVisitor;
+import br.usp.ime.jdx.processor.visitor.BatchCompilationUnitProcessor;
 
 
-public class DependencyExtractor extends BatchCompilationUnitVisitor{
+public class DependencyExtractor extends FileASTRequestor{
 
-	private Filter classFilter;
+	private List<CompilationUnit> compilationUnits = 
+			new ArrayList<CompilationUnit>();
+	
+	private Filter classFilter;	
 	private DependencyReport dependencyReport;
 	
 	private Map<String,Type> typeCache = 
@@ -54,28 +59,19 @@ public class DependencyExtractor extends BatchCompilationUnitVisitor{
 	
 	private Type clientType;
 	
-	public DependencyExtractor(){
-		super(true);
-	}
 	
-	public void run(String sourceDir, Filter fileFilter, Filter classFilter){
-		this.sourceDir = sourceDir;
-		this.classFilter = classFilter;
-		
-		//Creates a new dependency report and extracts the dependencies		
-		dependencyReport = new DependencyReport();
-		
-		super.processCodebase(sourceDir, fileFilter);
-		
-		System.out.println("Number of types processed: " + typeCache.size());	
-	}
-
 	@Override
-	protected void cacheCompilationUnit(String sourceDir,
+	public void acceptAST(String sourceFilePath, 
+			CompilationUnit compilationUnit) {
+
+		cacheCompilationUnit(sourceDir, sourceFilePath, compilationUnit);	
+	}	
+	
+	private void cacheCompilationUnit(String sourceDir,
 			String sourceFilePath, CompilationUnit compilationUnit) {
 		
-		CompUnit compUnit = new CompUnit(sourceFilePath);
-		
+		this.compilationUnits.add(compilationUnit);
+				
 		Stack<TypeDeclaration> typeStack = new Stack<TypeDeclaration>();
 		typeStack.addAll(compilationUnit.types());
 		
@@ -83,7 +79,7 @@ public class DependencyExtractor extends BatchCompilationUnitVisitor{
 			TypeDeclaration typeDeclaration = typeStack.pop();				
 			
 			String typeName = getTypeName(typeDeclaration);
-			Type type = new Type(typeName,compUnit);
+			Type type = new Type(typeName,new CompUnit(sourceFilePath));
 			typeCache.put(typeName, type);
 			
 			for(TypeDeclaration subType : typeDeclaration.getTypes()){
@@ -91,10 +87,28 @@ public class DependencyExtractor extends BatchCompilationUnitVisitor{
 			}
 		}
 	}
+	
+	public void run(String[] paths, Filter classFilter){
+		this.classFilter = classFilter;
+		
+		//Creates a new dependency report and extracts the dependencies		
+		dependencyReport = new DependencyReport();
+		
+		//This is used to cache compilation units (e.g., so that
+		//we can retrieve the compilation units from provider types
+		//during dependency extraction)
+		BatchCompilationUnitProcessor batchCuProcessor = 
+				new BatchCompilationUnitProcessor();
+		
+		batchCuProcessor.run(this, paths);
+		
+		System.out.println("Number of types detected: " + typeCache.size());	
+		
+		for(CompilationUnit compilationUnit : compilationUnits){
+			processCompilationUnit(compilationUnit);
+		}		
+	}
 
-	
-	
-	@Override
 	protected void processCompilationUnit(CompilationUnit compilationUnit) {
 		
 		Stack<TypeDeclaration> typeStack = new Stack<TypeDeclaration>();
