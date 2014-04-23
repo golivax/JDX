@@ -35,12 +35,7 @@ public class DependencyReport {
 		
 		Collection<Dependency<Type>> typeDependencies = getTypeDependencies();
 		for(Dependency<Type> typeDependency : typeDependencies){
-			if(typeDependency.getClient() == null) {
-				System.out.println("Merda no client!");
-			}
-			if(typeDependency.getSupplier() == null) {
-				System.out.println("Merda no supplier!");
-			}
+			
 			CompUnit clientCU = typeDependency.getClient().getCompUnit();
 			CompUnit supplierCU = typeDependency.getSupplier().getCompUnit();
 			
