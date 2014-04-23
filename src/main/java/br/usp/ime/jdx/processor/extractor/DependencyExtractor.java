@@ -37,7 +37,6 @@ import org.eclipse.jdt.core.dom.TypeDeclarationStatement;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
-import org.eclipse.jdt.internal.compiler.lookup.ParameterizedMethodBinding;
 
 import br.usp.ime.jdx.entity.CompUnit;
 import br.usp.ime.jdx.entity.DependencyReport;
