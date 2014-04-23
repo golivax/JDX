@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AssertStatement;
 import org.eclipse.jdt.core.dom.Block;
@@ -36,6 +37,7 @@ import org.eclipse.jdt.core.dom.TypeDeclarationStatement;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
+import org.eclipse.jdt.internal.compiler.lookup.ParameterizedMethodBinding;
 
 import br.usp.ime.jdx.entity.CompUnit;
 import br.usp.ime.jdx.entity.DependencyReport;
@@ -121,7 +123,7 @@ public class DependencyExtractor extends FileASTRequestor{
 			
 			this.clientType = getType(getTypeName(typeDeclaration));
 			
-			//handling method declarations within this class
+			//handling method declarations within this type
 			processMethodDeclarations(typeDeclaration.getMethods());
 			
 			for(TypeDeclaration subTypeDeclaration : typeDeclaration.getTypes()){
@@ -505,18 +507,29 @@ public class DependencyExtractor extends FileASTRequestor{
 
 	private void processMethodBinding(IMethodBinding binding){
 		
-		if (!binding.getDeclaringClass().isAnonymous()){
-									
-			String providerTypeName = 
-					getProviderTypeName(binding.getDeclaringClass());
-			
-			if (providerTypeName != null) 
-				setUse(providerTypeName);
+		//It is null when a generic class/interface takes a certain 
+		//type parameter that does not exist in source code
+		//e.g. "ArrayList<Player> opponents = new ArrayList<Player>();" and
+		//the Player class/interface does not exist in source code
+		if(binding.getDeclaringClass() != null){			
+			if (!binding.getDeclaringClass().isAnonymous()){
+				
+				String providerTypeName = 
+						getProviderTypeName(binding.getDeclaringClass());
+				
+				if (providerTypeName != null) 
+					setUse(providerTypeName);
+			}
 		}
+		
+		
 	}
 
 	private String getProviderTypeName(ITypeBinding declaringClass) {
-		return declaringClass.getQualifiedName();
+		String qualifiedName = declaringClass.getQualifiedName();
+		//Removing generic's type parameter
+		String providerTypeName = StringUtils.substringBefore(qualifiedName, "<");
+		return providerTypeName;
 	}
 
 	private void setUse(String providerTypeName){
@@ -526,7 +539,7 @@ public class DependencyExtractor extends FileASTRequestor{
 			Type providerType = getType(providerTypeName);
 			if(providerType == null){
 				System.out.println("WARNING: Could not find binding for " + 
-						providerTypeName + " in class " + 
+					providerTypeName + " in class " + 
 					clientType.getCompUnit().getName());
 			}
 			else{
