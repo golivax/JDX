@@ -1,6 +1,7 @@
 ﻿package br.usp.ime.jdx.processor.extractor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.Stack;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AssertStatement;
+import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
@@ -18,6 +20,7 @@ import org.eclipse.jdt.core.dom.DoStatement;
 import org.eclipse.jdt.core.dom.EnhancedForStatement;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
+import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IMethodBinding;
@@ -83,10 +86,42 @@ public class DependencyExtractor extends FileASTRequestor{
 			Type type = new Type(typeName,new CompUnit(sourceFilePath));
 			typeCache.put(typeName, type);
 			
-			for(TypeDeclaration subType : typeDeclaration.getTypes()){
+			
+			for(TypeDeclaration subType : getSubTypes(typeDeclaration)){
 				typeStack.push(subType);
 			}
 		}
+	}
+	
+
+	private List<TypeDeclaration> getSubTypes(TypeDeclaration typeDeclaration) {
+		List<TypeDeclaration> subTypes = new ArrayList<TypeDeclaration>();
+		
+		try{
+			//Recovers static nested classes and "regular" inner classes
+			Collections.addAll(subTypes, typeDeclaration.getTypes());
+			
+			//Recovers local classes
+			for(MethodDeclaration methodDeclaration : typeDeclaration.getMethods()){
+				Block block = methodDeclaration.getBody();
+				if (block != null) {
+					List<Statement> statements = block.statements();
+					for(Statement statement : statements){
+						if (statement.getNodeType() == ASTNode.TYPE_DECLARATION_STATEMENT){
+							TypeDeclarationStatement tds = (TypeDeclarationStatement)statement;
+							if (tds.getDeclaration() instanceof TypeDeclaration){
+								TypeDeclaration t = (TypeDeclaration)tds.getDeclaration();
+								
+								subTypes.add((TypeDeclaration)tds.getDeclaration());
+							}
+						}
+					}
+				}									
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return subTypes;
 	}
 	
 	public DependencyReport run(String[] paths, Filter classFilter){
@@ -123,17 +158,26 @@ public class DependencyExtractor extends FileASTRequestor{
 			this.clientType = getType(getTypeName(typeDeclaration));
 			
 			//handling method declarations within this type
-			processMethodDeclarations(typeDeclaration.getMethods());
+			processFieldsAndMethods(typeDeclaration);
 			
-			for(TypeDeclaration subTypeDeclaration : typeDeclaration.getTypes()){
+			for(TypeDeclaration subTypeDeclaration : getSubTypes(typeDeclaration)){
 				typeStack.push(subTypeDeclaration);
 			}
 		}
 	}
 	
-	private void processMethodDeclarations(MethodDeclaration[] methods){
+	private void processFieldsAndMethods(TypeDeclaration typeDeclaration){
 
-		for (MethodDeclaration methodDeclaration : methods){
+		for (FieldDeclaration fieldDeclaration : typeDeclaration.getFields()){
+			// processing fields
+			List<VariableDeclarationFragment> fragments = fieldDeclaration.fragments();
+
+			for(VariableDeclarationFragment fragment : fragments){
+				processVariableDeclarationFragment(fragment);
+			}
+		}
+		
+		for (MethodDeclaration methodDeclaration : typeDeclaration.getMethods()){
 			// getting the blocks inside the current method
 			Block codeBlock = methodDeclaration.getBody();
 			if (codeBlock != null) processBlock(codeBlock);			
@@ -252,7 +296,6 @@ public class DependencyExtractor extends FileASTRequestor{
 	}
 	
 	private void processTypeDeclarationStatement(TypeDeclarationStatement tds){
-		
 		ITypeBinding binding = tds.resolveBinding();
 		processTypeBinding(binding);
 	}
@@ -263,7 +306,7 @@ public class DependencyExtractor extends FileASTRequestor{
 			String providerTypeName = 
 					getProviderTypeName(binding.getDeclaringClass());
 				
-			if (providerTypeName != null) setUse(providerTypeName);
+			setUse(providerTypeName);
 		}
 	}
 
@@ -469,6 +512,11 @@ public class DependencyExtractor extends FileASTRequestor{
 					(ClassInstanceCreation)expression;
 			
 			methodBinding = instanceCreation.resolveConstructorBinding();
+		}else if(expression instanceof Assignment){
+			
+			Assignment assignment = (Assignment)expression;
+			processExpression(assignment.getRightHandSide());
+
 			
 		}else if (expression != null){
 			//There are other types of expressions, including
@@ -511,21 +559,20 @@ public class DependencyExtractor extends FileASTRequestor{
 		//e.g. "ArrayList<Player> opponents = new ArrayList<Player>();" and
 		//the Player class/interface does not exist in source code
 		if(binding.getDeclaringClass() != null){			
-			if (!binding.getDeclaringClass().isAnonymous()){
+			if (!binding.getDeclaringClass().isAnonymous() && 
+				!binding.getDeclaringClass().isLocal()){
 				
 				String providerTypeName = 
 						getProviderTypeName(binding.getDeclaringClass());
 				
-				if (providerTypeName != null) 
-					setUse(providerTypeName);
+				setUse(providerTypeName);
 			}
 		}
-		
-		
 	}
 
-	private String getProviderTypeName(ITypeBinding declaringClass) {
-		String qualifiedName = declaringClass.getQualifiedName();
+	private String getProviderTypeName(ITypeBinding typeBinding) {
+	
+		String qualifiedName = typeBinding.getQualifiedName();
 		//Removing generic's type parameter
 		String providerTypeName = StringUtils.substringBefore(qualifiedName, "<");
 		return providerTypeName;

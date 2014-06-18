@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Paths;
-import java.util.Iterator;
 
 import org.junit.Test;
 
@@ -17,9 +16,16 @@ import br.usp.ime.jdx.filter.JavaNativeClassFilter;
 
 public class DependencyExtractorTest {
 
+	private String rootDir = 
+			Paths.get("").toAbsolutePath()+"\\src\\test\\java\\br\\usp\\ime"
+					+ "\\jdx\\processor\\extractor\\methodinv";
 
+	/**
+	//No dep
+	
+	@Test
 	public void shouldFindNoDeps(){
-		String rootDir = Paths.get("").toAbsolutePath()+"\\src\\test\\java\\br\\usp\\ime\\jdx\\processor\\extractor\\proj1";
+		String rootDir = this.rootDir + "\\nodep";
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(
@@ -28,9 +34,11 @@ public class DependencyExtractorTest {
 		assertTrue(depReport.getTypeDependencies().isEmpty());		
 	}
 	
+	//Local variable tests
+	
 	@Test
-	public void shouldFindLocalVariableInstantiationDeps(){
-		String rootDir = Paths.get("").toAbsolutePath()+"\\src\\test\\java\\br\\usp\\ime\\jdx\\processor\\extractor\\proj2";
+	public void shouldFindMethodInvocationsInsideConstructors(){
+		String rootDir = this.rootDir + "\\localvariable\\constructorbody";
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(
@@ -38,16 +46,144 @@ public class DependencyExtractorTest {
 		
 		System.out.println(depReport);
 		
+		//One compilation unit dependency
 		assertEquals(1, depReport.getCompUnitDependencies().size());
 		
-		Iterator<Dependency<CompUnit>> depIterator = 
-				depReport.getCompUnitDependencies().iterator();
+		Dependency<CompUnit> dep = 
+				depReport.getCompUnitDependencies().iterator().next();
 		
-		Dependency<CompUnit> dep = depIterator.next();
+		//from A
 		assertEquals(rootDir + "\\A.java", dep.getClient().getName());
+		//to B
 		assertEquals(rootDir + "\\B.java", dep.getSupplier().getName());
-		assertEquals(new Integer(28), dep.getStrength());
+		//with 8 calls (2 from each constructor)
+		assertEquals(new Integer(8), dep.getStrength());
 	}
+	
+	@Test
+	public void shouldFindMethodInvocationsInsideMethods(){
+		String rootDir = this.rootDir + "\\localvariable\\methodbody";
+		
+		JDX jdx = new JDX();
+		DependencyReport depReport = jdx.calculateDepsFrom(
+				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
+		
+		System.out.println(depReport);
+		
+		//One compilation unit dependency
+		assertEquals(1, depReport.getCompUnitDependencies().size());
+		
+		Dependency<CompUnit> dep = 
+				depReport.getCompUnitDependencies().iterator().next();
+		
+		//from A
+		assertEquals(rootDir + "\\A.java", dep.getClient().getName());
+		//to B
+		assertEquals(rootDir + "\\B.java", dep.getSupplier().getName());
+		//with 10 calls (2 from each method)
+		assertEquals(new Integer(10), dep.getStrength());
+	}
+	
+	@Test
+	public void shouldFindMethodInvocationsInsideInnerClass(){
+		String rootDir = this.rootDir + "\\localvariable\\innerclassbody";
+		
+		JDX jdx = new JDX();
+		DependencyReport depReport = jdx.calculateDepsFrom(
+				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
+		
+		System.out.println(depReport);
+		
+		//One compilation unit dependency
+		assertEquals(1, depReport.getCompUnitDependencies().size());
+		
+		Dependency<CompUnit> dep = 
+				depReport.getCompUnitDependencies().iterator().next();
+		
+		//from A
+		assertEquals(rootDir + "\\A.java", dep.getClient().getName());
+		//to B
+		assertEquals(rootDir + "\\B.java", dep.getSupplier().getName());
+		//with 12 calls (2 from each method)
+		assertEquals(new Integer(12), dep.getStrength());
+	}
+	*/
+	
+	@Test
+	public void shouldFindMethodInvocationsInsideLocalClass(){
+		String rootDir = this.rootDir + "\\localvariable\\localclassbody";
+		
+		JDX jdx = new JDX();
+		DependencyReport depReport = jdx.calculateDepsFrom(
+				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
+		
+		System.out.println(depReport);
+		
+		//One compilation unit dependency
+		assertEquals(1, depReport.getCompUnitDependencies().size());
+		
+		Dependency<CompUnit> dep = 
+				depReport.getCompUnitDependencies().iterator().next();
+		
+		//from A
+		assertEquals(rootDir + "\\A.java", dep.getClient().getName());
+		//to B
+		assertEquals(rootDir + "\\B.java", dep.getSupplier().getName());
+		//with 2 calls
+		assertEquals(new Integer(2), dep.getStrength());
+	}
+	
+	/**
+	@Test
+	public void shouldFindAttributeInitialization(){
+		String rootDir = this.rootDir + "\\attribute\\declaration";
+		
+		JDX jdx = new JDX();
+		DependencyReport depReport = jdx.calculateDepsFrom(
+				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
+		
+		System.out.println(depReport);
+		
+		//One compilation unit dependency
+		assertEquals(1, depReport.getCompUnitDependencies().size());
+		
+		Dependency<CompUnit> dep = 
+				depReport.getCompUnitDependencies().iterator().next();
+		
+		//from A
+		assertEquals(rootDir + "\\A.java", dep.getClient().getName());
+		//to B
+		assertEquals(rootDir + "\\B.java", dep.getSupplier().getName());
+		//with 4 calls (the instantiation of the four attributes)
+		assertEquals(new Integer(4), dep.getStrength());
+	}
+	
+	@Test
+	public void shouldFindAttributeMethodInvocationsInMethodBody(){
+		String rootDir = this.rootDir + "\\attribute\\methodbody";
+		
+		JDX jdx = new JDX();
+		DependencyReport depReport = jdx.calculateDepsFrom(
+				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
+		
+		System.out.println(depReport);
+		
+		//One compilation unit dependency
+		assertEquals(1, depReport.getCompUnitDependencies().size());
+		
+		Dependency<CompUnit> dep = 
+				depReport.getCompUnitDependencies().iterator().next();
+		
+		//from A
+		assertEquals(rootDir + "\\A.java", dep.getClient().getName());
+		//to B
+		assertEquals(rootDir + "\\B.java", dep.getSupplier().getName());
+		//with 4 calls (the instantiation of the four attributes)
+		assertEquals(new Integer(2), dep.getStrength());
+	}
+	*/
+	
+	
 	
 	/**
 	@Test
