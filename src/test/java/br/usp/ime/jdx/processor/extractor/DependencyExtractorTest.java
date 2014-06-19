@@ -20,7 +20,6 @@ public class DependencyExtractorTest {
 			Paths.get("").toAbsolutePath()+"\\src\\test\\java\\br\\usp\\ime"
 					+ "\\jdx\\processor\\extractor\\methodinv";
 
-	/**
 	//No dep
 	
 	@Test
@@ -28,8 +27,8 @@ public class DependencyExtractorTest {
 		String rootDir = this.rootDir + "\\nodep";
 		
 		JDX jdx = new JDX();
-		DependencyReport depReport = jdx.calculateDepsFrom(
-				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
+		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
+				new JavaFileFilter(), new JavaNativeClassFilter());
 		
 		assertTrue(depReport.getTypeDependencies().isEmpty());		
 	}
@@ -41,8 +40,8 @@ public class DependencyExtractorTest {
 		String rootDir = this.rootDir + "\\localvariable\\constructorbody";
 		
 		JDX jdx = new JDX();
-		DependencyReport depReport = jdx.calculateDepsFrom(
-				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
+		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
+				new JavaFileFilter(), new JavaNativeClassFilter());
 		
 		System.out.println(depReport);
 		
@@ -65,8 +64,8 @@ public class DependencyExtractorTest {
 		String rootDir = this.rootDir + "\\localvariable\\methodbody";
 		
 		JDX jdx = new JDX();
-		DependencyReport depReport = jdx.calculateDepsFrom(
-				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
+		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
+				new JavaFileFilter(), new JavaNativeClassFilter());
 		
 		System.out.println(depReport);
 		
@@ -85,12 +84,60 @@ public class DependencyExtractorTest {
 	}
 	
 	@Test
+	public void shouldFindMethodInvocationsInIfThenElse(){
+		String rootDir = this.rootDir + "\\localvariable\\methodbody\\ifthenelseexp";
+		
+		JDX jdx = new JDX();
+		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
+				new JavaFileFilter(), new JavaNativeClassFilter());
+		
+		System.out.println(depReport);
+		
+		//One compilation unit dependency
+		assertEquals(1, depReport.getCompUnitDependencies().size());
+		
+		Dependency<CompUnit> dep = 
+				depReport.getCompUnitDependencies().iterator().next();
+		
+		//from A
+		assertEquals(rootDir + "\\A.java", dep.getClient().getName());
+		//to B
+		assertEquals(rootDir + "\\B.java", dep.getSupplier().getName());
+		//with 6 calls
+		assertEquals(new Integer(6), dep.getStrength());
+	}
+	
+	@Test
+	public void shouldFindMethodInvocationsInFor(){
+		String rootDir = this.rootDir + "\\localvariable\\methodbody\\forexp";
+		
+		JDX jdx = new JDX();
+		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
+				new JavaFileFilter(), new JavaNativeClassFilter());
+		
+		System.out.println(depReport);
+		
+		//One compilation unit dependency
+		assertEquals(1, depReport.getCompUnitDependencies().size());
+		
+		Dependency<CompUnit> dep = 
+				depReport.getCompUnitDependencies().iterator().next();
+		
+		//from A
+		assertEquals(rootDir + "\\A.java", dep.getClient().getName());
+		//to B
+		assertEquals(rootDir + "\\B.java", dep.getSupplier().getName());
+		//with 3 calls
+		assertEquals(new Integer(3), dep.getStrength());
+	}
+	
+	@Test
 	public void shouldFindMethodInvocationsInsideInnerClass(){
 		String rootDir = this.rootDir + "\\localvariable\\innerclassbody";
 		
 		JDX jdx = new JDX();
-		DependencyReport depReport = jdx.calculateDepsFrom(
-				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
+		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
+				new JavaFileFilter(), new JavaNativeClassFilter());
 		
 		System.out.println(depReport);
 		
@@ -107,15 +154,14 @@ public class DependencyExtractorTest {
 		//with 12 calls (2 from each method)
 		assertEquals(new Integer(12), dep.getStrength());
 	}
-	*/
 	
 	@Test
 	public void shouldFindMethodInvocationsInsideLocalClass(){
 		String rootDir = this.rootDir + "\\localvariable\\localclassbody";
 		
 		JDX jdx = new JDX();
-		DependencyReport depReport = jdx.calculateDepsFrom(
-				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
+		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false,
+				new JavaFileFilter(), new JavaNativeClassFilter());
 		
 		System.out.println(depReport);
 		
@@ -133,14 +179,13 @@ public class DependencyExtractorTest {
 		assertEquals(new Integer(2), dep.getStrength());
 	}
 	
-	/**
 	@Test
 	public void shouldFindAttributeInitialization(){
 		String rootDir = this.rootDir + "\\attribute\\declaration";
 		
 		JDX jdx = new JDX();
-		DependencyReport depReport = jdx.calculateDepsFrom(
-				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
+		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false,
+				new JavaFileFilter(), new JavaNativeClassFilter());
 		
 		System.out.println(depReport);
 		
@@ -163,8 +208,8 @@ public class DependencyExtractorTest {
 		String rootDir = this.rootDir + "\\attribute\\methodbody";
 		
 		JDX jdx = new JDX();
-		DependencyReport depReport = jdx.calculateDepsFrom(
-				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
+		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false,
+				new JavaFileFilter(), new JavaNativeClassFilter());
 		
 		System.out.println(depReport);
 		
@@ -178,12 +223,9 @@ public class DependencyExtractorTest {
 		assertEquals(rootDir + "\\A.java", dep.getClient().getName());
 		//to B
 		assertEquals(rootDir + "\\B.java", dep.getSupplier().getName());
-		//with 4 calls (the instantiation of the four attributes)
+		//with 2 calls
 		assertEquals(new Integer(2), dep.getStrength());
 	}
-	*/
-	
-	
 	
 	/**
 	@Test

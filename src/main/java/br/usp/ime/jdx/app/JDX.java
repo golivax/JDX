@@ -19,14 +19,23 @@ public class JDX {
 	public JDX(){
 		
 	}
-	
-	public DependencyReport calculateDepsFrom(String sourceDir, 
+
+	//TODO: Change to truly fluent API
+	public DependencyReport calculateDepsFrom(String sourceDir, boolean recursive,
 			Filter fileFilter, Filter classFilter) {
 		
 		DependencyExtractor extractor = new DependencyExtractor();
 		
-		String[] paths = FilesystemUtils.getPathsFromFilesRecursively(
-				sourceDir, fileFilter);
+		String[] paths;
+		
+		if(recursive){
+			paths = FilesystemUtils.getPathsFromSourceDirRecursively(
+					sourceDir, fileFilter);
+		}
+		else{
+			paths = FilesystemUtils.getPathsFromSourceDir(
+					sourceDir, fileFilter);
+		}
 		
 		return extractor.run(paths, classFilter);
 	}
@@ -60,11 +69,10 @@ public class JDX {
 		
 		String rootDir = "C:\\tmp\\ant\\src\\main";
 				
-		
 		JDX jdx = new JDX();
 		
 		DependencyReport depReport = jdx.calculateDepsFrom(
-				rootDir, new JavaFileFilter(), new JavaNativeClassFilter());
+				rootDir, true, new JavaFileFilter(), new JavaNativeClassFilter());
 		
 		System.out.println(depReport.getTypeDependencies().size());
 		System.out.println(depReport.getTypeDependencies());

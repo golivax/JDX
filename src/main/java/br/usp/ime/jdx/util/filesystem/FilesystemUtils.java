@@ -8,7 +8,33 @@ import br.usp.ime.jdx.filter.Filter;
 
 public class FilesystemUtils {
 
-	public static String[] getPathsFromFilesRecursively(
+	
+	public static String[] getPathsFromSourceDir(String rootDir, 
+			Filter filter){
+		
+		List<String> paths = new ArrayList<String>();
+		
+		try {
+			File[] filesAndDirs = new File(rootDir).listFiles();
+			for (File file : filesAndDirs) {
+				//If it is a file and matches the filter, then we get it
+				if (file.isFile() && filter.matches(file.getPath())) {						
+					paths.add(file.getPath());
+				}
+			}
+		} catch (Throwable e) {
+			System.err.println("getPathsFromSourceDir error in " + 
+				rootDir);
+			
+			e.printStackTrace();
+		}
+				
+		String[] pathsArray = paths.toArray(new String[paths.size()]);
+		return pathsArray;		
+	}
+	
+	
+	public static String[] getPathsFromSourceDirRecursively(
 			String rootDir, Filter filter){
 		
 		List<String> paths = 
@@ -19,8 +45,7 @@ public class FilesystemUtils {
 		return pathsArray;		
 	}
 			
-	
-	public static List<String> getPathFromFilesRecursively(
+	private static List<String> getPathFromFilesRecursively(
 			File rootDir, Filter filter) {
 		
 		List<String> paths = new ArrayList<String>();

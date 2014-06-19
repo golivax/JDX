@@ -26,6 +26,7 @@ import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IfStatement;
+import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.LabeledStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
@@ -109,9 +110,7 @@ public class DependencyExtractor extends FileASTRequestor{
 					for(Statement statement : statements){
 						if (statement.getNodeType() == ASTNode.TYPE_DECLARATION_STATEMENT){
 							TypeDeclarationStatement tds = (TypeDeclarationStatement)statement;
-							if (tds.getDeclaration() instanceof TypeDeclaration){
-								TypeDeclaration t = (TypeDeclaration)tds.getDeclaration();
-								
+							if (tds.getDeclaration() instanceof TypeDeclaration){								
 								subTypes.add((TypeDeclaration)tds.getDeclaration());
 							}
 						}
@@ -317,7 +316,7 @@ public class DependencyExtractor extends FileASTRequestor{
 		List<Expression> expressions = constructorInvocation.arguments();
 		
 		for(Expression expression : expressions){
-			processExpression(expression);
+			processBindings(expression);
 		}
 		
 		IMethodBinding methodBinding = 
@@ -341,7 +340,7 @@ public class DependencyExtractor extends FileASTRequestor{
 		Expression expression = efs.getExpression();
 
 		processStatement(body);
-		processExpression(expression);
+		processBindings(expression);
 
 	}
 
@@ -351,7 +350,7 @@ public class DependencyExtractor extends FileASTRequestor{
 		Expression doExpression = doStatement.getExpression();
 
 		processStatement(statement);
-		processExpression(doExpression);
+		processBindings(doExpression);
 
 	}
 
@@ -361,14 +360,14 @@ public class DependencyExtractor extends FileASTRequestor{
 		Expression whileExpression = whileStatement.getExpression();
 
 		processStatement(whileBody);
-		processExpression(whileExpression);
+		processBindings(whileExpression);
 	}
 
 	@SuppressWarnings("unchecked")
 	private void processSwitchStatement(SwitchStatement switchStatement){
 		
 		Expression switchExpression = switchStatement.getExpression();
-		processExpression(switchExpression);
+		processBindings(switchExpression);
 
 		List<Statement> switchStatements = switchStatement.statements();
 		for(Statement statement : switchStatements){
@@ -378,7 +377,7 @@ public class DependencyExtractor extends FileASTRequestor{
 
 	private void processSwitchCase(SwitchCase switchCase){
 		Expression switchCaseExpression = switchCase.getExpression();
-		processExpression(switchCaseExpression);
+		processBindings(switchCaseExpression);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -390,21 +389,26 @@ public class DependencyExtractor extends FileASTRequestor{
 		List<Expression> updaterExpressions = forStatement.updaters();
 
 		processStatement(forBody);
-		processExpression(forExpression);
-
+		
+		if(forExpression instanceof InfixExpression){
+			InfixExpression infixExpression = (InfixExpression)forExpression;
+			processBindings(infixExpression.getLeftOperand());
+			processBindings(infixExpression.getRightOperand());
+		}
+		
 		for(Expression initializerExpression : initializerExpressions){
-			processExpression(initializerExpression);
+			processBindings(initializerExpression);
 		}
 
 		for(Expression updaterExpression : updaterExpressions){
-			processExpression(updaterExpression);
+			processBindings(updaterExpression);
 		}
 	}
 
 	private void processIfStatement(IfStatement ifStatement){
 
 		Expression ifExpression = ifStatement.getExpression();
-		processExpression(ifExpression);
+		processBindings(ifExpression);
 
 		Statement thenStatement = ifStatement.getThenStatement();
 		if (thenStatement != null) processStatement(thenStatement);
@@ -418,8 +422,16 @@ public class DependencyExtractor extends FileASTRequestor{
 			ExpressionStatement	expressionStatement){
 
 		Expression expression = expressionStatement.getExpression();
-		processExpression(expression);
-			
+		
+		if(expression instanceof Assignment){
+			Assignment assignment = (Assignment)expression;
+			processBindings(assignment.getLeftHandSide());
+			processBindings(assignment.getRightHandSide());
+		}
+		else{
+			processBindings(expression);
+		}
+		
 	}
 
 	private void processReturnStatement(ReturnStatement returnStatement){
@@ -427,7 +439,7 @@ public class DependencyExtractor extends FileASTRequestor{
 		if(returnStatement != null){
 			Expression expression = returnStatement.getExpression();
 			if (expression != null){
-				processExpression(expression);
+				processBindings(expression);
 			}
 		}
 	}
@@ -448,7 +460,7 @@ public class DependencyExtractor extends FileASTRequestor{
 			VariableDeclarationFragment fragment){
 
 		Expression initializer = fragment.getInitializer();
-		processExpression(initializer);
+		processBindings(initializer);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -482,20 +494,20 @@ public class DependencyExtractor extends FileASTRequestor{
 			Expression syncExpression = synchronizedStat.getExpression();
 
 			processBlock(synchronizedBlock);
-			processExpression(syncExpression);
+			processBindings(syncExpression);
 		}
 	}
 
 	private void processAssertStatement(AssertStatement as){
 		
 		Expression expression = as.getExpression();
-		processExpression(expression);
+		processBindings(expression);
 		
 		Expression message = as.getMessage();		
-		processExpression(message);		
+		processBindings(message);		
 	}
 
-	private void processExpression(Expression expression){
+	private void processBindings(Expression expression){
 
 		IMethodBinding methodBinding = null;
 		
@@ -512,11 +524,6 @@ public class DependencyExtractor extends FileASTRequestor{
 					(ClassInstanceCreation)expression;
 			
 			methodBinding = instanceCreation.resolveConstructorBinding();
-		}else if(expression instanceof Assignment){
-			
-			Assignment assignment = (Assignment)expression;
-			processExpression(assignment.getRightHandSide());
-
 			
 		}else if (expression != null){
 			//There are other types of expressions, including
