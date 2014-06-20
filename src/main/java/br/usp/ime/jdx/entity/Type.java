@@ -1,6 +1,6 @@
 package br.usp.ime.jdx.entity;
 
-public class Type {
+public class Type extends NamedEntity{
 
 	private String name;
 	private CompUnit compUnit;

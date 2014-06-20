@@ -2,8 +2,8 @@
 
 import java.util.Collection;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.map.MultiKeyMap;
-
 
 public class DependencyReport {
 
@@ -57,8 +57,13 @@ public class DependencyReport {
 		return cuDependenciesMap.values();
 	}
 	
-	public Dependency<Type> getTypeDependency(String client, String supplier){
-		return dependenciesMap.get(client,supplier);
+	public Dependency<Type> getTypeDependency(String clientName, String supplierName){
+		
+			Dependency<Type> typeDependency = 
+					CollectionUtils.find(dependenciesMap.values(),
+					new DependencyPredicate<Type>(clientName,supplierName));
+			
+			return typeDependency;
 	}
 
 	public String toString(){

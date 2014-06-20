@@ -1,6 +1,6 @@
 ﻿package br.usp.ime.jdx.entity;
 
-public class Dependency<E> {
+public class Dependency<E extends NamedEntity> {
 
 	private E client;
 	private E supplier;

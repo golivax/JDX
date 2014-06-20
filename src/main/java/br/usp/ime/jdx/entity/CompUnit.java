@@ -3,7 +3,7 @@ package br.usp.ime.jdx.entity;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CompUnit {
+public class CompUnit extends NamedEntity{
 
 	private String name;
 	private Set<Type> types;
