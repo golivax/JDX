@@ -157,6 +157,31 @@ public class DependencyExtractorTest {
 		assertEquals(new Integer(6), dep.getStrength());
 	}
 	
+	
+	@Test
+	public void shouldFindMethodInvocationInReturn(){
+		String rootDir = this.rootDir + "\\localvariable\\methodbody\\returnexp";
+		
+		JDX jdx = new JDX();
+		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
+				new JavaFileFilter(), new JavaNativeClassFilter());
+		
+		System.out.println(depReport);
+		
+		//One compilation unit dependency
+		assertEquals(1, depReport.getCompUnitDependencies().size());
+		
+		Dependency<CompUnit> dep = 
+				depReport.getCompUnitDependencies().iterator().next();
+		
+		//from A
+		assertEquals(rootDir + "\\A.java", dep.getClient().getName());
+		//to B
+		assertEquals(rootDir + "\\B.java", dep.getSupplier().getName());
+		//with 1 call
+		assertEquals(new Integer(1), dep.getStrength());
+	}
+	
 	@Test
 	public void shouldFindMethodInvocationsInSwitch(){
 		String rootDir = this.rootDir + "\\localvariable\\methodbody\\switchexp";
@@ -298,11 +323,71 @@ public class DependencyExtractorTest {
 		//it is treated as a direct call from A to C)
 		assertEquals(new Integer(1), dep.getStrength());
 		
-		//From A to C
+		//From B to C
 		dep =	depReport.getTypeDependency("br.usp.ime.jdx.processor.extractor."
 				+ "methodinv.localvariable.methodbody.misc.chainedcalls.B",
 				"br.usp.ime.jdx.processor.extractor."
 				+ "methodinv.localvariable.methodbody.misc.chainedcalls.C");
+
+		assertNotNull(dep);
+
+		//checking that it is from B
+		assertEquals(rootDir + "\\B.java", dep.getClient().getCompUnit().getName());
+		//checking that it is to C
+		assertEquals(rootDir + "\\C.java", dep.getSupplier().getCompUnit().getName());
+		//with 1 call (instantiation)
+		assertEquals(new Integer(1), dep.getStrength());
+	}
+	
+	@Test
+	public void shouldFindCallToAttrib(){
+		String rootDir = this.rootDir + "\\localvariable\\methodbody\\misc\\callatrib";
+		
+		JDX jdx = new JDX();
+		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
+				new JavaFileFilter(), new JavaNativeClassFilter());
+		
+		System.out.println(depReport);
+		
+		//One compilation unit dependency
+		assertEquals(3, depReport.getCompUnitDependencies().size());
+		
+		//From A to B
+		Dependency<Type> dep = 
+			depReport.getTypeDependency("br.usp.ime.jdx.processor.extractor."
+			+ "methodinv.localvariable.methodbody.misc.callatrib.A",
+			"br.usp.ime.jdx.processor.extractor."
+			+ "methodinv.localvariable.methodbody.misc.callatrib.B");
+	
+		assertNotNull(dep);
+		
+		//checking that it is from A
+		assertEquals(rootDir + "\\A.java", dep.getClient().getCompUnit().getName());
+		//checking that it is to B
+		assertEquals(rootDir + "\\B.java", dep.getSupplier().getCompUnit().getName());
+		//with 2 calls (instantiation of B, b.getC())
+		assertEquals(new Integer(2), dep.getStrength());
+		
+		//From A to C
+		dep =	depReport.getTypeDependency("br.usp.ime.jdx.processor.extractor."
+				+ "methodinv.localvariable.methodbody.misc.callatrib.A",
+				"br.usp.ime.jdx.processor.extractor."
+				+ "methodinv.localvariable.methodbody.misc.callatrib.C");
+			
+		assertNotNull(dep);
+				
+		//checking that it is from A
+		assertEquals(rootDir + "\\A.java", dep.getClient().getCompUnit().getName());
+		//checking that it is to C
+		assertEquals(rootDir + "\\C.java", dep.getSupplier().getCompUnit().getName());
+		//with 1 call (c.bar())
+		assertEquals(new Integer(1), dep.getStrength());
+		
+		//From B to C
+		dep =	depReport.getTypeDependency("br.usp.ime.jdx.processor.extractor."
+				+ "methodinv.localvariable.methodbody.misc.callatrib.B",
+				"br.usp.ime.jdx.processor.extractor."
+				+ "methodinv.localvariable.methodbody.misc.callatrib.C");
 
 		assertNotNull(dep);
 
