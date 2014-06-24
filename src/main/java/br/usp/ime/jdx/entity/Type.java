@@ -1,6 +1,10 @@
 package br.usp.ime.jdx.entity;
 
-public class Type extends NamedEntity{
+import java.io.Serializable;
+
+public class Type extends NamedEntity implements Serializable{
+
+	private static final long serialVersionUID = -7126906063529157990L;
 
 	private String name;
 	private CompUnit compUnit;

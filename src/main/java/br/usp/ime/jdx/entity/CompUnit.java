@@ -1,9 +1,12 @@
 package br.usp.ime.jdx.entity;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CompUnit extends NamedEntity{
+public class CompUnit extends NamedEntity implements Serializable{
+
+	private static final long serialVersionUID = 5569390666734073800L;
 
 	private String name;
 	private Set<Type> types;

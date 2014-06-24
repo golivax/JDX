@@ -1,11 +1,14 @@
 ﻿package br.usp.ime.jdx.entity;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.map.MultiKeyMap;
 
-public class DependencyReport {
+public class DependencyReport implements Serializable{
+
+	private static final long serialVersionUID = 2294342917700842739L;
 
 	private MultiKeyMap<Type,Dependency<Type>> dependenciesMap = 
 			new MultiKeyMap<Type,Dependency<Type>>();

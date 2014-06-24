@@ -1,6 +1,10 @@
 ﻿package br.usp.ime.jdx.entity;
 
-public class Dependency<E extends NamedEntity> {
+import java.io.Serializable;
+
+public class Dependency<E extends NamedEntity> implements Serializable{
+
+	private static final long serialVersionUID = -320459234337627245L;
 
 	private E client;
 	private E supplier;
