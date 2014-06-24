@@ -1,6 +1,6 @@
 package br.usp.ime.jdx.processor.extractor.methodinv.nodep;
 
-public class A {
+public class A extends B implements C{
 
 	private B b1;
 	private B b2 = null;
@@ -24,6 +24,11 @@ public class A {
 	public B bar(){
 		B b = null;
 		return b;
+	}
+
+	@Override
+	public void foo() {
+		
 	}
 	
 }
