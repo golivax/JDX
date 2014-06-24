@@ -87,7 +87,6 @@ public class DependencyExtractor extends FileASTRequestor{
 			Type type = new Type(typeName,new CompUnit(sourceFilePath));
 			typeCache.put(typeName, type);
 			
-			
 			for(TypeDeclaration subType : getSubTypes(typeDeclaration)){
 				typeStack.push(subType);
 			}

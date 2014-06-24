@@ -9,7 +9,8 @@ public class CompUnit extends NamedEntity{
 	private Set<Type> types;
 	
 	public CompUnit(String name){
-		this.name = name;
+		//Always replace back slashes with forward slashes
+		this.name = name.replaceAll("\\\\", "/");
 		types = new HashSet<Type>();
 	}
 	

@@ -1,75 +1,68 @@
-﻿package br.usp.ime.jdx.util.filesystem;
+package br.usp.ime.jdx.util.filesystem;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import br.usp.ime.jdx.filter.Filter;
-
 public class FilesystemUtils {
 
-	
-	public static String[] getPathsFromSourceDir(String rootDir, 
-			Filter filter){
+	public FilesystemUtils(){
 		
+	}
+
+	public static String[] getPathsFromSourceDirRecursively(String sourceDir,
+			String globPattern) {
+
 		List<String> paths = new ArrayList<String>();
 		
-		try {
-			File[] filesAndDirs = new File(rootDir).listFiles();
-			for (File file : filesAndDirs) {
-				//If it is a file and matches the filter, then we get it
-				if (file.isFile() && filter.matches(file.getPath())) {						
-					paths.add(file.getPath());
-				}
-			}
-		} catch (Throwable e) {
-			System.err.println("getPathsFromSourceDir error in " + 
-				rootDir);
-			
-			e.printStackTrace();
-		}
-				
-		String[] pathsArray = paths.toArray(new String[paths.size()]);
-		return pathsArray;		
-	}
-	
-	
-	public static String[] getPathsFromSourceDirRecursively(
-			String rootDir, Filter filter){
-		
-		List<String> paths = 
-				getPathFromFilesRecursively(new File(rootDir), filter);
-		
-		String[] pathsArray = paths.toArray(new String[paths.size()]);
-		
-		return pathsArray;		
-	}
-			
-	private static List<String> getPathFromFilesRecursively(
-			File rootDir, Filter filter) {
-		
-		List<String> paths = new ArrayList<String>();
-		
-		try {
-			File[] filesAndDirs = rootDir.listFiles();
-			for (File file : filesAndDirs) {
-				//If it is a directory, we get all the files in there
-				if (file.isDirectory()) {
-					paths.addAll(getPathFromFilesRecursively(file, filter));
-				} 
-				//If it is a file and matches the filter, then we get it
-				else if (file.isFile() && filter.matches(file.getPath())) {						
-					paths.add(file.getPath());
-				}
-			}
-		} catch (Throwable e) {
-			System.err.println("getPathFromFilesRecursively error in " + 
-				rootDir);
-			
+		try{
+			PathFinder finder = new PathFinder(globPattern);
+	        Files.walkFileTree(Paths.get(sourceDir), finder);
+	        paths.addAll(finder.getResults());
+		}catch(IOException e){
 			e.printStackTrace();
 		}
 		
-		return paths;
+		String[] pathsArray = paths.toArray(new String[paths.size()]);
+		return pathsArray;
+	}
+
+	public static String[] getPathsFromSourceDir(String sourceDir,
+			String globPattern) {
+		
+		List<String> paths = new ArrayList<String>();
+		
+		Path sourceDirPath = Paths.get(sourceDir);
+		try (DirectoryStream<Path> dirStream = 
+				Files.newDirectoryStream(sourceDirPath, globPattern)) {
+		
+			for(Path path : dirStream){
+				paths.add(path.toString());
+			}
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		String[] pathsArray = paths.toArray(new String[paths.size()]);
+		return pathsArray;
+	}
+	
+	public static void main(String[] args) {
+		String[] paths = FilesystemUtils.getPathsFromSourceDirRecursively(
+		  "C:/tmp/tomcat/tomcat/tc7.0.x/trunk/java/org/apache/catalina", 
+		  "*.java");
+		
+		for(String path : paths){
+			System.out.println(path);
+		}
+		
+		System.out.println(paths.length);
 	}
 	
 }

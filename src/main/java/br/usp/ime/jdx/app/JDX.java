@@ -9,7 +9,6 @@ import java.util.List;
 import br.usp.ime.jdx.entity.DependencyReport;
 import br.usp.ime.jdx.entity.SourceCodeUnit;
 import br.usp.ime.jdx.filter.Filter;
-import br.usp.ime.jdx.filter.JavaFileFilter;
 import br.usp.ime.jdx.filter.JavaNativeClassFilter;
 import br.usp.ime.jdx.processor.extractor.DependencyExtractor;
 import br.usp.ime.jdx.util.filesystem.FilesystemUtils;
@@ -22,7 +21,7 @@ public class JDX {
 
 	//TODO: Change to truly fluent API
 	public DependencyReport calculateDepsFrom(String sourceDir, boolean recursive,
-			Filter fileFilter, Filter classFilter) {
+			String globPattern, Filter classFilter) {
 		
 		DependencyExtractor extractor = new DependencyExtractor();
 		
@@ -30,11 +29,11 @@ public class JDX {
 		
 		if(recursive){
 			paths = FilesystemUtils.getPathsFromSourceDirRecursively(
-					sourceDir, fileFilter);
+					sourceDir, globPattern);
 		}
 		else{
 			paths = FilesystemUtils.getPathsFromSourceDir(
-					sourceDir, fileFilter);
+					sourceDir, globPattern);
 		}
 		
 		return extractor.run(paths, classFilter);
@@ -72,7 +71,7 @@ public class JDX {
 		JDX jdx = new JDX();
 		
 		DependencyReport depReport = jdx.calculateDepsFrom(
-				rootDir, true, new JavaFileFilter(), new JavaNativeClassFilter());
+				rootDir, true, "*.java", new JavaNativeClassFilter());
 		
 		System.out.println(depReport.getTypeDependencies().size());
 		System.out.println(depReport.getTypeDependencies());
