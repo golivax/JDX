@@ -8,13 +8,41 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 public class FilesystemUtils {
 
 	public FilesystemUtils(){
 		
 	}
+	
+	public static String[] getPathsFromSourceDirs(List<String> sourceDirs,
+			String globPattern, boolean recursive){
+		
+		String[] paths = new String[0];
+		
+		for(String sourceDir : sourceDirs){
+			String[] filePathsFromDir = 
+					getPathsFromSourceDir(sourceDir, globPattern, recursive);
+			
+			paths = ArrayUtils.addAll(paths, filePathsFromDir);			
+		}
+		
+		return paths;
+	}
+	
+	public static String[] getPathsFromSourceDir(String sourceDir, 
+			String globPattern, boolean recursive){
+		
+		if(recursive){
+			return getPathsFromSourceDirRecursively(sourceDir, globPattern);
+		}
+		else{
+			return getPathsFromSourceDir(sourceDir, globPattern);
+		}
+	}
 
-	public static String[] getPathsFromSourceDirRecursively(String sourceDir,
+	private static String[] getPathsFromSourceDirRecursively(String sourceDir,
 			String globPattern) {
 
 		List<String> paths = new ArrayList<String>();
@@ -31,7 +59,7 @@ public class FilesystemUtils {
 		return pathsArray;
 	}
 
-	public static String[] getPathsFromSourceDir(String sourceDir,
+	private static String[] getPathsFromSourceDir(String sourceDir,
 			String globPattern) {
 		
 		List<String> paths = new ArrayList<String>();
@@ -54,9 +82,9 @@ public class FilesystemUtils {
 	}
 	
 	public static void main(String[] args) {
-		String[] paths = FilesystemUtils.getPathsFromSourceDirRecursively(
+		String[] paths = FilesystemUtils.getPathsFromSourceDir(
 		  "C:/tmp/tomcat/tomcat/tc7.0.x/trunk/java/org/apache/catalina", 
-		  "*.java");
+		  "*.java", true);
 		
 		for(String path : paths){
 			System.out.println(path);

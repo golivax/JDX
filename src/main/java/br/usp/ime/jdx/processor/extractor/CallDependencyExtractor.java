@@ -49,7 +49,7 @@ import br.usp.ime.jdx.filter.Filter;
 import br.usp.ime.jdx.processor.BatchCompilationUnitProcessor;
 
 
-public class DependencyExtractor extends FileASTRequestor{
+public class CallDependencyExtractor extends FileASTRequestor{
 
 	private List<CompilationUnit> compilationUnits = 
 			new ArrayList<CompilationUnit>();
@@ -122,7 +122,7 @@ public class DependencyExtractor extends FileASTRequestor{
 		return subTypes;
 	}
 	
-	public DependencyReport run(String[] paths, Filter classFilter){
+	public DependencyReport run(List<String> sourceDirs, String[] paths, Filter classFilter){
 		this.classFilter = classFilter;
 		
 		//Creates a new dependency report and extracts the dependencies		
@@ -134,7 +134,7 @@ public class DependencyExtractor extends FileASTRequestor{
 		BatchCompilationUnitProcessor batchCuProcessor = 
 				new BatchCompilationUnitProcessor();
 		
-		batchCuProcessor.run(this, paths);
+		batchCuProcessor.run(sourceDirs, this, paths);
 		
 		System.out.println("Number of types detected: " + typeCache.size());	
 		

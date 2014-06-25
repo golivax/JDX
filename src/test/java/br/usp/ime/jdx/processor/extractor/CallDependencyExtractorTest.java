@@ -15,7 +15,7 @@ import br.usp.ime.jdx.entity.DependencyReport;
 import br.usp.ime.jdx.entity.Type;
 import br.usp.ime.jdx.filter.JavaNativeClassFilter;
 
-public class DependencyExtractorTest {
+public class CallDependencyExtractorTest {
 
 	private String rootDir = 
 		Paths.get("").toAbsolutePath().toString().replaceAll("\\\\", "/") +

@@ -3,6 +3,7 @@
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.FileSystems;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import br.usp.ime.jdx.entity.DependencyReport;
 import br.usp.ime.jdx.entity.SourceCodeUnit;
 import br.usp.ime.jdx.filter.Filter;
 import br.usp.ime.jdx.filter.JavaNativeClassFilter;
-import br.usp.ime.jdx.processor.extractor.DependencyExtractor;
+import br.usp.ime.jdx.processor.extractor.CallDependencyExtractor;
 import br.usp.ime.jdx.util.filesystem.FilesystemUtils;
 
 public class JDX {
@@ -20,25 +21,32 @@ public class JDX {
 	}
 
 	//TODO: Change to truly fluent API
-	public DependencyReport calculateDepsFrom(String sourceDir, boolean recursive,
-			String globPattern, Filter classFilter) {
+	public DependencyReport calculateDepsFrom(String sourceDir, 
+			boolean recursive, String globPattern, Filter classFilter) {
 		
-		DependencyExtractor extractor = new DependencyExtractor();
+		CallDependencyExtractor extractor = new CallDependencyExtractor();
 		
-		String[] paths;
+		String[] paths = FilesystemUtils.getPathsFromSourceDir(
+				sourceDir, globPattern, recursive);
 		
-		if(recursive){
-			paths = FilesystemUtils.getPathsFromSourceDirRecursively(
-					sourceDir, globPattern);
-		}
-		else{
-			paths = FilesystemUtils.getPathsFromSourceDir(
-					sourceDir, globPattern);
-		}
-		
-		return extractor.run(paths, classFilter);
+		List<String> sourceDirs = new ArrayList<String>();
+		sourceDirs.add(sourceDir);
+				
+		return extractor.run(sourceDirs, paths, classFilter);
 	}
 	
+	//TODO: Change to truly fluent API
+	public DependencyReport calculateDepsFrom(List<String> sourceDirs, 
+			boolean recursive, String globPattern, Filter classFilter) {
+
+		CallDependencyExtractor extractor = new CallDependencyExtractor();
+
+		String[] paths = FilesystemUtils.getPathsFromSourceDirs(
+				sourceDirs, globPattern, recursive);
+		
+		return extractor.run(sourceDirs,paths, classFilter);
+	}
+
 	public DependencyReport calculateDepsFrom(File file, List<File> allFiles) {
 		throw new UnsupportedOperationException(
 				"This operation has not been implemented yet");
@@ -78,5 +86,5 @@ public class JDX {
 		System.out.println(new Date(System.currentTimeMillis()));
 	
 	}
-		
+	
 }
