@@ -60,6 +60,18 @@ public class CallDependencyExtractor {
 		//Creates a new dependency report and extracts the dependencies
 		this.dependencyReport = new DependencyReport();
 		
+		extractImplicitDependencies();
+		
+		//Now we process each the fields and methods of each type
+		for(TypeDeclaration typeDeclaration : cacher.getTypeDeclarations()){
+			processFieldsAndMethods(typeDeclaration);
+		}		
+
+		return dependencyReport;
+	}
+
+	private void extractImplicitDependencies() {
+	
 		//First off, we add dependencies from constructors to attrib<>
 		for(Type type : cacher.getTypes()){
 			for(Method constructor : type.getConstructors()){
@@ -68,12 +80,10 @@ public class CallDependencyExtractor {
 			}
 		}
 		
-		//Now we process each the fields and methods of each type
-		for(TypeDeclaration typeDeclaration : cacher.getTypeDeclarations()){
-			processFieldsAndMethods(typeDeclaration);
-		}		
-
-		return dependencyReport;
+		//TODO: Deal with superclasses
+		//if G extends A and a constructor from G does not invoke any 
+		//constructor from A, then the constructor from G implicitly calls the
+		//default constructor from A
 	}
 	
 	private void processFieldsAndMethods(TypeDeclaration typeDeclaration){
