@@ -13,31 +13,59 @@ public class DependencyReport implements Serializable{
 
 	private static final long serialVersionUID = 2294342917700842739L;
 
-	private MultiKeyMap<Method,MethodCallDependency> dependenciesMap = 
+	private MultiKeyMap<Type,TypeDependency> typeDependenciesMap = 
+			new MultiKeyMap<>();
+	
+	private MultiKeyMap<Method,MethodCallDependency> callDependenciesMap = 
 			new MultiKeyMap<>();
 	
 	public DependencyReport(){
 		
 	}
 	
-	public void addDependency(Method client, Method supplier){
-		if (!dependenciesMap.containsKey(client, supplier)){
-			MethodCallDependency dependency = new MethodCallDependency(client, supplier);
-			dependenciesMap.put(client, supplier, dependency);
+	public void addDependency(Type client, Type supplier){
+		if (!typeDependenciesMap.containsKey(client, supplier)){
+			TypeDependency dependency = new TypeDependency(client, supplier);
+			typeDependenciesMap.put(client, supplier, dependency);
 		}
 		else{
-			MethodCallDependency dependency = dependenciesMap.get(client, supplier);
+			System.out.println("Warning: Trying to define two different "
+					+ "relationships between types");
+		}
+	}
+	
+	public void addDependency(Method client, Method supplier){
+		if (!callDependenciesMap.containsKey(client, supplier)){
+			MethodCallDependency dependency = new MethodCallDependency(client, supplier);
+			callDependenciesMap.put(client, supplier, dependency);
+		}
+		else{
+			MethodCallDependency dependency = callDependenciesMap.get(client, supplier);
 			dependency.increaseStrength();
 		}
 	}
 	
 	public Collection<MethodCallDependency> getMethodCallDependencies(){
-		return dependenciesMap.values();
+		return callDependenciesMap.values();
 	}
 	
-	public Collection<Dependency<Type>> getTypeDependencies(){
+	public Collection<TypeDependency> getTypeDependencies(
+			boolean inferFromMethodCalls){
 		
-		MultiKeyMap<Type,Dependency<Type>> typeDependenciesMap = 
+		if(inferFromMethodCalls){
+			Collection<TypeDependency> typeDependencies = 
+					inferDependenciesFromMethodCalls();
+			
+			typeDependencies.addAll(this.typeDependenciesMap.values());
+			return typeDependencies;
+		}
+		else{
+			return typeDependenciesMap.values();
+		}
+	}
+	
+	private Collection<TypeDependency> inferDependenciesFromMethodCalls() {
+		MultiKeyMap<Type,TypeDependency> typeDependenciesMap = 
 				new MultiKeyMap<>();
 		
 		Collection<MethodCallDependency> methodCallDependencies = 
@@ -55,13 +83,13 @@ public class DependencyReport implements Serializable{
 			if(!clientType.equals(supplierType)){
 			
 				if (typeDependenciesMap.containsKey(clientType,supplierType)){
-					Dependency<Type> dep = 
+					TypeDependency dep = 
 							typeDependenciesMap.get(clientType,supplierType);
 					
 					dep.increaseStrength(methodCallDependency.getStrength());
 				}
 				else{
-					Dependency<Type> typeDep = new Dependency<Type>(clientType, 
+					TypeDependency typeDep = new TypeDependency(clientType, 
 							supplierType, methodCallDependency.getStrength());
 					
 					typeDependenciesMap.put(clientType, supplierType, typeDep);
@@ -71,13 +99,17 @@ public class DependencyReport implements Serializable{
 		
 		return typeDependenciesMap.values();
 	}
-	
-	public Collection<Dependency<CompUnit>> getCompUnitDependencies(){
+
+	public Collection<Dependency<CompUnit>> getCompUnitDependencies(
+			boolean inferFromMethodCalls){
+		
 		MultiKeyMap<CompUnit,Dependency<CompUnit>> cuDependenciesMap = 
 				new MultiKeyMap<CompUnit,Dependency<CompUnit>>();
 		
-		Collection<Dependency<Type>> typeDependencies = getTypeDependencies();
-		for(Dependency<Type> typeDependency : typeDependencies){
+		Collection<TypeDependency> typeDependencies = getTypeDependencies(
+				inferFromMethodCalls);
+		
+		for(TypeDependency typeDependency : typeDependencies){
 			
 			CompUnit clientCU = typeDependency.getClient().getCompUnit();
 			CompUnit supplierCU = typeDependency.getSupplier().getCompUnit();
@@ -101,10 +133,13 @@ public class DependencyReport implements Serializable{
 	}
 	
 	
-	public Dependency<Type> getTypeDependency(String clientName, String supplierName){
+	public Dependency<Type> getTypeDependency(
+			String clientName, String supplierName){
 		
-			Collection<Dependency<Type>> typeDependencies = getTypeDependencies();
-			for(Dependency<Type> typeDependency : typeDependencies){
+			Collection<TypeDependency> typeDependencies = 
+					getTypeDependencies(true);
+			
+			for(TypeDependency typeDependency : typeDependencies){
 				
 				if(typeDependency.getClient().getFQN().equals(clientName) && 
 					typeDependency.getSupplier().getFQN().equals(supplierName)){
@@ -119,7 +154,7 @@ public class DependencyReport implements Serializable{
 
 	public String toString(){
 		StringBuilder builder = new StringBuilder();
-		for (Dependency<Method> dependency : dependenciesMap.values()){
+		for (Dependency<Method> dependency : callDependenciesMap.values()){
 			
 			builder.append(dependency.toString());
 			builder.append("\n");

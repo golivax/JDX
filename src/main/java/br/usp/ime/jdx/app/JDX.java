@@ -9,7 +9,6 @@ import java.util.List;
 
 import br.usp.ime.jdx.entity.SourceCodeUnit;
 import br.usp.ime.jdx.entity.dependency.DependencyReport;
-import br.usp.ime.jdx.entity.dependency.MethodCallDependency;
 import br.usp.ime.jdx.filter.Filter;
 import br.usp.ime.jdx.filter.JavaNativeClassFilter;
 import br.usp.ime.jdx.processor.extractor.DependencyExtractor;
@@ -75,7 +74,8 @@ public class JDX {
 		String fileSeparator = FileSystems.getDefault().getSeparator();
 		System.out.println(fileSeparator);
 		
-		String rootDir = "C:/Users/user/workspace/tricky1/src/tricky3";
+		String rootDir = "C:/tmp/maven/maven/maven-3/trunk/maven-core/src/"
+				+ "main/java/org/apache";
 				
 		JDX jdx = new JDX();
 		
@@ -83,10 +83,7 @@ public class JDX {
 				rootDir, true, "*.java", new JavaNativeClassFilter());
 		
 		System.out.println(depReport.getMethodCallDependencies().size());
-		for(MethodCallDependency dep : depReport.getMethodCallDependencies()){
-			System.out.println(dep);
-		}
-		
+		System.out.println(depReport.getMethodCallDependencies());
 		System.out.println(new Date(System.currentTimeMillis()));
 	
 	}

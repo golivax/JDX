@@ -76,7 +76,7 @@ public class Type extends NamedEntity implements Serializable{
 
 	@Override
 	public String toString(){
-		return getName();
+		return getFQN();
 	}
 	
 	public Set<Method> getConstructors(){

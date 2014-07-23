@@ -14,5 +14,4 @@ public class MethodCallDependency extends Dependency<Method>{
 		super(client, supplier, strength);
 	}
 
-
 }

@@ -155,6 +155,7 @@ public class Cacher extends FileASTRequestor{
 		String typeName = typeDeclaration.getName().toString();
 
 		ASTNode node = typeDeclaration.getParent();
+
 		while(node != null){
 			if(node instanceof TypeDeclaration){
 				TypeDeclaration superType = (TypeDeclaration)node;
@@ -208,8 +209,8 @@ public class Cacher extends FileASTRequestor{
 		return typeDeclarationMap.keySet();
 	}
 
-	public Type getType(String typeName){
-		return typeNameMap.get(typeName);
+	public Type getType(String typeQualifiedName){
+		return typeNameMap.get(typeQualifiedName);
 	}
 
 	public Type getType(TypeDeclaration typeDeclaration) {

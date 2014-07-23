@@ -3,7 +3,6 @@ package br.usp.ime.jdx.processor.extractor.call;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AssertStatement;
 import org.eclipse.jdt.core.dom.Assignment;
@@ -53,19 +52,14 @@ public class CallDependencyExtractor {
 		this.cacher = cacher;
 	}
 	
-	public DependencyReport run(Filter classFilter) {
+	public DependencyReport run(DependencyReport dependencyReport, 
+			Filter classFilter) {
 		
 		this.classFilter = classFilter;
-		
-		//Creates a new dependency report and extracts the dependencies
-		this.dependencyReport = new DependencyReport();
+		this.dependencyReport = dependencyReport;
 		
 		extractImplicitDependencies();
-		
-		//Now we process each the fields and methods of each type
-		for(TypeDeclaration typeDeclaration : cacher.getTypeDeclarations()){
-			processFieldsAndMethods(typeDeclaration);
-		}		
+		extractExplicitDependencies();	
 
 		return dependencyReport;
 	}
@@ -86,6 +80,14 @@ public class CallDependencyExtractor {
 		//default constructor from A
 	}
 	
+	private void extractExplicitDependencies() {
+		//Now we process the fields and methods of each type
+		for(TypeDeclaration typeDeclaration : cacher.getTypeDeclarations()){
+			processFieldsAndMethods(typeDeclaration);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
 	private void processFieldsAndMethods(TypeDeclaration typeDeclaration){
 
 		//Processing fields
@@ -112,6 +114,7 @@ public class CallDependencyExtractor {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void processBlock(Block codeBlock){
 		try{
 			List<Statement> statements = codeBlock.statements();
@@ -231,8 +234,8 @@ public class CallDependencyExtractor {
 	private void processTypeBinding(ITypeBinding binding){
 		if(binding != null){		
 				
-			String providerTypeName = 
-					getProviderTypeName(binding.getDeclaringClass());
+			System.out.println("What is this?!");
+			//String providerTypeName = ExtractorUtils.getQualifiedTypeName(
 				
 			//setUse(providerTypeName);
 		}
@@ -498,48 +501,32 @@ public class CallDependencyExtractor {
 			if (!binding.getDeclaringClass().isAnonymous() && 
 				!binding.getDeclaringClass().isLocal()){		
 				
-				String methodName = binding.getName();
-				List<String> parameterTypes = new ArrayList<>();
+				String providerTypeName = ExtractorUtils.getQualifiedTypeName(
+ 						binding.getDeclaringClass());
 				
-				for(ITypeBinding typeBinding : binding.getParameterTypes()){
-					parameterTypes.add(typeBinding.getName());
-				}
-				
- 				String providerTypeName = 
-						getProviderTypeName(binding.getDeclaringClass());
-				
-				Type providerType = 
-						cacher.getType(providerTypeName);
-				
-				if(providerType == null){
-					System.out.println("WARNING: Could not find binding for " + 
-						providerTypeName + " in class " + 
-						clientMethod.getContainingType().getCompUnit());
-				}
-				else{
-					Method providerMethod = 
-							providerType.getMethod(methodName, parameterTypes);
+				if (!classFilter.matches(providerTypeName)){
 					
+					String methodName = binding.getName();
+					List<String> parameterTypes = new ArrayList<>();
+					
+					for(ITypeBinding typeBinding : binding.getParameterTypes()){
+						parameterTypes.add(typeBinding.getName());
+					}
+										
+					Type providerType =	cacher.getType(providerTypeName);
+					
+					Method providerMethod =	
+							providerType.getMethod(methodName, parameterTypes);
+
 					setUse(providerMethod);
 				}
 			}
 		}
 	}
 
-	private String getProviderTypeName(ITypeBinding typeBinding) {
-		
-		String qualifiedName = typeBinding.getQualifiedName();
-		//Removing generic's type parameter
-		String providerTypeName = StringUtils.substringBefore(qualifiedName, "<");
-		return providerTypeName;
+	private void setUse(Method providerMethod){	
+		dependencyReport.addDependency(clientMethod, providerMethod);
 	}
-
-	private void setUse(Method providerMethod){
-
-		Type providerType = providerMethod.getContainingType();
-		if (!classFilter.matches(providerType.getName())){			
-				dependencyReport.addDependency(clientMethod, providerMethod);
-		}
 		
-	}
+	
 }

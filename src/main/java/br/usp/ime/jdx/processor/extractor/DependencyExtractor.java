@@ -6,6 +6,7 @@ import br.usp.ime.jdx.entity.dependency.DependencyReport;
 import br.usp.ime.jdx.filter.Filter;
 import br.usp.ime.jdx.processor.BatchCompilationUnitProcessor;
 import br.usp.ime.jdx.processor.extractor.call.CallDependencyExtractor;
+import br.usp.ime.jdx.processor.extractor.call.TypeDependencyExtractor;
 
 public class DependencyExtractor{
 
@@ -23,10 +24,17 @@ public class DependencyExtractor{
 
 		batchCompilationUnitProcessor.run(sourceDirs, cacher, paths);
 
+		DependencyReport depReport = new DependencyReport();
+		
 		CallDependencyExtractor callDepExtractor = 
-				new CallDependencyExtractor(cacher);
+				new CallDependencyExtractor(cacher); 
+				
+		callDepExtractor.run(depReport, classFilter);
 
-		DependencyReport depReport = callDepExtractor.run(classFilter);
+		TypeDependencyExtractor typeDepExtractor = 
+				new TypeDependencyExtractor(cacher);
+		
+		typeDepExtractor.run(depReport, classFilter);
 		
 		return depReport;
 	}
