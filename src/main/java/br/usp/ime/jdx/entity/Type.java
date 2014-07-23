@@ -79,17 +79,25 @@ public class Type extends NamedEntity implements Serializable{
 		return getName();
 	}
 	
+	public Set<Method> getConstructors(){
+		Set<Method> constructors = new HashSet<>();
+		for(Method method : methods){
+			if(method.isConstructor()) {
+				constructors.add(method);
+			}
+		}
+		return constructors;
+	}
+	
 	public Set<Method> getMethods(String methodName) {
-		
-		Set<Method> methodsFounds = new HashSet<>();
-		
+		Set<Method> methodsFound = new HashSet<>();
 		for (Method method : methods){
 			
 			if(method.getName().equals(methodName)){
-				methodsFounds.add(method);
+				methodsFound.add(method);
 			}
 		}
-		return methodsFounds;
+		return methodsFound;
 	}
 
 	public Method getMethod(String methodName, List<String> parameters) {

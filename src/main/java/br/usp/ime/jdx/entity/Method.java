@@ -8,10 +8,21 @@ public class Method extends NamedEntity{
 	private List<String> parameters;
 	private String sourceCode;
 	private Type containingType;
+	private boolean isConstructor = false;
 	
 	public Method(String name, List<String> parameters, String sourceCode){
+		
 		this.name = name;
 		this.parameters = parameters;
+		this.sourceCode = sourceCode;
+	}
+	
+	public Method(String name, List<String> parameters, boolean isConstructor, 
+			String sourceCode){
+		
+		this.name = name;
+		this.parameters = parameters;
+		this.isConstructor = isConstructor;
 		this.sourceCode = sourceCode;
 	}
 	
@@ -52,6 +63,10 @@ public class Method extends NamedEntity{
 
 	public List<String> getParameters() {
 		return parameters;
+	}
+	
+	public boolean isConstructor(){
+		return false;
 	}
 
 }

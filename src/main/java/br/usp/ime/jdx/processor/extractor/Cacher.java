@@ -107,22 +107,29 @@ public class Cacher extends FileASTRequestor{
 			List<String> parameterTypes = 
 					getParameterTypes(methodDeclaration);
 
+			boolean isConstructor = methodDeclaration.isConstructor();
+			
 			String sourceCode = methodDeclaration.toString();
 
 			//Might be useful in the future
 			//Return type: methodDeclaration.getReturnType2();
 			//Type parameters (generic): methodDeclaration.typeParameters();
 
-			Method method = new Method(methodName,parameterTypes,sourceCode);
+			Method method = new Method(
+					methodName,parameterTypes,isConstructor,sourceCode);
+			
 			type.addMethod(method);
 
 			methodDeclarationMap.put(methodDeclaration, method);
 		}
 
 		//Add implicit constructor (only if no other constructors exist, of course)
-		if(type.getMethods(type.getName()).isEmpty()){
-			Method method = new Method(type.getName(),new ArrayList<String>(),null);
-			type.addMethod(method);
+		if(type.getConstructors().isEmpty()){
+			
+			Method constructor = new Method(type.getName(), 
+					new ArrayList<String>(),true,null);
+			
+			type.addMethod(constructor);
 		}
 		
 		//Add artificial "attrib<>" method
