@@ -1,6 +1,7 @@
 package br.usp.ime.jdx.processor.extractor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -213,6 +214,10 @@ public class Cacher extends FileASTRequestor{
 
 	public Type getType(TypeDeclaration typeDeclaration) {
 		return typeDeclarationMap.get(typeDeclaration);		
+	}
+
+	public Collection<Type> getTypes() {
+		return typeDeclarationMap.values();		
 	}
 
 	

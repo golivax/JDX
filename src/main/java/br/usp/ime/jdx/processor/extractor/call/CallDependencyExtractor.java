@@ -60,6 +60,15 @@ public class CallDependencyExtractor {
 		//Creates a new dependency report and extracts the dependencies
 		this.dependencyReport = new DependencyReport();
 		
+		//First off, we add dependencies from constructors to attrib<>
+		for(Type type : cacher.getTypes()){
+			for(Method constructor : type.getConstructors()){
+				this.clientMethod = constructor;
+				setUse(type.getAttribMethod());
+			}
+		}
+		
+		//Now we process each the fields and methods of each type
 		for(TypeDeclaration typeDeclaration : cacher.getTypeDeclarations()){
 			processFieldsAndMethods(typeDeclaration);
 		}		
@@ -87,7 +96,7 @@ public class CallDependencyExtractor {
 		for (MethodDeclaration methodDeclaration : typeDeclaration.getMethods()){
 			
 			this.clientMethod = cacher.getMethod(methodDeclaration);
-			
+						
 			Block codeBlock = methodDeclaration.getBody();
 			if (codeBlock != null) processBlock(codeBlock);			
 		}
@@ -523,6 +532,4 @@ public class CallDependencyExtractor {
 		}
 		
 	}
-	
-
 }

@@ -66,7 +66,7 @@ public class Method extends NamedEntity{
 	}
 	
 	public boolean isConstructor(){
-		return false;
+		return isConstructor;
 	}
 
 }
