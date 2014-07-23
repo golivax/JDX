@@ -7,7 +7,7 @@ public class A {
 	
 	private void fooPrivate(){
 		B b = new B();
-		b.bar();	
+		b.bar();
 	}
 	
 	protected void fooProtected(){

@@ -20,7 +20,9 @@ public class BatchCompilationUnitProcessor {
 			parser.setResolveBindings(true); 
 			
 			System.out.println("Sourcepath Entries: " + sourceDirs);
-			String[] sourceDirsArray = sourceDirs.toArray(new String[sourceDirs.size()]);
+			
+			String[] sourceDirsArray = 
+					sourceDirs.toArray(new String[sourceDirs.size()]);
 			
 			// setting the environment			
 			parser.setEnvironment(null, sourceDirsArray, null, true);			

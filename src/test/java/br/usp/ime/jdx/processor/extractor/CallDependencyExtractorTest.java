@@ -10,9 +10,9 @@ import org.junit.Test;
 
 import br.usp.ime.jdx.app.JDX;
 import br.usp.ime.jdx.entity.CompUnit;
-import br.usp.ime.jdx.entity.Dependency;
-import br.usp.ime.jdx.entity.DependencyReport;
 import br.usp.ime.jdx.entity.Type;
+import br.usp.ime.jdx.entity.dependency.Dependency;
+import br.usp.ime.jdx.entity.dependency.DependencyReport;
 import br.usp.ime.jdx.filter.JavaNativeClassFilter;
 
 public class CallDependencyExtractorTest {
@@ -60,6 +60,7 @@ public class CallDependencyExtractorTest {
 		assertEquals(new Integer(8), dep.getStrength());
 	}
 	
+	
 	@Test
 	public void shouldFindMethodInvocationsInsideMethods(){
 		String rootDir = this.rootDir + "/localvariable/methodbody";
@@ -82,6 +83,7 @@ public class CallDependencyExtractorTest {
 		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
 		//with 10 calls (2 from each method)
 		assertEquals(new Integer(10), dep.getStrength());
+		
 	}
 	
 	@Test
@@ -348,7 +350,7 @@ public class CallDependencyExtractorTest {
 		
 		System.out.println(depReport);
 		
-		//One compilation unit dependency
+		//3 compilation unit dependency
 		assertEquals(3, depReport.getCompUnitDependencies().size());
 		
 		//From A to B
@@ -414,12 +416,33 @@ public class CallDependencyExtractorTest {
 		Dependency<CompUnit> dep = 
 				depReport.getCompUnitDependencies().iterator().next();
 		
+		//Each compilation unit should store all its types
+		//In this case, the compilation unit "A.java" should have 
+		//3 three types (A, A.I1, A.I1.I2)
+		assertEquals(3, dep.getClient().getTypes().size());
+		
+		assertTrue(
+				dep.getClient().containsType(
+						"br.usp.ime.jdx.processor.extractor.methodinv."
+						+ "localvariable.innerclassbody.A"));
+
+		assertTrue(
+				dep.getClient().containsType(
+						"br.usp.ime.jdx.processor.extractor.methodinv."
+						+ "localvariable.innerclassbody.A.I1"));
+		
+		assertTrue(
+				dep.getClient().containsType(
+						"br.usp.ime.jdx.processor.extractor.methodinv."
+						+ "localvariable.innerclassbody.A.I1.I2"));
+		
 		//from A
 		assertEquals(rootDir + "/A.java", dep.getClient().getName());
 		//to B
 		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
 		//with 12 calls (2 from each method)
 		assertEquals(new Integer(12), dep.getStrength());
+		
 	}
 	
 	@Test
@@ -445,6 +468,7 @@ public class CallDependencyExtractorTest {
 		//with 2 calls
 		assertEquals(new Integer(2), dep.getStrength());
 	}
+	
 	
 	@Test
 	public void shouldFindAttributeInitialization(){

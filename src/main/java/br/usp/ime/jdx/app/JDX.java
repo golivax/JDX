@@ -7,11 +7,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import br.usp.ime.jdx.entity.DependencyReport;
 import br.usp.ime.jdx.entity.SourceCodeUnit;
+import br.usp.ime.jdx.entity.dependency.DependencyReport;
 import br.usp.ime.jdx.filter.Filter;
 import br.usp.ime.jdx.filter.JavaNativeClassFilter;
-import br.usp.ime.jdx.processor.extractor.CallDependencyExtractor;
+import br.usp.ime.jdx.processor.extractor.DependencyExtractor;
 import br.usp.ime.jdx.util.filesystem.FilesystemUtils;
 
 public class JDX {
@@ -24,7 +24,7 @@ public class JDX {
 	public DependencyReport calculateDepsFrom(String sourceDir, 
 			boolean recursive, String globPattern, Filter classFilter) {
 		
-		CallDependencyExtractor extractor = new CallDependencyExtractor();
+		DependencyExtractor extractor = new DependencyExtractor();
 		
 		String[] paths = FilesystemUtils.getPathsFromSourceDir(
 				sourceDir, globPattern, recursive);
@@ -39,7 +39,7 @@ public class JDX {
 	public DependencyReport calculateDepsFrom(List<String> sourceDirs, 
 			boolean recursive, String globPattern, Filter classFilter) {
 
-		CallDependencyExtractor extractor = new CallDependencyExtractor();
+		DependencyExtractor extractor = new DependencyExtractor();
 
 		String[] paths = FilesystemUtils.getPathsFromSourceDirs(
 				sourceDirs, globPattern, recursive);
@@ -74,7 +74,8 @@ public class JDX {
 		String fileSeparator = FileSystems.getDefault().getSeparator();
 		System.out.println(fileSeparator);
 		
-		String rootDir = "C:\\tmp\\ant\\src\\main";
+		String rootDir = "C:/tmp/maven/maven/maven-3/trunk/maven-core/src/"
+				+ "main/java/org/apache";
 				
 		JDX jdx = new JDX();
 		

@@ -1,6 +1,8 @@
-﻿package br.usp.ime.jdx.entity;
+﻿package br.usp.ime.jdx.entity.dependency;
 
 import java.io.Serializable;
+
+import br.usp.ime.jdx.entity.NamedEntity;
 
 public class Dependency<E extends NamedEntity> implements Serializable{
 

@@ -9,24 +9,40 @@ public class CompUnit extends NamedEntity implements Serializable{
 	private static final long serialVersionUID = 5569390666734073800L;
 
 	private String name;
+	private String sourceCode;
 	private Set<Type> types;
 	
-	public CompUnit(String name){
+	public CompUnit(String name, String sourceCode){
 		//Always replace back slashes with forward slashes
 		this.name = name.replaceAll("\\\\", "/");
+		this.sourceCode = sourceCode;
 		types = new HashSet<Type>();
 	}
 	
 	public void addType(Type type){
 		this.types.add(type);
+		type.setCompUnit(this);
 	}
 	
 	public Set<Type> getTypes(){
 		return types;
 	}
 	
+	public boolean containsType(String typeName){
+		for(Type type : types){
+			if(typeName.equals(type.getFQN())){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public String getName(){
 		return name;
+	}
+	
+	public String getSourceCode(){
+		return sourceCode;
 	}
 	
 	@Override

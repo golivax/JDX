@@ -1,11 +1,7 @@
-﻿package br.usp.ime.jdx.processor.extractor;
+package br.usp.ime.jdx.processor.extractor.call;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -14,14 +10,12 @@ import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
-import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ConstructorInvocation;
 import org.eclipse.jdt.core.dom.DoStatement;
 import org.eclipse.jdt.core.dom.EnhancedForStatement;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
-import org.eclipse.jdt.core.dom.FileASTRequestor;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -42,141 +36,58 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
 
-import br.usp.ime.jdx.entity.CompUnit;
-import br.usp.ime.jdx.entity.DependencyReport;
+import br.usp.ime.jdx.entity.Method;
 import br.usp.ime.jdx.entity.Type;
+import br.usp.ime.jdx.entity.dependency.DependencyReport;
 import br.usp.ime.jdx.filter.Filter;
-import br.usp.ime.jdx.processor.BatchCompilationUnitProcessor;
+import br.usp.ime.jdx.processor.extractor.Cacher;
 
-
-public class CallDependencyExtractor extends FileASTRequestor{
-
-	private List<CompilationUnit> compilationUnits = 
-			new ArrayList<CompilationUnit>();
+public class CallDependencyExtractor {
 	
-	private Filter classFilter;	
+	private Cacher cacher;
+	private Filter classFilter;
 	private DependencyReport dependencyReport;
+	private Method clientMethod;
 	
-	private Map<String,Type> typeCache = 
-			new HashMap<String, Type>();
-		
-	private String sourceDir;
-	
-	private Type clientType;
-	
-	
-	@Override
-	public void acceptAST(String sourceFilePath, 
-			CompilationUnit compilationUnit) {
-
-		cacheCompilationUnit(sourceDir, sourceFilePath, compilationUnit);	
-	}	
-	
-	private void cacheCompilationUnit(String sourceDir,
-			String sourceFilePath, CompilationUnit compilationUnit) {
-		
-		this.compilationUnits.add(compilationUnit);
-				
-		Stack<TypeDeclaration> typeStack = new Stack<TypeDeclaration>();
-		typeStack.addAll(compilationUnit.types());
-		
-		while(!typeStack.isEmpty()){
-			TypeDeclaration typeDeclaration = typeStack.pop();				
-			
-			String typeName = getTypeName(typeDeclaration);
-			Type type = new Type(typeName,new CompUnit(sourceFilePath));
-			typeCache.put(typeName, type);
-			
-			for(TypeDeclaration subType : getSubTypes(typeDeclaration)){
-				typeStack.push(subType);
-			}
-		}
+	public CallDependencyExtractor(Cacher cacher){
+		this.cacher = cacher;
 	}
 	
-
-	private List<TypeDeclaration> getSubTypes(TypeDeclaration typeDeclaration) {
-		List<TypeDeclaration> subTypes = new ArrayList<TypeDeclaration>();
+	public DependencyReport run(Filter classFilter) {
 		
-		try{
-			//Recovers static nested classes and "regular" inner classes
-			Collections.addAll(subTypes, typeDeclaration.getTypes());
-			
-			//Recovers local classes
-			for(MethodDeclaration methodDeclaration : typeDeclaration.getMethods()){
-				Block block = methodDeclaration.getBody();
-				if (block != null) {
-					List<Statement> statements = block.statements();
-					for(Statement statement : statements){
-						if (statement.getNodeType() == ASTNode.TYPE_DECLARATION_STATEMENT){
-							TypeDeclarationStatement tds = (TypeDeclarationStatement)statement;
-							if (tds.getDeclaration() instanceof TypeDeclaration){								
-								subTypes.add((TypeDeclaration)tds.getDeclaration());
-							}
-						}
-					}
-				}									
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		return subTypes;
-	}
-	
-	public DependencyReport run(List<String> sourceDirs, String[] paths, Filter classFilter){
 		this.classFilter = classFilter;
 		
-		//Creates a new dependency report and extracts the dependencies		
-		dependencyReport = new DependencyReport();
+		//Creates a new dependency report and extracts the dependencies
+		this.dependencyReport = new DependencyReport();
 		
-		//This is used to cache compilation units (e.g., so that
-		//we can retrieve the compilation units from provider types
-		//during dependency extraction)
-		BatchCompilationUnitProcessor batchCuProcessor = 
-				new BatchCompilationUnitProcessor();
-		
-		batchCuProcessor.run(sourceDirs, this, paths);
-		
-		System.out.println("Number of types detected: " + typeCache.size());	
-		
-		for(CompilationUnit compilationUnit : compilationUnits){
-			processCompilationUnit(compilationUnit);
-		}		
-		
-		return dependencyReport;
-	}
-
-	protected void processCompilationUnit(CompilationUnit compilationUnit) {
-		
-		Stack<TypeDeclaration> typeStack = new Stack<TypeDeclaration>();
-		typeStack.addAll(compilationUnit.types());
-		
-		while(!typeStack.isEmpty()){					
-			TypeDeclaration typeDeclaration = typeStack.pop();
-			
-			this.clientType = getType(getTypeName(typeDeclaration));
-			
-			//handling method declarations within this type
+		for(TypeDeclaration typeDeclaration : cacher.getTypeDeclarations()){
 			processFieldsAndMethods(typeDeclaration);
-			
-			for(TypeDeclaration subTypeDeclaration : getSubTypes(typeDeclaration)){
-				typeStack.push(subTypeDeclaration);
-			}
-		}
+		}		
+
+		return dependencyReport;
 	}
 	
 	private void processFieldsAndMethods(TypeDeclaration typeDeclaration){
 
+		//Processing fields
 		for (FieldDeclaration fieldDeclaration : typeDeclaration.getFields()){
-			// processing fields
-			List<VariableDeclarationFragment> fragments = fieldDeclaration.fragments();
+
+			Type type = cacher.getType(typeDeclaration);
+			this.clientMethod = type.getAttribMethod();
+			
+			List<VariableDeclarationFragment> fragments = 
+					fieldDeclaration.fragments();
 
 			for(VariableDeclarationFragment fragment : fragments){
 				processVariableDeclarationFragment(fragment);
 			}
 		}
 		
+		//Processing method declarations
 		for (MethodDeclaration methodDeclaration : typeDeclaration.getMethods()){
-			// getting the blocks inside the current method
+			
+			this.clientMethod = cacher.getMethod(methodDeclaration);
+			
 			Block codeBlock = methodDeclaration.getBody();
 			if (codeBlock != null) processBlock(codeBlock);			
 		}
@@ -304,7 +215,7 @@ public class CallDependencyExtractor extends FileASTRequestor{
 			String providerTypeName = 
 					getProviderTypeName(binding.getDeclaringClass());
 				
-			setUse(providerTypeName);
+			//setUse(providerTypeName);
 		}
 	}
 
@@ -559,69 +470,59 @@ public class CallDependencyExtractor extends FileASTRequestor{
 	}
 
 	private void processMethodBinding(IMethodBinding binding){
-		
+				
 		//It is null when a generic class/interface takes a certain 
 		//type parameter that does not exist in source code
 		//e.g. "ArrayList<Player> opponents = new ArrayList<Player>();" and
 		//the Player class/interface does not exist in source code
 		if(binding.getDeclaringClass() != null){			
 			if (!binding.getDeclaringClass().isAnonymous() && 
-				!binding.getDeclaringClass().isLocal()){
+				!binding.getDeclaringClass().isLocal()){		
 				
-				String providerTypeName = 
+				String methodName = binding.getName();
+				List<String> parameterTypes = new ArrayList<>();
+				
+				for(ITypeBinding typeBinding : binding.getParameterTypes()){
+					parameterTypes.add(typeBinding.getName());
+				}
+				
+ 				String providerTypeName = 
 						getProviderTypeName(binding.getDeclaringClass());
 				
-				setUse(providerTypeName);
+				Type providerType = 
+						cacher.getType(providerTypeName);
+				
+				if(providerType == null){
+					System.out.println("WARNING: Could not find binding for " + 
+						providerTypeName + " in class " + 
+						clientMethod.getContainingType().getCompUnit());
+				}
+				else{
+					Method providerMethod = 
+							providerType.getMethod(methodName, parameterTypes);
+					
+					setUse(providerMethod);
+				}
 			}
 		}
 	}
 
 	private String getProviderTypeName(ITypeBinding typeBinding) {
-	
+		
 		String qualifiedName = typeBinding.getQualifiedName();
 		//Removing generic's type parameter
 		String providerTypeName = StringUtils.substringBefore(qualifiedName, "<");
 		return providerTypeName;
 	}
 
-	private void setUse(String providerTypeName){
-				
-		if (!classFilter.matches(providerTypeName)){			
-			
-			Type providerType = getType(providerTypeName);
-			if(providerType == null){
-				System.out.println("WARNING: Could not find binding for " + 
-					providerTypeName + " in class " + 
-					clientType.getCompUnit().getName());
-			}
-			else{
-				dependencyReport.addDependency(clientType, providerType);	
-			}
+	private void setUse(Method providerMethod){
+
+		Type providerType = providerMethod.getContainingType();
+		if (!classFilter.matches(providerType.getName())){			
+				dependencyReport.addDependency(clientMethod, providerMethod);
 		}
+		
 	}
 	
-	private Type getType(String typeName){
-		return typeCache.get(typeName);
-	}
 
-	private String getTypeName(TypeDeclaration typeDeclaration) {
-		
-		String typeName = typeDeclaration.getName().toString();
-		
-		ASTNode node = typeDeclaration.getParent();
-		while(node != null){
-			if(node instanceof TypeDeclaration){
-				TypeDeclaration superType = (TypeDeclaration)node;
-				typeName = superType.getName().toString() + "." + typeName;
-			}
-			if(node instanceof CompilationUnit){
-				CompilationUnit compilationUnit = (CompilationUnit)node;
-				typeName = compilationUnit.getPackage().getName() + 
-						"." + typeName;
-			}
-			node = node.getParent();
-		}
-		
-		return typeName;
-	}	
 }

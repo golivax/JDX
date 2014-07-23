@@ -1,33 +1,59 @@
 package br.usp.ime.jdx.entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class Type extends NamedEntity implements Serializable{
 
 	private static final long serialVersionUID = -7126906063529157990L;
 
-	private String name;
+	private String fqn;
+	private String sourceCode;
 	private CompUnit compUnit;
+	private Set<Method> methods;
 	
-	public Type(String name, CompUnit compUnit){
-		this.name = name;
-		this.compUnit = compUnit;
-		compUnit.addType(this);
+	public Type(String fqn, String sourceCode){
+		this.fqn = fqn;
+		this.sourceCode = sourceCode;
+		this.methods = new HashSet<Method>();
 	}
 	
+	@Override
 	public String getName(){
-		return name;
+		return StringUtils.substringAfterLast(fqn, ".");
+	}
+	
+	public String getFQN(){
+		return fqn;
+	}
+	
+	public String getSourceCode(){
+		return sourceCode;
 	}
 	
 	public CompUnit getCompUnit(){
 		return compUnit;
 	}
 	
+	public void setCompUnit(CompUnit compUnit){
+		this.compUnit = compUnit;
+	}
+	
+	public void addMethod(Method method){
+		this.methods.add(method);
+		method.setContainingType(this);
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((fqn == null) ? 0 : fqn.hashCode());
 		return result;
 	}
 
@@ -40,10 +66,10 @@ public class Type extends NamedEntity implements Serializable{
 		if (getClass() != obj.getClass())
 			return false;
 		Type other = (Type) obj;
-		if (name == null) {
-			if (other.name != null)
+		if (fqn == null) {
+			if (other.fqn != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!fqn.equals(other.fqn))
 			return false;
 		return true;
 	}
@@ -52,5 +78,34 @@ public class Type extends NamedEntity implements Serializable{
 	public String toString(){
 		return getName();
 	}
+	
+	public Set<Method> getMethods(String methodName) {
+		
+		Set<Method> methodsFounds = new HashSet<>();
+		
+		for (Method method : methods){
+			
+			if(method.getName().equals(methodName)){
+				methodsFounds.add(method);
+			}
+		}
+		return methodsFounds;
+	}
+
+	public Method getMethod(String methodName, List<String> parameters) {
+		for (Method method : getMethods(methodName)){			
+			if(method.getParameters().equals(parameters)){				
+				return method;
+			}
+		}
+		return null;		
+	}
+
+	//TODO: Criar atributo para guardar attrib method
+	public Method getAttribMethod() {
+		return getMethod("attrib<>", new ArrayList<String>());
+	}
+
+	
 
 }
