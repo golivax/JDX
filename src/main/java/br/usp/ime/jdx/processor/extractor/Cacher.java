@@ -123,7 +123,7 @@ public class Cacher extends FileASTRequestor{
 			methodDeclarationMap.put(methodDeclaration, method);
 		}
 
-		//Add implicit constructor (only if no other constructors exist, of course)
+		//Add implicit constructor when no explicit constructors exist
 		if(type.getConstructors().isEmpty()){
 			
 			Method constructor = new Method(type.getName(), 
