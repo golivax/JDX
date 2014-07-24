@@ -1,4 +1,4 @@
-package br.usp.ime.jdx.processor.extractor.call;
+package br.usp.ime.jdx.processor.extractor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,6 @@ import br.usp.ime.jdx.entity.Method;
 import br.usp.ime.jdx.entity.Type;
 import br.usp.ime.jdx.entity.dependency.DependencyReport;
 import br.usp.ime.jdx.filter.Filter;
-import br.usp.ime.jdx.processor.extractor.Cacher;
 
 public class CallDependencyExtractor {
 	

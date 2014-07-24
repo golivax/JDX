@@ -5,8 +5,6 @@ import java.util.List;
 import br.usp.ime.jdx.entity.dependency.DependencyReport;
 import br.usp.ime.jdx.filter.Filter;
 import br.usp.ime.jdx.processor.BatchCompilationUnitProcessor;
-import br.usp.ime.jdx.processor.extractor.call.CallDependencyExtractor;
-import br.usp.ime.jdx.processor.extractor.call.TypeDependencyExtractor;
 
 public class DependencyExtractor{
 

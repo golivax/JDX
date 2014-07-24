@@ -1,4 +1,4 @@
-package br.usp.ime.jdx.processor.extractor.call;
+package br.usp.ime.jdx.processor.extractor;
 
 import java.util.List;
 
@@ -7,7 +7,6 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import br.usp.ime.jdx.entity.Type;
 import br.usp.ime.jdx.entity.dependency.DependencyReport;
 import br.usp.ime.jdx.filter.Filter;
-import br.usp.ime.jdx.processor.extractor.Cacher;
 
 /**
  * Extracts relationships between types. For now it detects

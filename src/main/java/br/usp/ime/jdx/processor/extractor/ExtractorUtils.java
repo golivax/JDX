@@ -1,4 +1,4 @@
-package br.usp.ime.jdx.processor.extractor.call;
+package br.usp.ime.jdx.processor.extractor;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.ITypeBinding;
