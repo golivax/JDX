@@ -1,9 +1,9 @@
 package br.usp.ime.jdx.processor.extractor;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +19,9 @@ import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclarationStatement;
 
+import br.usp.ime.jdx.entity.Clazz;
 import br.usp.ime.jdx.entity.CompUnit;
+import br.usp.ime.jdx.entity.Interface;
 import br.usp.ime.jdx.entity.Method;
 import br.usp.ime.jdx.entity.Type;
 
@@ -27,8 +29,11 @@ public class Cacher extends FileASTRequestor{
 	
 	private Map<CompilationUnit,CompUnit> compUnitMap =	new HashMap<>();	
 	
-	private Map<TypeDeclaration,Type> typeDeclarationMap = new HashMap<>();
-	private Map<String,Type> typeNameMap = new HashMap<>();
+	private Map<TypeDeclaration,Interface> interfaceMap = new HashMap<>();
+	private Map<String,Interface> interfaceNameMap = new HashMap<>();
+	
+	private Map<TypeDeclaration,Clazz> clazzMap = new HashMap<>();
+	private Map<String,Clazz> clazzNameMap = new HashMap<>();
 	
 	private Map<MethodDeclaration,Method> methodDeclarationMap = 
 			new HashMap<>();
@@ -57,6 +62,7 @@ public class Cacher extends FileASTRequestor{
 		
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void cacheTypes(CompilationUnit compilationUnit){
 		Stack<TypeDeclaration> typeStack = new Stack<TypeDeclaration>();
 		typeStack.addAll(compilationUnit.types());
@@ -67,12 +73,24 @@ public class Cacher extends FileASTRequestor{
 			String typeName = getTypeName(typeDeclaration);
 			String sourceCode = typeDeclaration.toString();
 			
-			Type type = new Type(typeName, sourceCode);
+			Type type;
+			
+			if(typeDeclaration.isInterface()){
+				Interface interf = new Interface(typeName, sourceCode);
+				interfaceMap.put(typeDeclaration, interf);
+				interfaceNameMap.put(typeName, interf);
+				type = interf;
+			}
+			else{
+				Clazz clazz = new Clazz(typeName, sourceCode);
+				clazzMap.put(typeDeclaration, clazz);
+				clazzNameMap.put(typeName, clazz);
+				type = clazz;
+			}
+			
 			CompUnit compUnit = compUnitMap.get(compilationUnit);
 			compUnit.addType(type);
 			
-			typeDeclarationMap.put(typeDeclaration, type);
-			typeNameMap.put(typeName, type);
 
 			for(TypeDeclaration subType : getSubTypes(typeDeclaration)){
 				typeStack.push(subType);
@@ -80,6 +98,7 @@ public class Cacher extends FileASTRequestor{
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void cacheMethods(CompilationUnit compilationUnit) {
 		
 		Stack<TypeDeclaration> typeStack = new Stack<TypeDeclaration>();
@@ -98,7 +117,7 @@ public class Cacher extends FileASTRequestor{
 	
 	private void cacheMethods(TypeDeclaration typeDeclaration) {
 				
-		Type type = typeDeclarationMap.get(typeDeclaration);
+		Type type = getType(typeDeclaration); 
 		
 		for(MethodDeclaration methodDeclaration : 
 			typeDeclaration.getMethods()){
@@ -138,6 +157,7 @@ public class Cacher extends FileASTRequestor{
 		type.addMethod(attribMethod);
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<String> getParameterTypes(MethodDeclaration methodDeclaration) {
 		List<String> parameterTypes = new ArrayList<>();
 		
@@ -172,7 +192,7 @@ public class Cacher extends FileASTRequestor{
 		return typeName;
 	}	
 
-
+	@SuppressWarnings("unchecked")
 	private List<TypeDeclaration> getSubTypes(TypeDeclaration typeDeclaration) {
 		List<TypeDeclaration> subTypes = new ArrayList<TypeDeclaration>();
 
@@ -204,22 +224,47 @@ public class Cacher extends FileASTRequestor{
 	public Method getMethod(MethodDeclaration methodDeclaration) {
 		return methodDeclarationMap.get(methodDeclaration);
 	}
-
-	public Set<TypeDeclaration> getTypeDeclarations() {
-		return typeDeclarationMap.keySet();
+	
+	public Interface getInterface(TypeDeclaration typeDeclaration){
+		return interfaceMap.get(typeDeclaration);
 	}
-
-	public Type getType(String typeQualifiedName){
-		return typeNameMap.get(typeQualifiedName);
+	
+	public Clazz getClazz(TypeDeclaration typeDeclaration){
+		return clazzMap.get(typeDeclaration);
 	}
 
 	public Type getType(TypeDeclaration typeDeclaration) {
-		return typeDeclarationMap.get(typeDeclaration);		
+		Type type = interfaceMap.get(typeDeclaration);
+		if (type == null) type = clazzMap.get(typeDeclaration);
+		return type;		
+	}
+	
+	public Set<Type> getTypes() {
+		Set<Type> types = new HashSet<>();
+		types.addAll(interfaceMap.values());
+		types.addAll(clazzMap.values());
+		return types;		
+	}
+	
+	public Set<TypeDeclaration> getTypeDeclarations() {
+		Set<TypeDeclaration> typeDeclarations = new HashSet<>();
+		typeDeclarations.addAll(interfaceMap.keySet());
+		typeDeclarations.addAll(clazzMap.keySet());
+		return typeDeclarations;
 	}
 
-	public Collection<Type> getTypes() {
-		return typeDeclarationMap.values();		
+	public Clazz getClazz(String clazzQualifiedName){
+		return clazzNameMap.get(clazzQualifiedName);
 	}
-
+	
+	public Interface getInterface(String interfaceQualifiedName){
+		return interfaceNameMap.get(interfaceQualifiedName);
+	}
+	
+	public Type getType(String typeQualifiedName){
+		Type type = interfaceNameMap.get(typeQualifiedName);
+		if (type == null) type = clazzNameMap.get(typeQualifiedName);
+		return type;
+	}
 	
 }

@@ -1,13 +1,16 @@
 ﻿package br.usp.ime.jdx.util.printer;
 
-import br.usp.ime.jdx.entity.dependency.Dependency;
 import br.usp.ime.jdx.entity.dependency.DependencyReport;
+import br.usp.ime.jdx.entity.dependency.TypeMetaDependency;
 
 public class DependencyPrinter {
 
 	public static String printCSV(DependencyReport dependencyReport){
 		StringBuilder builder = new StringBuilder();
-		for(Dependency dependency : dependencyReport.getTypeDependencies(true)){
+		
+		for(TypeMetaDependency dependency : 
+				dependencyReport.getTypeMetaDependencies()){
+		
 			builder.append(
 					dependency.getClient() + ";" + 
 					dependency.getSupplier() + ";" + 

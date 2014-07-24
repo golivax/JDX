@@ -8,7 +8,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Type extends NamedEntity implements Serializable{
+public abstract class Type extends NamedEntity implements Serializable{
 
 	private static final long serialVersionUID = -7126906063529157990L;
 

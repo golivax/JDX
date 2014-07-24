@@ -2,9 +2,10 @@ package br.usp.ime.jdx.processor.extractor;
 
 import java.util.List;
 
+import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
-import br.usp.ime.jdx.entity.Type;
 import br.usp.ime.jdx.entity.dependency.DependencyReport;
 import br.usp.ime.jdx.filter.Filter;
 
@@ -30,72 +31,98 @@ public class TypeDependencyExtractor {
 		this.classFilter = classFilter;
 		this.dependencyReport = dependencyReport;
 		
-		detectClassInheritance();
-		detectInterfaceImplementationAndExtension();
+		for(TypeDeclaration typeDeclaration : cacher.getTypeDeclarations()){	
+			detectClassInheritance(typeDeclaration);
+			detectInterfaceImplementationAndExtension(typeDeclaration);
+		}
 	
 		return dependencyReport;
 	}
 	
-	private void detectClassInheritance() {
-		for(TypeDeclaration typeDeclaration : cacher.getTypeDeclarations()){
-						
-			if(typeDeclaration.getSuperclassType() != null){
-				
-				Type type = cacher.getType(typeDeclaration);
-				
-				if(typeDeclaration.getSuperclassType().resolveBinding() == null){
-					
-					System.out.println("WARNING: Could not find binding for " + 
-							typeDeclaration.getSuperclassType() + " in class " + 
-							type.getCompUnit());					
-				}
-				else{
-					String parentTypeName = ExtractorUtils.getQualifiedTypeName(
-						typeDeclaration.getSuperclassType().resolveBinding());
-					
-					addDependency(type, parentTypeName);
-				}				
+	private void detectClassInheritance(TypeDeclaration typeDeclaration) {
+
+		Type superClassType = typeDeclaration.getSuperclassType();
+
+		if(superClassType != null){
+
+			String superClassName = getBindingName(
+					typeDeclaration, superClassType);
+
+			if (superClassName != null && !classFilter.matches(superClassName)){
+
+				dependencyReport.addInheritanceDependency(
+						cacher.getClazz(typeDeclaration), 
+						cacher.getClazz(superClassName));
 			}
 		}
 	}
 
-	private void detectInterfaceImplementationAndExtension() {
-		for(TypeDeclaration typeDeclaration : cacher.getTypeDeclarations()){
+	@SuppressWarnings("unchecked")
+	private void detectInterfaceImplementationAndExtension(
+			TypeDeclaration typeDeclaration) {
 			
-			//For a class declaration, these are the interfaces that this class 
-			//implements; for an interface declaration, these are the interfaces 
-			//that this interface extends.
-			List<org.eclipse.jdt.core.dom.Type> implementedInterfaces = 
+		if (typeDeclaration.isInterface()){
+
+			//For an interface declaration, these are the interfaces 
+			//that this interface extends.	
+			List<Type> extendedInterfaces = 
 					typeDeclaration.superInterfaceTypes();
-			
-			for(org.eclipse.jdt.core.dom.Type implementedInterface : implementedInterfaces){
-				
-				Type type = cacher.getType(typeDeclaration);
-				
-				if(implementedInterface.resolveBinding() == null){
-					
-					System.out.println("WARNING: Could not find binding for " + 
-							implementedInterface + " in class " + 
-							type.getCompUnit());	
+
+			for(Type extendedInterface : extendedInterfaces){
+
+				String extendedInterfaceName = 
+						getBindingName(typeDeclaration, extendedInterface);
+
+				if (extendedInterfaceName != null && 
+						!classFilter.matches(extendedInterfaceName)){
+
+					dependencyReport.addInheritanceDependency(
+							cacher.getInterface(typeDeclaration), 
+							cacher.getInterface(extendedInterfaceName));
 				}
-				else{
-					String implementedInterfaceName = 
-						ExtractorUtils.getQualifiedTypeName(
-							implementedInterface.resolveBinding());
-					
-					addDependency(type, implementedInterfaceName);
+			}			
+		}
+		else{
+
+			//For a class declaration, these are the interfaces that 
+			//this class implements
+			List<Type> implementedInterfaces = 
+					typeDeclaration.superInterfaceTypes();
+
+			for(Type implementedInterface :	implementedInterfaces){
+
+				String implementedInterfaceName = 
+						getBindingName(typeDeclaration, implementedInterface);
+
+				if (implementedInterfaceName != null && 
+						!classFilter.matches(implementedInterfaceName)){
+
+					dependencyReport.addImplementsDependency(
+							cacher.getClazz(typeDeclaration), 
+							cacher.getInterface(implementedInterfaceName));
 				}
-			}
+			}			
+
 		}
 		
 	}
 
-	private void addDependency(Type clientType, String supplierTypeName){
-
-		if (!classFilter.matches(supplierTypeName)){	
+	private String getBindingName(TypeDeclaration typeDeclaration, Type type) {
+		
+		ITypeBinding typeBinding = type.resolveBinding();
+		
+		if(typeBinding == null){
 			
-			Type providerType = cacher.getType(supplierTypeName);			
-			dependencyReport.addDependency(clientType,providerType);
-		}		
+			System.out.println("WARNING: Could not find binding for " + 
+					type + " in class " + 
+					cacher.getType(typeDeclaration).getCompUnit());
+			
+			return null;
+		}
+		else{
+			return ExtractorUtils.getQualifiedTypeName(typeBinding);
+		}
+		
 	}
+	
 }

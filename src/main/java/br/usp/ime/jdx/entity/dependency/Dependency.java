@@ -4,24 +4,34 @@ import java.io.Serializable;
 
 import br.usp.ime.jdx.entity.NamedEntity;
 
-public class Dependency<E extends NamedEntity> implements Serializable{
+public abstract class Dependency<E extends NamedEntity> implements Serializable{
 
 	private static final long serialVersionUID = -320459234337627245L;
 
 	private E client;
 	private E supplier;
-	private Integer strength;
+	private Integer strength = 1;
+	protected String label = new String("[no label]");
 	
 	public Dependency(E client, E supplier){
 		this.client = client;
 		this.supplier = supplier;
-		this.strength = 1;
 	}
 	
 	public Dependency(E client, E supplier, int strength){
-		this.client = client;
-		this.supplier = supplier;
+		this(client,supplier);
 		this.strength = strength;
+	}
+	
+	public Dependency(E client, E supplier, String label){
+		this(client,supplier);
+		this.label = label;
+	}
+
+	
+	public Dependency(E client, E supplier, String label, int strength){
+		this(client,supplier,strength);
+		this.label = label;
 	}
 
 	public E getClient() {
@@ -44,6 +54,10 @@ public class Dependency<E extends NamedEntity> implements Serializable{
 		strength = strength + n;
 	}
 
+	public String getLabel() {
+		return label;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -55,6 +69,7 @@ public class Dependency<E extends NamedEntity> implements Serializable{
 	}
 
 	@Override
+	@SuppressWarnings("rawtypes")
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
@@ -78,7 +93,7 @@ public class Dependency<E extends NamedEntity> implements Serializable{
 
 	@Override
 	public String toString(){
-		return "(" + client + "," + supplier + "," + strength + ")";
+		return "(" + client + "," + label + "," + supplier + "," + strength + ")";
 	}
 	
 }

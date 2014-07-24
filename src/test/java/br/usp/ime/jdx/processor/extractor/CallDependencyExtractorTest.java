@@ -5,14 +5,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Paths;
+import java.util.Collection;
 
 import org.junit.Test;
 
 import br.usp.ime.jdx.app.JDX;
-import br.usp.ime.jdx.entity.CompUnit;
-import br.usp.ime.jdx.entity.Type;
-import br.usp.ime.jdx.entity.dependency.Dependency;
+import br.usp.ime.jdx.entity.dependency.CompUnitMetaDependency;
 import br.usp.ime.jdx.entity.dependency.DependencyReport;
+import br.usp.ime.jdx.entity.dependency.MethodCallDependency;
+import br.usp.ime.jdx.entity.dependency.TypeMetaDependency;
 import br.usp.ime.jdx.filter.JavaNativeClassFilter;
 
 public class CallDependencyExtractorTest {
@@ -22,19 +23,27 @@ public class CallDependencyExtractorTest {
 		"/src/test/java/br/usp/ime/jdx/processor/extractor/methodinv";
 
 	//No dep
-	/**
 	@Test
-	public void shouldFindNoDeps(){
+	public void shouldFindNoCallsFromOneTypeToAnother(){
 		String rootDir = this.rootDir + "/nodep";
 			
 		JDX jdx = new JDX();
+		
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
 				"*.java", new JavaNativeClassFilter());
 		
-		System.out.println(depReport.getMethodCallDependencies());
-		assertTrue(depReport.getMethodCallDependencies().isEmpty());		
+		Collection<MethodCallDependency> callDeps = 
+				depReport.getMethodCallDependencies();
+		
+
+		assertEquals(3, depReport.getMethodCallDependencies().size());
+		
+		for(MethodCallDependency callDep : callDeps){
+			assertEquals(callDep.getClient().getContainingType(),
+					callDep.getClient().getContainingType());
+		}				
 	}
-	*/
+	
 	
 	//Local variable tests
 	
@@ -49,10 +58,10 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
-		assertEquals(1, depReport.getCompUnitDependencies(true).size());
+		assertEquals(1, depReport.getCompUnitMetaDependencies().size());
 		
-		Dependency<CompUnit> dep = 
-				depReport.getCompUnitDependencies(true).iterator().next();
+		CompUnitMetaDependency dep = 
+				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
 		assertEquals(rootDir + "/A.java", dep.getClient().getName());
@@ -74,10 +83,10 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
-		assertEquals(1, depReport.getCompUnitDependencies(true).size());
+		assertEquals(1, depReport.getCompUnitMetaDependencies().size());
 		
-		Dependency<CompUnit> dep = 
-				depReport.getCompUnitDependencies(true).iterator().next();
+		CompUnitMetaDependency dep = 
+				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
 		assertEquals(rootDir + "/A.java", dep.getClient().getName());
@@ -99,10 +108,10 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
-		assertEquals(1, depReport.getCompUnitDependencies(true).size());
+		assertEquals(1, depReport.getCompUnitMetaDependencies().size());
 		
-		Dependency<CompUnit> dep = 
-				depReport.getCompUnitDependencies(true).iterator().next();
+		CompUnitMetaDependency dep = 
+				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
 		assertEquals(rootDir + "/A.java", dep.getClient().getName());
@@ -123,10 +132,10 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
-		assertEquals(1, depReport.getCompUnitDependencies(true).size());
+		assertEquals(1, depReport.getCompUnitMetaDependencies().size());
 		
-		Dependency<CompUnit> dep = 
-				depReport.getCompUnitDependencies(true).iterator().next();
+		CompUnitMetaDependency dep = 
+				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
 		assertEquals(rootDir + "/A.java", dep.getClient().getName());
@@ -147,10 +156,10 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
-		assertEquals(1, depReport.getCompUnitDependencies(true).size());
+		assertEquals(1, depReport.getCompUnitMetaDependencies().size());
 		
-		Dependency<CompUnit> dep = 
-				depReport.getCompUnitDependencies(true).iterator().next();
+		CompUnitMetaDependency dep = 
+				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
 		assertEquals(rootDir + "/A.java", dep.getClient().getName());
@@ -172,10 +181,10 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
-		assertEquals(1, depReport.getCompUnitDependencies(true).size());
+		assertEquals(1, depReport.getCompUnitMetaDependencies().size());
 		
-		Dependency<CompUnit> dep = 
-				depReport.getCompUnitDependencies(true).iterator().next();
+		CompUnitMetaDependency dep = 
+				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
 		assertEquals(rootDir + "/A.java", dep.getClient().getName());
@@ -196,10 +205,10 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
-		assertEquals(1, depReport.getCompUnitDependencies(true).size());
+		assertEquals(1, depReport.getCompUnitMetaDependencies().size());
 		
-		Dependency<CompUnit> dep = 
-				depReport.getCompUnitDependencies(true).iterator().next();
+		CompUnitMetaDependency dep = 
+				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
 		assertEquals(rootDir + "/A.java", dep.getClient().getName());
@@ -220,10 +229,10 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
-		assertEquals(1, depReport.getCompUnitDependencies(true).size());
+		assertEquals(1, depReport.getCompUnitMetaDependencies().size());
 		
-		Dependency<CompUnit> dep = 
-				depReport.getCompUnitDependencies(true).iterator().next();
+		CompUnitMetaDependency dep = 
+				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
 		assertEquals(rootDir + "/A.java", dep.getClient().getName());
@@ -244,10 +253,10 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
-		assertEquals(1, depReport.getCompUnitDependencies(true).size());
+		assertEquals(1, depReport.getCompUnitMetaDependencies().size());
 		
-		Dependency<CompUnit> dep = 
-				depReport.getCompUnitDependencies(true).iterator().next();
+		CompUnitMetaDependency dep = 
+				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
 		assertEquals(rootDir + "/A.java", dep.getClient().getName());
@@ -268,10 +277,10 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
-		assertEquals(1, depReport.getCompUnitDependencies(true).size());
+		assertEquals(1, depReport.getCompUnitMetaDependencies().size());
 		
-		Dependency<CompUnit> dep = 
-				depReport.getCompUnitDependencies(true).iterator().next();
+		CompUnitMetaDependency dep = 
+				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
 		assertEquals(rootDir + "/A.java", dep.getClient().getName());
@@ -292,11 +301,12 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
-		assertEquals(3, depReport.getCompUnitDependencies(true).size());
+		assertEquals(3, depReport.getCompUnitMetaDependencies().size());
 		
 		//From A to B
-		Dependency<Type> dep = 
-			depReport.getTypeDependency("br.usp.ime.jdx.processor.extractor."
+		TypeMetaDependency dep = 
+			depReport.getTypeMetaDependency(
+			"br.usp.ime.jdx.processor.extractor."
 			+ "methodinv.localvariable.methodbody.misc.chainedcalls.A",
 			"br.usp.ime.jdx.processor.extractor."
 			+ "methodinv.localvariable.methodbody.misc.chainedcalls.B");
@@ -311,7 +321,8 @@ public class CallDependencyExtractorTest {
 		assertEquals(new Integer(1), dep.getStrength());
 		
 		//From A to C
-		dep =	depReport.getTypeDependency("br.usp.ime.jdx.processor.extractor."
+		dep =	depReport.getTypeMetaDependency(
+				"br.usp.ime.jdx.processor.extractor."
 				+ "methodinv.localvariable.methodbody.misc.chainedcalls.A",
 				"br.usp.ime.jdx.processor.extractor."
 				+ "methodinv.localvariable.methodbody.misc.chainedcalls.C");
@@ -327,7 +338,8 @@ public class CallDependencyExtractorTest {
 		assertEquals(new Integer(1), dep.getStrength());
 		
 		//From B to C
-		dep =	depReport.getTypeDependency("br.usp.ime.jdx.processor.extractor."
+		dep =	depReport.getTypeMetaDependency(
+				"br.usp.ime.jdx.processor.extractor."
 				+ "methodinv.localvariable.methodbody.misc.chainedcalls.B",
 				"br.usp.ime.jdx.processor.extractor."
 				+ "methodinv.localvariable.methodbody.misc.chainedcalls.C");
@@ -353,11 +365,12 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//3 compilation unit dependency
-		assertEquals(3, depReport.getCompUnitDependencies(true).size());
+		assertEquals(3, depReport.getCompUnitMetaDependencies().size());
 		
 		//From A to B
-		Dependency<Type> dep = 
-			depReport.getTypeDependency("br.usp.ime.jdx.processor.extractor."
+		TypeMetaDependency dep = 
+			depReport.getTypeMetaDependency(
+			"br.usp.ime.jdx.processor.extractor."
 			+ "methodinv.localvariable.methodbody.misc.callatrib.A",
 			"br.usp.ime.jdx.processor.extractor."
 			+ "methodinv.localvariable.methodbody.misc.callatrib.B");
@@ -372,7 +385,8 @@ public class CallDependencyExtractorTest {
 		assertEquals(new Integer(2), dep.getStrength());
 		
 		//From A to C
-		dep =	depReport.getTypeDependency("br.usp.ime.jdx.processor.extractor."
+		dep =	depReport.getTypeMetaDependency(
+				"br.usp.ime.jdx.processor.extractor."
 				+ "methodinv.localvariable.methodbody.misc.callatrib.A",
 				"br.usp.ime.jdx.processor.extractor."
 				+ "methodinv.localvariable.methodbody.misc.callatrib.C");
@@ -387,7 +401,8 @@ public class CallDependencyExtractorTest {
 		assertEquals(new Integer(1), dep.getStrength());
 		
 		//From B to C
-		dep =	depReport.getTypeDependency("br.usp.ime.jdx.processor.extractor."
+		dep =	depReport.getTypeMetaDependency(
+				"br.usp.ime.jdx.processor.extractor."
 				+ "methodinv.localvariable.methodbody.misc.callatrib.B",
 				"br.usp.ime.jdx.processor.extractor."
 				+ "methodinv.localvariable.methodbody.misc.callatrib.C");
@@ -413,10 +428,10 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
-		assertEquals(1, depReport.getCompUnitDependencies(true).size());
+		assertEquals(1, depReport.getCompUnitMetaDependencies().size());
 		
-		Dependency<CompUnit> dep = 
-				depReport.getCompUnitDependencies(true).iterator().next();
+		CompUnitMetaDependency dep = 
+				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//Each compilation unit should store all its types
 		//In this case, the compilation unit "A.java" should have 
@@ -458,10 +473,10 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
-		assertEquals(1, depReport.getCompUnitDependencies(true).size());
+		assertEquals(1, depReport.getCompUnitMetaDependencies().size());
 		
-		Dependency<CompUnit> dep = 
-				depReport.getCompUnitDependencies(true).iterator().next();
+		CompUnitMetaDependency dep = 
+				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
 		assertEquals(rootDir + "/A.java", dep.getClient().getName());
@@ -483,10 +498,10 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
-		assertEquals(1, depReport.getCompUnitDependencies(true).size());
+		assertEquals(1, depReport.getCompUnitMetaDependencies().size());
 		
-		Dependency<CompUnit> dep = 
-				depReport.getCompUnitDependencies(true).iterator().next();
+		CompUnitMetaDependency dep = 
+				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
 		assertEquals(rootDir + "/A.java", dep.getClient().getName());
@@ -507,10 +522,10 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
-		assertEquals(1, depReport.getCompUnitDependencies(true).size());
+		assertEquals(1, depReport.getCompUnitMetaDependencies().size());
 		
-		Dependency<CompUnit> dep = 
-				depReport.getCompUnitDependencies(true).iterator().next();
+		CompUnitMetaDependency dep = 
+				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
 		assertEquals(rootDir + "/A.java", dep.getClient().getName());

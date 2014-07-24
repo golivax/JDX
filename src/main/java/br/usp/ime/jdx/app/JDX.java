@@ -74,18 +74,15 @@ public class JDX {
 		String fileSeparator = FileSystems.getDefault().getSeparator();
 		System.out.println(fileSeparator);
 		
-		String rootDir = "C:/tmp/maven/maven/maven-3/trunk/maven-core/src/"
-				+ "main/java/org/apache";
+		String rootDir = "C:/Users/user/workspace/tricky1/src/tricky5";
 				
 		JDX jdx = new JDX();
 		
 		DependencyReport depReport = jdx.calculateDepsFrom(
 				rootDir, true, "*.java", new JavaNativeClassFilter());
-		
-		System.out.println(depReport.getMethodCallDependencies().size());
-		System.out.println(depReport.getMethodCallDependencies());
+
+		System.out.println(depReport.getTypeDependencies());
 		System.out.println(new Date(System.currentTimeMillis()));
-	
 	}
 	
 }

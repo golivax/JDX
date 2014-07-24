@@ -5,7 +5,9 @@ import java.util.Collection;
 
 import org.apache.commons.collections4.map.MultiKeyMap;
 
+import br.usp.ime.jdx.entity.Clazz;
 import br.usp.ime.jdx.entity.CompUnit;
+import br.usp.ime.jdx.entity.Interface;
 import br.usp.ime.jdx.entity.Method;
 import br.usp.ime.jdx.entity.Type;
 
@@ -23,18 +25,49 @@ public class DependencyReport implements Serializable{
 		
 	}
 	
-	public void addDependency(Type client, Type supplier){
+	public void addInheritanceDependency(Clazz client, Clazz supplier){
 		if (!typeDependenciesMap.containsKey(client, supplier)){
-			TypeDependency dependency = new TypeDependency(client, supplier);
+			
+			InheritanceDependency dependency = 
+					new InheritanceDependency(client, supplier);
+			
 			typeDependenciesMap.put(client, supplier, dependency);
 		}
 		else{
 			System.out.println("Warning: Trying to define two different "
-					+ "relationships between types");
+					+ "relationships between the same types");
 		}
 	}
 	
-	public void addDependency(Method client, Method supplier){
+	public void addInheritanceDependency(Interface client, Interface supplier){
+		if (!typeDependenciesMap.containsKey(client, supplier)){
+			
+			InheritanceDependency dependency = 
+					new InheritanceDependency(client, supplier);
+			
+			typeDependenciesMap.put(client, supplier, dependency);
+		}
+		else{
+			System.out.println("Warning: Trying to define two different "
+					+ "relationships between the same types");
+		}
+	}
+	
+	public void addImplementsDependency(Clazz client, Interface supplier){
+		if (!typeDependenciesMap.containsKey(client, supplier)){
+			
+			ImplementsDependency dependency = 
+					new ImplementsDependency(client, supplier);
+			
+			typeDependenciesMap.put(client, supplier, dependency);
+		}
+		else{
+			System.out.println("Warning: Trying to define two different "
+					+ "relationships between the same types");
+		}
+	}
+
+	public void addMethodCallDependency(Method client, Method supplier){
 		if (!callDependenciesMap.containsKey(client, supplier)){
 			MethodCallDependency dependency = new MethodCallDependency(client, supplier);
 			callDependenciesMap.put(client, supplier, dependency);
@@ -49,24 +82,34 @@ public class DependencyReport implements Serializable{
 		return callDependenciesMap.values();
 	}
 	
-	public Collection<TypeDependency> getTypeDependencies(
-			boolean inferFromMethodCalls){
-		
-		if(inferFromMethodCalls){
-			Collection<TypeDependency> typeDependencies = 
-					inferDependenciesFromMethodCalls();
-			
-			typeDependencies.addAll(this.typeDependenciesMap.values());
-			return typeDependencies;
-		}
-		else{
-			return typeDependenciesMap.values();
-		}
+	public Collection<TypeDependency> getTypeDependencies(){
+		return typeDependenciesMap.values();
 	}
 	
-	private Collection<TypeDependency> inferDependenciesFromMethodCalls() {
-		MultiKeyMap<Type,TypeDependency> typeDependenciesMap = 
+	public Collection<TypeMetaDependency> getTypeMetaDependencies(){
+		
+		MultiKeyMap<Type,TypeMetaDependency> typeMetaDepsMap = 
 				new MultiKeyMap<>();
+		
+		for(TypeDependency typeDependency : getTypeDependencies()){
+			
+			Type client = typeDependency.getClient();
+			Type supplier = typeDependency.getSupplier();
+			int strength = typeDependency.getStrength();
+			
+			TypeMetaDependency typeMetaDep = 
+					new TypeMetaDependency(client,supplier,strength);
+			
+			typeMetaDepsMap.put(client,supplier,typeMetaDep);
+		}
+		
+		inferDependenciesFromMethodCalls(typeMetaDepsMap);
+		
+		return typeMetaDepsMap.values();
+	}
+	
+	private void inferDependenciesFromMethodCalls(
+			MultiKeyMap<Type, TypeMetaDependency> typeMetaDepsMap) {
 		
 		Collection<MethodCallDependency> methodCallDependencies = 
 				getMethodCallDependencies();
@@ -79,51 +122,56 @@ public class DependencyReport implements Serializable{
 			Type supplierType = 
 					methodCallDependency.getSupplier().getContainingType();
 			
+			int strength = methodCallDependency.getStrength();
+			
 			//Somente deps entre types diferentes
 			if(!clientType.equals(supplierType)){
 			
-				if (typeDependenciesMap.containsKey(clientType,supplierType)){
-					TypeDependency dep = 
-							typeDependenciesMap.get(clientType,supplierType);
+				if (typeMetaDepsMap.containsKey(clientType,supplierType)){
 					
-					dep.increaseStrength(methodCallDependency.getStrength());
+					TypeMetaDependency typeMetaDep = 
+							typeMetaDepsMap.get(clientType,supplierType);
+					
+					typeMetaDep.increaseStrength(strength);
 				}
 				else{
-					TypeDependency typeDep = new TypeDependency(clientType, 
-							supplierType, methodCallDependency.getStrength());
+					TypeMetaDependency typeMetaDep = new TypeMetaDependency(
+							clientType, supplierType, strength);
 					
-					typeDependenciesMap.put(clientType, supplierType, typeDep);
+					typeMetaDepsMap.put(clientType, supplierType, typeMetaDep);
 				}
 			}
 		}
-		
-		return typeDependenciesMap.values();
 	}
 
-	public Collection<Dependency<CompUnit>> getCompUnitDependencies(
-			boolean inferFromMethodCalls){
+	public Collection<CompUnitMetaDependency> getCompUnitMetaDependencies(){
 		
-		MultiKeyMap<CompUnit,Dependency<CompUnit>> cuDependenciesMap = 
-				new MultiKeyMap<CompUnit,Dependency<CompUnit>>();
+		MultiKeyMap<CompUnit,CompUnitMetaDependency> cuDependenciesMap = 
+				new MultiKeyMap<CompUnit,CompUnitMetaDependency>();
 		
-		Collection<TypeDependency> typeDependencies = getTypeDependencies(
-				inferFromMethodCalls);
-		
-		for(TypeDependency typeDependency : typeDependencies){
+		Collection<TypeMetaDependency> typeMetaDependencies = 
+				getTypeMetaDependencies();
+				
+		for(TypeMetaDependency typeDependency : typeMetaDependencies){
 			
 			CompUnit clientCU = typeDependency.getClient().getCompUnit();
 			CompUnit supplierCU = typeDependency.getSupplier().getCompUnit();
+			int strength = typeDependency.getStrength();
 			
 			//Somente deps entre compUnits diferentes
 			if(!clientCU.equals(supplierCU)){
 			
 				if (cuDependenciesMap.containsKey(clientCU,supplierCU)){
-					Dependency<CompUnit> dep = cuDependenciesMap.get(clientCU,supplierCU);
-					dep.increaseStrength(typeDependency.getStrength());
+					
+					CompUnitMetaDependency dep = 
+							cuDependenciesMap.get(clientCU,supplierCU);
+					
+					dep.increaseStrength(strength);
 				}
 				else{
-					Dependency<CompUnit> dep = new Dependency<CompUnit>(
-							clientCU, supplierCU, typeDependency.getStrength());
+					CompUnitMetaDependency dep = new CompUnitMetaDependency(
+							clientCU, supplierCU, strength);
+					
 					cuDependenciesMap.put(clientCU, supplierCU, dep);
 				}
 			}
@@ -131,13 +179,29 @@ public class DependencyReport implements Serializable{
 		
 		return cuDependenciesMap.values();
 	}
-	
-	
-	public Dependency<Type> getTypeDependency(
+
+	public TypeMetaDependency getTypeMetaDependency(
 			String clientName, String supplierName){
 		
-			Collection<TypeDependency> typeDependencies = 
-					getTypeDependencies(true);
+		Collection<TypeMetaDependency> metaTypeDeps = 
+				getTypeMetaDependencies();
+		
+		for(TypeMetaDependency typeMetaDep : metaTypeDeps){
+			
+			if(typeMetaDep.getClient().getFQN().equals(clientName) && 
+				typeMetaDep.getSupplier().getFQN().equals(supplierName)){
+			
+				return typeMetaDep;
+			}
+		}
+		
+		return null;
+	}
+	
+	public TypeDependency getTypeDependency(
+			String clientName, String supplierName){
+		
+			Collection<TypeDependency> typeDependencies = getTypeDependencies();
 			
 			for(TypeDependency typeDependency : typeDependencies){
 				

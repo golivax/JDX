@@ -50,7 +50,10 @@ public class Method extends NamedEntity{
 	}
 	
 	public String toString(){
-		return containingType.getFQN() + "." + getSignature();
+		String s = new String();
+		if (containingType != null) s= containingType.getFQN() + ".";
+		s += getSignature();
+		return s;
 	}
 	
 	public Type getContainingType(){

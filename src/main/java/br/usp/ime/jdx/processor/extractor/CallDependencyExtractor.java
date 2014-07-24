@@ -524,7 +524,7 @@ public class CallDependencyExtractor {
 	}
 
 	private void setUse(Method providerMethod){	
-		dependencyReport.addDependency(clientMethod, providerMethod);
+		dependencyReport.addMethodCallDependency(clientMethod, providerMethod);
 	}
 		
 	
