@@ -30,7 +30,6 @@ import org.eclipse.jdt.core.dom.SwitchStatement;
 import org.eclipse.jdt.core.dom.SynchronizedStatement;
 import org.eclipse.jdt.core.dom.TryStatement;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.jdt.core.dom.TypeDeclarationStatement;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
@@ -203,13 +202,9 @@ public class CallDependencyExtractor {
 						(ConstructorInvocation) currentStatement);
 				break;
 	
-			case ASTNode.TYPE_DECLARATION_STATEMENT:
-				processTypeDeclarationStatement(
-						(TypeDeclarationStatement) currentStatement);
-				break;
-	
-				// do nothing for the following statements/cases
-	
+			// do nothing for the following statements/cases
+			case ASTNode.TYPE_DECLARATION_STATEMENT: break; // Local classes
+			
 			case ASTNode.SUPER_CONSTRUCTOR_INVOCATION: break;	
 	
 			case ASTNode.BREAK_STATEMENT: break;
@@ -225,21 +220,6 @@ public class CallDependencyExtractor {
 
 	}
 	
-	private void processTypeDeclarationStatement(TypeDeclarationStatement tds){
-		ITypeBinding binding = tds.resolveBinding();
-		processTypeBinding(binding);
-	}
-
-	private void processTypeBinding(ITypeBinding binding){
-		if(binding != null){		
-				
-			System.out.println("What is this?!");
-			//String providerTypeName = ExtractorUtils.getQualifiedTypeName(
-				
-			//setUse(providerTypeName);
-		}
-	}
-
 	@SuppressWarnings("unchecked")
 	private void processConstructorInvocation(
 			ConstructorInvocation constructorInvocation){

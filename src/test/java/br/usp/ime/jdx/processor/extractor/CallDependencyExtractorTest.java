@@ -21,7 +21,7 @@ public class CallDependencyExtractorTest {
 	private String rootDir = 
 		Paths.get("").toAbsolutePath().toString().replaceAll("\\\\", "/") +
 		"/src/test/java/br/usp/ime/jdx/processor/extractor/methodinv";
-
+ 
 	//No dep
 	@Test
 	public void shouldFindNoCallsFromOneTypeToAnother(){
@@ -485,7 +485,6 @@ public class CallDependencyExtractorTest {
 		//with 2 calls
 		assertEquals(new Integer(2), dep.getStrength());
 	}
-	
 	
 	@Test
 	public void shouldFindAttributeInitialization(){
