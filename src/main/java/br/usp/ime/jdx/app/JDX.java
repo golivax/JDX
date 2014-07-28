@@ -74,7 +74,7 @@ public class JDX {
 		String fileSeparator = FileSystems.getDefault().getSeparator();
 		System.out.println(fileSeparator);
 		
-		String rootDir = "C:/Users/user/workspace/tricky1/src/tricky5";
+		String rootDir = "C:/tmp/jEdit";
 				
 		JDX jdx = new JDX();
 		

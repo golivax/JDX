@@ -252,6 +252,14 @@ public class Cacher extends FileASTRequestor{
 		typeDeclarations.addAll(clazzMap.keySet());
 		return typeDeclarations;
 	}
+	
+	public Set<TypeDeclaration> getInterfaceTypeDeclarations(){
+		return interfaceMap.keySet();
+	}
+	
+	public Set<TypeDeclaration> getClazzTypeDeclarations(){
+		return clazzMap.keySet();
+	}
 
 	public Clazz getClazz(String clazzQualifiedName){
 		return clazzNameMap.get(clazzQualifiedName);

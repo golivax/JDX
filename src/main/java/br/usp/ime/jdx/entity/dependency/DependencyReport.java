@@ -2,6 +2,8 @@
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.collections4.map.MultiKeyMap;
 
@@ -15,75 +17,87 @@ public class DependencyReport implements Serializable{
 
 	private static final long serialVersionUID = 2294342917700842739L;
 
-	private MultiKeyMap<Type,TypeDependency> typeDependenciesMap = 
+	private MultiKeyMap<Type,ClazzInheritanceDependency> 
+		clazzInheritanceMap = new MultiKeyMap<>();
+			
+	private MultiKeyMap<Type,InterfaceInheritanceDependency> 
+		interfaceInheritanceMap = new MultiKeyMap<>();
+		
+	private MultiKeyMap<Type,ImplementsDependency> implementsMap = 
 			new MultiKeyMap<>();
 	
-	private MultiKeyMap<Method,MethodCallDependency> callDependenciesMap = 
+	private MultiKeyMap<Method,MethodCallDependency> callMap = 
 			new MultiKeyMap<>();
 	
 	public DependencyReport(){
 		
 	}
-	
-	public void addInheritanceDependency(Clazz client, Clazz supplier){
-		if (!typeDependenciesMap.containsKey(client, supplier)){
-			
-			InheritanceDependency dependency = 
-					new InheritanceDependency(client, supplier);
-			
-			typeDependenciesMap.put(client, supplier, dependency);
-		}
-		else{
-			System.out.println("Warning: Trying to define two different "
-					+ "relationships between the same types");
-		}
-	}
-	
-	public void addInheritanceDependency(Interface client, Interface supplier){
-		if (!typeDependenciesMap.containsKey(client, supplier)){
-			
-			InheritanceDependency dependency = 
-					new InheritanceDependency(client, supplier);
-			
-			typeDependenciesMap.put(client, supplier, dependency);
-		}
-		else{
-			System.out.println("Warning: Trying to define two different "
-					+ "relationships between the same types");
-		}
-	}
-	
-	public void addImplementsDependency(Clazz client, Interface supplier){
-		if (!typeDependenciesMap.containsKey(client, supplier)){
-			
-			ImplementsDependency dependency = 
-					new ImplementsDependency(client, supplier);
-			
-			typeDependenciesMap.put(client, supplier, dependency);
-		}
-		else{
-			System.out.println("Warning: Trying to define two different "
-					+ "relationships between the same types");
-		}
-	}
-
 	public void addMethodCallDependency(Method client, Method supplier){
-		if (!callDependenciesMap.containsKey(client, supplier)){
+		if (!callMap.containsKey(client, supplier)){
 			MethodCallDependency dependency = new MethodCallDependency(client, supplier);
-			callDependenciesMap.put(client, supplier, dependency);
+			callMap.put(client, supplier, dependency);
 		}
 		else{
-			MethodCallDependency dependency = callDependenciesMap.get(client, supplier);
+			MethodCallDependency dependency = callMap.get(client, supplier);
 			dependency.increaseStrength();
 		}
 	}
 	
+	public void addClazzInheritanceDependency(Clazz client, Clazz supplier){
+		
+		//TODO: Check whether two clazz inheritances have the same client and 
+		//throw an exception
+		
+		ClazzInheritanceDependency dependency = 
+				new ClazzInheritanceDependency(client, supplier);
+
+		clazzInheritanceMap.put(client, supplier, dependency);
+	}
+	
+	public void addInterfaceInheritanceDependency(
+			Interface client, Interface supplier){
+			
+		InterfaceInheritanceDependency dependency = 
+				new InterfaceInheritanceDependency(client, supplier);
+			
+		interfaceInheritanceMap.put(client, supplier, dependency);
+	}
+	
+	public void addImplementsDependency(Clazz client, Interface supplier){
+		ImplementsDependency dependency = 
+				new ImplementsDependency(client, supplier);
+
+		implementsMap.put(client, supplier, dependency);	
+	}
+	
 	public Collection<MethodCallDependency> getMethodCallDependencies(){
-		return callDependenciesMap.values();
+		return callMap.values();
+	}
+	
+	public Collection<ClazzInheritanceDependency> 
+		getClazzInheritanceDependencies(){
+		
+		return clazzInheritanceMap.values();
+	}
+	
+	public Collection<InterfaceInheritanceDependency> 
+		getInterfaceInheritanceDependencies(){
+		
+		return interfaceInheritanceMap.values();
+	}
+	
+	public Collection<ImplementsDependency> getImplementsDependencies(){
+		
+		return implementsMap.values();
 	}
 	
 	public Collection<TypeDependency> getTypeDependencies(){
-		return typeDependenciesMap.values();
+		
+		Set<TypeDependency> typeDependencies = new HashSet<>();
+		typeDependencies.addAll(getClazzInheritanceDependencies());
+		typeDependencies.addAll(getInterfaceInheritanceDependencies());
+		typeDependencies.addAll(getImplementsDependencies());
+		return typeDependencies;
 	}
 	
 	public Collection<TypeMetaDependency> getTypeMetaDependencies(){
@@ -214,11 +228,10 @@ public class DependencyReport implements Serializable{
 			
 			return null;
 	}
-	
 
 	public String toString(){
 		StringBuilder builder = new StringBuilder();
-		for (Dependency<Method> dependency : callDependenciesMap.values()){
+		for (Dependency<Method> dependency : callMap.values()){
 			
 			builder.append(dependency.toString());
 			builder.append("\n");

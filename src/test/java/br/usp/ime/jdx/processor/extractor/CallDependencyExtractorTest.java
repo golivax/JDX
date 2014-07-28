@@ -364,7 +364,7 @@ public class CallDependencyExtractorTest {
 		
 		System.out.println(depReport);
 		
-		//3 compilation unit dependency
+		//3 compilation unit dependencies
 		assertEquals(3, depReport.getCompUnitMetaDependencies().size());
 		
 		//From A to B

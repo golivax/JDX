@@ -31,80 +31,86 @@ public class TypeDependencyExtractor {
 		this.classFilter = classFilter;
 		this.dependencyReport = dependencyReport;
 		
-		for(TypeDeclaration typeDeclaration : cacher.getTypeDeclarations()){	
-			detectClassInheritance(typeDeclaration);
-			detectInterfaceImplementationAndExtension(typeDeclaration);
+		for(TypeDeclaration clazzTypeDeclaration : 
+			cacher.getClazzTypeDeclarations()){
+			
+			detectClassInheritance(clazzTypeDeclaration);
+			detectInterfaceImplementation(clazzTypeDeclaration);
+		}
+		
+		for(TypeDeclaration interfaceTypeDeclaration : 
+			cacher.getInterfaceTypeDeclarations()){
+
+			detectInterfaceInheritance(interfaceTypeDeclaration);
 		}
 	
 		return dependencyReport;
 	}
 	
-	private void detectClassInheritance(TypeDeclaration typeDeclaration) {
+	private void detectClassInheritance(TypeDeclaration clazzTypeDeclaration) {
 
-		Type superClassType = typeDeclaration.getSuperclassType();
+		Type superClassType = clazzTypeDeclaration.getSuperclassType();
 
 		if(superClassType != null){
 
 			String superClassName = getBindingName(
-					typeDeclaration, superClassType);
+					clazzTypeDeclaration, superClassType);
 
 			if (superClassName != null && !classFilter.matches(superClassName)){
 
-				dependencyReport.addInheritanceDependency(
-						cacher.getClazz(typeDeclaration), 
+				dependencyReport.addClazzInheritanceDependency(
+						cacher.getClazz(clazzTypeDeclaration), 
 						cacher.getClazz(superClassName));
 			}
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private void detectInterfaceImplementationAndExtension(
-			TypeDeclaration typeDeclaration) {
+	private void detectInterfaceImplementation(
+			TypeDeclaration clazzTypeDeclaration){
 			
-		if (typeDeclaration.isInterface()){
+		//For a class declaration, these are the interfaces that 
+		//this class implements
+		List<Type> implementedInterfaces = 
+				clazzTypeDeclaration.superInterfaceTypes();
 
-			//For an interface declaration, these are the interfaces 
-			//that this interface extends.	
-			List<Type> extendedInterfaces = 
-					typeDeclaration.superInterfaceTypes();
+		for(Type implementedInterface :	implementedInterfaces){
 
-			for(Type extendedInterface : extendedInterfaces){
+			String implementedInterfaceName = 
+					getBindingName(clazzTypeDeclaration, implementedInterface);
 
-				String extendedInterfaceName = 
-						getBindingName(typeDeclaration, extendedInterface);
+			if (implementedInterfaceName != null && 
+					!classFilter.matches(implementedInterfaceName)){
 
-				if (extendedInterfaceName != null && 
-						!classFilter.matches(extendedInterfaceName)){
+				dependencyReport.addImplementsDependency(
+						cacher.getClazz(clazzTypeDeclaration), 
+						cacher.getInterface(implementedInterfaceName));
+			}
+		}					
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void detectInterfaceInheritance(
+			TypeDeclaration interfaceTypeDeclaration){
 
-					dependencyReport.addInheritanceDependency(
-							cacher.getInterface(typeDeclaration), 
-							cacher.getInterface(extendedInterfaceName));
-				}
-			}			
-		}
-		else{
+		//For an interface declaration, these are the interfaces 
+		//that this interface extends.	
+		List<Type> extendedInterfaces = 
+				interfaceTypeDeclaration.superInterfaceTypes();
 
-			//For a class declaration, these are the interfaces that 
-			//this class implements
-			List<Type> implementedInterfaces = 
-					typeDeclaration.superInterfaceTypes();
+		for(Type extendedInterface : extendedInterfaces){
 
-			for(Type implementedInterface :	implementedInterfaces){
+			String extendedInterfaceName = 
+					getBindingName(interfaceTypeDeclaration, extendedInterface);
 
-				String implementedInterfaceName = 
-						getBindingName(typeDeclaration, implementedInterface);
+			if (extendedInterfaceName != null && 
+					!classFilter.matches(extendedInterfaceName)){
 
-				if (implementedInterfaceName != null && 
-						!classFilter.matches(implementedInterfaceName)){
-
-					dependencyReport.addImplementsDependency(
-							cacher.getClazz(typeDeclaration), 
-							cacher.getInterface(implementedInterfaceName));
-				}
-			}			
-
-		}
-		
+				dependencyReport.addInterfaceInheritanceDependency(
+						cacher.getInterface(interfaceTypeDeclaration), 
+						cacher.getInterface(extendedInterfaceName));
+			}
+		}			
 	}
 
 	private String getBindingName(TypeDeclaration typeDeclaration, Type type) {
