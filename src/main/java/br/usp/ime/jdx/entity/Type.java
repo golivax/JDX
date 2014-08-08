@@ -94,6 +94,10 @@ public abstract class Type implements Serializable{
 		return constructors;
 	}
 	
+	public Set<Method> getMethods(){
+		return methods;
+	}
+	
 	public List<Method> getMethods(String methodName) {
 		List<Method> methodsFound = new ArrayList<>();
 		for (Method method : methods){

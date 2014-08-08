@@ -80,4 +80,13 @@ public class CompUnit implements Serializable{
 	public String toString(){
 		return path;
 	}
+	
+	public Set<Method> getMethods(){
+
+		Set<Method> methodsFromTypes = new HashSet<>();
+		for(Type type : types){
+			methodsFromTypes.addAll(type.getMethods());
+		}
+		return methodsFromTypes;
+	}
 }

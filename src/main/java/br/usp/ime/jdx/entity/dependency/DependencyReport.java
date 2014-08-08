@@ -10,6 +10,7 @@ import org.apache.commons.collections4.map.MultiKeyMap;
 import br.usp.ime.jdx.entity.Clazz;
 import br.usp.ime.jdx.entity.CompUnit;
 import br.usp.ime.jdx.entity.Interface;
+import br.usp.ime.jdx.entity.JavaProject;
 import br.usp.ime.jdx.entity.Method;
 import br.usp.ime.jdx.entity.Type;
 
@@ -17,6 +18,8 @@ public class DependencyReport implements Serializable{
 
 	private static final long serialVersionUID = 2294342917700842739L;
 
+	private JavaProject javaProject;
+	
 	private MultiKeyMap<Type,ClazzInheritanceDependency> 
 		clazzInheritanceMap = new MultiKeyMap<>();
 			
@@ -29,8 +32,8 @@ public class DependencyReport implements Serializable{
 	private MultiKeyMap<Method,MethodCallDependency> callMap = 
 			new MultiKeyMap<>();
 	
-	public DependencyReport(){
-		
+	public DependencyReport(JavaProject javaProject){
+		this.javaProject = javaProject;
 	}
 	
 	public void addMethodCallDependency(Method client, Method supplier){
@@ -240,4 +243,9 @@ public class DependencyReport implements Serializable{
 		
 		return builder.toString();
 	}
+
+	public JavaProject getJavaProject(){
+		return javaProject;
+	}
+	
 }

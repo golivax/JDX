@@ -361,4 +361,10 @@ public class Cacher extends FileASTRequestor{
 		return type;
 	}
 	
+	public Set<CompUnit> getCompUnits(){
+		Set<CompUnit> compUnits = new HashSet<>();
+		compUnits.addAll(compUnitMap.values());
+		return compUnits;
+	}
+	
 }
