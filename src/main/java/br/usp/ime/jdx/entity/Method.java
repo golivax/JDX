@@ -90,6 +90,10 @@ public class Method{
 		return s;
 	}
 	
+	public CompUnit getContainingCompUnit(){
+		return getContainingType().getCompUnit();
+	}
+	
 	public Type getContainingType(){
 		return containingType;
 	}

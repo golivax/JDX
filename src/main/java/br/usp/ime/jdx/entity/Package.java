@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class Package {
 
+	private Package parent;
 	private String FQN;
 	
 	public Package(String FQN){
@@ -16,6 +17,14 @@ public class Package {
 
 	public String getFQN() {
 		return FQN;
+	}
+	
+	public Package getParent(){
+		return parent;
+	}
+	
+	public void setParent(Package parent){
+		this.parent = parent;
 	}
 
 	@Override

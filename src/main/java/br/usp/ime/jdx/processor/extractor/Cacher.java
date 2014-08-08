@@ -33,7 +33,7 @@ public class Cacher extends FileASTRequestor{
 	
 	private boolean recoverSourceCode = false;
 	
-	private Map<PackageDeclaration, Package> pkgMap = new HashMap<>();
+	private Map<String, Package> pkgMap = new HashMap<>();
 	
 	private Map<CompilationUnit,CompUnit> compUnitMap =	new HashMap<>();	
 	
@@ -65,16 +65,41 @@ public class Cacher extends FileASTRequestor{
 	}
 
 	private void cachePackage(CompilationUnit compilationUnit) {
-		PackageDeclaration packageDeclaration = compilationUnit.getPackage(); 
+		PackageDeclaration packageDeclaration = compilationUnit.getPackage();
 		String packageFQN = packageDeclaration.getName().toString();
-		Package pkg = new Package(packageFQN);
-		pkgMap.put(packageDeclaration, pkg);
+		if(!pkgMap.containsKey(packageFQN)){
+			Package pkg = new Package(packageFQN);
+			pkgMap.put(packageFQN, pkg);
+			
+			if(packageFQN.contains(".")) cacheParentPackage(pkg);	
+		}		
+	}
+
+	private void cacheParentPackage(Package pkg) {
+		
+		String parentPkgFQN = 
+				StringUtils.substringBeforeLast(pkg.getFQN(), ".");
+		
+		if(!pkgMap.containsKey(parentPkgFQN)){
+			Package parentPkg = new Package(parentPkgFQN);
+			pkg.setParent(parentPkg);
+			
+			pkgMap.put(parentPkgFQN, parentPkg);
+			
+			if(parentPkgFQN.contains(".")) cacheParentPackage(parentPkg);
+		}
+		else{
+			pkg.setParent(pkgMap.get(parentPkgFQN));
+		}
+		
 	}
 
 	private void cacheCompilationUnit(String sourceFilePath,
 			CompilationUnit compilationUnit) {
 		
-		Package pkg = pkgMap.get(compilationUnit.getPackage());
+		String pkgFQN = compilationUnit.getPackage().getName().toString();
+		Package pkg = pkgMap.get(pkgFQN);
+		
 		String compUnitName = sourceFilePath;
 		
 		String compUnitSourceCode;
