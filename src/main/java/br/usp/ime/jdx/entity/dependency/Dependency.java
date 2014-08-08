@@ -2,9 +2,7 @@
 
 import java.io.Serializable;
 
-import br.usp.ime.jdx.entity.NamedEntity;
-
-public abstract class Dependency<E extends NamedEntity> implements Serializable{
+public abstract class Dependency<E> implements Serializable{
 
 	private static final long serialVersionUID = -320459234337627245L;
 

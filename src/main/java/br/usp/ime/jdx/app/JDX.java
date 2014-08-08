@@ -19,10 +19,16 @@ public class JDX {
 	public JDX(){
 		
 	}
+	
+	//Defaults:
+	//Recursive: true
+	//Glob Pattern: *.java
+	//Class Filter out: Java Native Classes
 
 	//TODO: Change to truly fluent API
 	public DependencyReport calculateDepsFrom(String sourceDir, 
-			boolean recursive, String globPattern, Filter classFilter) {
+			boolean recursive, String globPattern, Filter classFilter, 
+			boolean recoverSourceCode) {
 		
 		DependencyExtractor extractor = new DependencyExtractor();
 		
@@ -32,19 +38,20 @@ public class JDX {
 		List<String> sourceDirs = new ArrayList<String>();
 		sourceDirs.add(sourceDir);
 				
-		return extractor.run(sourceDirs, paths, classFilter);
+		return extractor.run(sourceDirs, paths, classFilter, recoverSourceCode);
 	}
 	
 	//TODO: Change to truly fluent API
 	public DependencyReport calculateDepsFrom(List<String> sourceDirs, 
-			boolean recursive, String globPattern, Filter classFilter) {
+			boolean recursive, String globPattern, Filter classFilter,
+			boolean recoverSourceCode) {
 
 		DependencyExtractor extractor = new DependencyExtractor();
 
 		String[] paths = FilesystemUtils.getPathsFromSourceDirs(
 				sourceDirs, globPattern, recursive);
 		
-		return extractor.run(sourceDirs,paths, classFilter);
+		return extractor.run(sourceDirs, paths, classFilter, recoverSourceCode);
 	}
 
 	public DependencyReport calculateDepsFrom(File file, List<File> allFiles) {
@@ -74,14 +81,14 @@ public class JDX {
 		String fileSeparator = FileSystems.getDefault().getSeparator();
 		System.out.println(fileSeparator);
 		
-		String rootDir = "C:/tmp/jEdit";
+		String rootDir = "C:/tmp/moenia/122";
 				
 		JDX jdx = new JDX();
 		
 		DependencyReport depReport = jdx.calculateDepsFrom(
-				rootDir, true, "*.java", new JavaNativeClassFilter());
+				rootDir, true, "*.java", new JavaNativeClassFilter(),true);
 
-		System.out.println(depReport.getTypeDependencies());
+		System.out.println(depReport.getCompUnitMetaDependencies());
 		System.out.println(new Date(System.currentTimeMillis()));
 	}
 	

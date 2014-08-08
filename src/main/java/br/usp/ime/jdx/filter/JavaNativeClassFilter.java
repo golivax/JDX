@@ -8,12 +8,11 @@ public class JavaNativeClassFilter extends Filter{
 	}
 	
 	public static void main(String[] args) {
-		JavaNativeClassFilter filter = 
-				new JavaNativeClassFilter();
+		JavaNativeClassFilter filter = new JavaNativeClassFilter();
 		
 		System.out.println(filter.matches("java.util.Vector.java"));
-		System.out.println(filter.matches("java.io.File"));
-		System.out.println(filter.matches("java.lang.StringBuffer"));
+		System.out.println(filter.matches("java.io"));
+		System.out.println(filter.matches("java.lang"));
 		System.out.println(filter.matches("javax.xml.parsers.SAXParserFactory"));
 		System.out.println(filter.matches("org.ietf.jgss.GSSContext"));
 		System.out.println(filter.matches("org.omg.CORBA.CurrentOperations"));

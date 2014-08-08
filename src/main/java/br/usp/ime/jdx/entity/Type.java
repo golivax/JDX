@@ -8,22 +8,27 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-public abstract class Type extends NamedEntity implements Serializable{
+import br.usp.ime.jdx.util.compress.StringCompressor;
+
+public abstract class Type implements Serializable{
 
 	private static final long serialVersionUID = -7126906063529157990L;
 
 	private String fqn;
-	private String sourceCode;
+	private byte[] sourceCode;
 	private CompUnit compUnit;
 	private Set<Method> methods;
 	
 	public Type(String fqn, String sourceCode){
 		this.fqn = fqn;
-		this.sourceCode = sourceCode;
+		
+		if(sourceCode != null){
+			this.sourceCode = StringCompressor.compress(sourceCode);
+		}
+		
 		this.methods = new HashSet<Method>();
 	}
 	
-	@Override
 	public String getName(){
 		return StringUtils.substringAfterLast(fqn, ".");
 	}
@@ -33,7 +38,7 @@ public abstract class Type extends NamedEntity implements Serializable{
 	}
 	
 	public String getSourceCode(){
-		return sourceCode;
+		return StringCompressor.decompress(sourceCode);
 	}
 	
 	public CompUnit getCompUnit(){
@@ -89,8 +94,8 @@ public abstract class Type extends NamedEntity implements Serializable{
 		return constructors;
 	}
 	
-	public Set<Method> getMethods(String methodName) {
-		Set<Method> methodsFound = new HashSet<>();
+	public List<Method> getMethods(String methodName) {
+		List<Method> methodsFound = new ArrayList<>();
 		for (Method method : methods){
 			
 			if(method.getName().equals(methodName)){

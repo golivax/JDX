@@ -80,7 +80,7 @@ public class TypeDependencyExtractor {
 					getBindingName(clazzTypeDeclaration, implementedInterface);
 
 			if (implementedInterfaceName != null && 
-					!classFilter.matches(implementedInterfaceName)){
+				!classFilter.matches(implementedInterfaceName)){
 
 				dependencyReport.addImplementsDependency(
 						cacher.getClazz(clazzTypeDeclaration), 
@@ -119,10 +119,11 @@ public class TypeDependencyExtractor {
 		
 		if(typeBinding == null){
 			
+			/**
 			System.out.println("WARNING: Could not find binding for " + 
 					type + " in class " + 
 					cacher.getType(typeDeclaration).getCompUnit());
-			
+			*/
 			return null;
 		}
 		else{

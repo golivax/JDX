@@ -3,6 +3,7 @@ package br.usp.ime.jdx.processor.extractor;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AssertStatement;
 import org.eclipse.jdt.core.dom.Assignment;
@@ -106,7 +107,7 @@ public class CallDependencyExtractor {
 		for (MethodDeclaration methodDeclaration : typeDeclaration.getMethods()){
 			
 			this.clientMethod = cacher.getMethod(methodDeclaration);
-						
+		
 			Block codeBlock = methodDeclaration.getBody();
 			if (codeBlock != null) processBlock(codeBlock);			
 		}
@@ -426,7 +427,7 @@ public class CallDependencyExtractor {
 		if(expression instanceof MethodInvocation){ 
 			
 			MethodInvocation methodInv = (MethodInvocation)expression;
-			methodBinding = methodInv.resolveMethodBinding();			
+			methodBinding = methodInv.resolveMethodBinding();
 			
 		//Dependency due to instance creation
 		}else if (expression instanceof ClassInstanceCreation){
@@ -465,8 +466,11 @@ public class CallDependencyExtractor {
 		//MethodBinding may be null when it involves external classes 
 		//(JAR files, etc). That is, class files which are not available 
 		//in the provided context (environment)
-		if (methodBinding != null){			
-			processMethodBinding(methodBinding);
+		if (methodBinding != null){	
+			
+			//We actually process the method declaration to avoid resolving
+			//parameter types
+			processMethodBinding(methodBinding.getMethodDeclaration());
 		}
 	}
 
@@ -486,18 +490,31 @@ public class CallDependencyExtractor {
 				if (!classFilter.matches(providerTypeName)){
 					
 					String methodName = binding.getName();
-					List<String> parameterTypes = new ArrayList<>();
+					if(binding.getDeclaringClass().isParameterizedType()){
+						methodName = StringUtils.substringBefore(methodName, "<");
+					}
 					
+					List<String> parameterTypes = new ArrayList<>();
+										
 					for(ITypeBinding typeBinding : binding.getParameterTypes()){
-						parameterTypes.add(typeBinding.getName());
+						String parameterType = typeBinding.getName();
+						parameterTypes.add(parameterType);
 					}
 										
 					Type providerType =	cacher.getType(providerTypeName);
 					
-					Method providerMethod =	
-							providerType.getMethod(methodName, parameterTypes);
+					//FIXME: Check why this is happening in JHotDraw
+					if(providerType != null){
+					
+						Method providerMethod =	
+								providerType.getMethod(methodName, parameterTypes);
 
-					setUse(providerMethod);
+						//FIXME: Check why this is happening in JHotDraw
+						if(providerMethod != null){
+							setUse(providerMethod);	
+						}
+						
+					}
 				}
 			}
 		}

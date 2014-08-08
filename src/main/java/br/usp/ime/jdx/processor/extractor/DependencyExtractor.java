@@ -7,15 +7,11 @@ import br.usp.ime.jdx.filter.Filter;
 import br.usp.ime.jdx.processor.BatchCompilationUnitProcessor;
 
 public class DependencyExtractor{
-
-	private Cacher cacher;
-
-	public DependencyExtractor(){
-		cacher = new Cacher();
-	}
 	
 	public DependencyReport run(List<String> sourceDirs, String[] paths, 
-			Filter classFilter){
+			Filter classFilter, boolean recoverSourceCode){
+		
+		Cacher cacher = new Cacher(recoverSourceCode);
 
 		BatchCompilationUnitProcessor batchCompilationUnitProcessor = 
 				new BatchCompilationUnitProcessor();
@@ -32,7 +28,7 @@ public class DependencyExtractor{
 		TypeDependencyExtractor typeDepExtractor = 
 				new TypeDependencyExtractor(cacher);
 		
-		typeDepExtractor.run(depReport, classFilter);
+		typeDepExtractor.run(depReport, classFilter);		
 		
 		return depReport;
 	}

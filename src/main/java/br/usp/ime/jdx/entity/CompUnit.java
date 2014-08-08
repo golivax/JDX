@@ -4,18 +4,24 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CompUnit extends NamedEntity implements Serializable{
+import br.usp.ime.jdx.util.compress.StringCompressor;
+
+public class CompUnit implements Serializable{
 
 	private static final long serialVersionUID = 5569390666734073800L;
 
-	private String name;
-	private String sourceCode;
+	private String path;
+	private byte[] sourceCode;
 	private Set<Type> types;
 	
-	public CompUnit(String name, String sourceCode){
+	public CompUnit(String path, String sourceCode){
 		//Always replace back slashes with forward slashes
-		this.name = name.replaceAll("\\\\", "/");
-		this.sourceCode = sourceCode;
+		this.path = path.replaceAll("\\\\", "/");
+		
+		if(sourceCode != null){
+			this.sourceCode = StringCompressor.compress(sourceCode);
+		}
+		
 		types = new HashSet<Type>();
 	}
 	
@@ -37,19 +43,19 @@ public class CompUnit extends NamedEntity implements Serializable{
 		return false;
 	}
 	
-	public String getName(){
-		return name;
+	public String getPath(){
+		return path;
 	}
 	
 	public String getSourceCode(){
-		return sourceCode;
+		return StringCompressor.decompress(sourceCode);
 	}
 	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((path == null) ? 0 : path.hashCode());
 		return result;
 	}
 
@@ -62,16 +68,16 @@ public class CompUnit extends NamedEntity implements Serializable{
 		if (getClass() != obj.getClass())
 			return false;
 		CompUnit other = (CompUnit) obj;
-		if (name == null) {
-			if (other.name != null)
+		if (path == null) {
+			if (other.path != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!path.equals(other.path))
 			return false;
 		return true;
 	}
 	
 	@Override
 	public String toString(){
-		return name;
+		return path;
 	}
 }

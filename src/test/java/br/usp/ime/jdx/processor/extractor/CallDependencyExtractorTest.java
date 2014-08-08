@@ -30,11 +30,10 @@ public class CallDependencyExtractorTest {
 		JDX jdx = new JDX();
 		
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		Collection<MethodCallDependency> callDeps = 
 				depReport.getMethodCallDependencies();
-		
 
 		assertEquals(3, depReport.getMethodCallDependencies().size());
 		
@@ -44,7 +43,6 @@ public class CallDependencyExtractorTest {
 		}				
 	}
 	
-	
 	//Local variable tests
 	
 	@Test
@@ -53,7 +51,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -64,9 +62,9 @@ public class CallDependencyExtractorTest {
 				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getPath());
 		//to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 8 calls (2 from each constructor)
 		assertEquals(new Integer(8), dep.getStrength());
 	}
@@ -78,7 +76,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -89,9 +87,9 @@ public class CallDependencyExtractorTest {
 				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getPath());
 		//to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 10 calls (2 from each method)
 		assertEquals(new Integer(10), dep.getStrength());
 		
@@ -103,7 +101,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -114,9 +112,9 @@ public class CallDependencyExtractorTest {
 				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getPath());
 		//to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 3 calls (instantiation, dowhile body, dowhile condition)
 		assertEquals(new Integer(3), dep.getStrength());
 	}
@@ -127,7 +125,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -138,9 +136,9 @@ public class CallDependencyExtractorTest {
 				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getPath());
 		//to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 3 calls
 		assertEquals(new Integer(3), dep.getStrength());
 	}
@@ -151,7 +149,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -162,9 +160,9 @@ public class CallDependencyExtractorTest {
 				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getPath());
 		//to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 6 calls
 		assertEquals(new Integer(6), dep.getStrength());
 	}
@@ -176,7 +174,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -187,9 +185,9 @@ public class CallDependencyExtractorTest {
 				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getPath());
 		//to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 1 call
 		assertEquals(new Integer(1), dep.getStrength());
 	}
@@ -200,7 +198,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -211,9 +209,9 @@ public class CallDependencyExtractorTest {
 				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getPath());
 		//to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 5 calls (instantiation, switch parm, case 1, case3, default)
 		assertEquals(new Integer(5), dep.getStrength());
 	}
@@ -224,7 +222,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -235,9 +233,9 @@ public class CallDependencyExtractorTest {
 				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getPath());
 		//to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 4 calls (instantiation, inside try, inside catch, inside finally)
 		assertEquals(new Integer(4), dep.getStrength());
 	}
@@ -248,7 +246,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -259,9 +257,9 @@ public class CallDependencyExtractorTest {
 				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getPath());
 		//to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 3 calls (instantiation, while condition, while body)
 		assertEquals(new Integer(3), dep.getStrength());
 	}
@@ -272,7 +270,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -283,9 +281,9 @@ public class CallDependencyExtractorTest {
 				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getPath());
 		//to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 5 calls (3 from foo(), 2 from the other)
 		assertEquals(new Integer(5), dep.getStrength());
 	}
@@ -296,7 +294,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -314,9 +312,9 @@ public class CallDependencyExtractorTest {
 		assertNotNull(dep);
 		
 		//checking that it is from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getCompUnit().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getCompUnit().getPath());
 		//checking that it is to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getCompUnit().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getCompUnit().getPath());
 		//with 1 call (instantiation of B)
 		assertEquals(new Integer(1), dep.getStrength());
 		
@@ -330,9 +328,9 @@ public class CallDependencyExtractorTest {
 		assertNotNull(dep);
 				
 		//checking that it is from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getCompUnit().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getCompUnit().getPath());
 		//checking that it is to C
-		assertEquals(rootDir + "/C.java", dep.getSupplier().getCompUnit().getName());
+		assertEquals(rootDir + "/C.java", dep.getSupplier().getCompUnit().getPath());
 		//with 1 call (the chained call is evaluated as a single statement, i.e.
 		//it is treated as a direct call from A to C)
 		assertEquals(new Integer(1), dep.getStrength());
@@ -347,9 +345,9 @@ public class CallDependencyExtractorTest {
 		assertNotNull(dep);
 
 		//checking that it is from B
-		assertEquals(rootDir + "/B.java", dep.getClient().getCompUnit().getName());
+		assertEquals(rootDir + "/B.java", dep.getClient().getCompUnit().getPath());
 		//checking that it is to C
-		assertEquals(rootDir + "/C.java", dep.getSupplier().getCompUnit().getName());
+		assertEquals(rootDir + "/C.java", dep.getSupplier().getCompUnit().getPath());
 		//with 1 call (instantiation)
 		assertEquals(new Integer(1), dep.getStrength());
 	}
@@ -360,7 +358,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -378,9 +376,9 @@ public class CallDependencyExtractorTest {
 		assertNotNull(dep);
 		
 		//checking that it is from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getCompUnit().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getCompUnit().getPath());
 		//checking that it is to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getCompUnit().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getCompUnit().getPath());
 		//with 2 calls (instantiation of B, b.getC())
 		assertEquals(new Integer(2), dep.getStrength());
 		
@@ -394,9 +392,9 @@ public class CallDependencyExtractorTest {
 		assertNotNull(dep);
 				
 		//checking that it is from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getCompUnit().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getCompUnit().getPath());
 		//checking that it is to C
-		assertEquals(rootDir + "/C.java", dep.getSupplier().getCompUnit().getName());
+		assertEquals(rootDir + "/C.java", dep.getSupplier().getCompUnit().getPath());
 		//with 1 call (c.bar())
 		assertEquals(new Integer(1), dep.getStrength());
 		
@@ -410,9 +408,9 @@ public class CallDependencyExtractorTest {
 		assertNotNull(dep);
 
 		//checking that it is from B
-		assertEquals(rootDir + "/B.java", dep.getClient().getCompUnit().getName());
+		assertEquals(rootDir + "/B.java", dep.getClient().getCompUnit().getPath());
 		//checking that it is to C
-		assertEquals(rootDir + "/C.java", dep.getSupplier().getCompUnit().getName());
+		assertEquals(rootDir + "/C.java", dep.getSupplier().getCompUnit().getPath());
 		//with 1 call (instantiation)
 		assertEquals(new Integer(1), dep.getStrength());
 	}
@@ -423,7 +421,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -454,9 +452,9 @@ public class CallDependencyExtractorTest {
 						+ "localvariable.innerclassbody.A.I1.I2"));
 		
 		//from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getPath());
 		//to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 12 calls (2 from each method)
 		assertEquals(new Integer(12), dep.getStrength());
 		
@@ -468,7 +466,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false,
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -479,9 +477,9 @@ public class CallDependencyExtractorTest {
 				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getPath());
 		//to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 2 calls
 		assertEquals(new Integer(2), dep.getStrength());
 	}
@@ -492,7 +490,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false,
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -503,9 +501,9 @@ public class CallDependencyExtractorTest {
 				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getPath());
 		//to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 4 calls (the instantiation of the four attributes)
 		assertEquals(new Integer(4), dep.getStrength());
 	}
@@ -516,7 +514,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false,
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		System.out.println(depReport);
 		
@@ -527,9 +525,9 @@ public class CallDependencyExtractorTest {
 				depReport.getCompUnitMetaDependencies().iterator().next();
 		
 		//from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getName());
+		assertEquals(rootDir + "/A.java", dep.getClient().getPath());
 		//to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getName());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 2 calls
 		assertEquals(new Integer(2), dep.getStrength());
 	}
@@ -794,7 +792,7 @@ public class CallDependencyExtractorTest {
 						"				BuildResult currentBuild = build(changeSet);"+
 						"				persistence.beginTransaction();"+
 						"				Commit commit = convert.toDomain(data, persistence.getSession());"+
-						"				log.info(\"Author: \" + commit.getAuthor().getName() + \" on \" + commit.getDate().getTime() + \" with \" + commit.getArtifacts().size() + \" artifacts\");"+
+						"				log.info(\"Author: \" + commit.getAuthor().getPath() + \" on \" + commit.getDate().getTime() + \" with \" + commit.getArtifacts().size() + \" artifacts\");"+
 						"				giveSessionToTools();"+
 						"				runTools(commit, currentBuild);"+
 						"				persistence.commit();"+
@@ -862,10 +860,10 @@ public class CallDependencyExtractorTest {
 						"					scm.goTo(commit.getCommitId());"+
 						"				}"+
 						"				"+
-						"				log.info(\"running tool: \" + tool.getName());"+
+						"				log.info(\"running tool: \" + tool.getPath());"+
 						"				tool.calculate(commit, currentBuild);"+
 						"			} catch (Exception e) {"+
-						"				log.error(\"error in tool \" + tool.getName(), e);"+
+						"				log.error(\"error in tool \" + tool.getPath(), e);"+
 						"			}"+
 						"		}"+
 						"	}"+

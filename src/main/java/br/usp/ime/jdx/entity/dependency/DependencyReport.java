@@ -32,6 +32,7 @@ public class DependencyReport implements Serializable{
 	public DependencyReport(){
 		
 	}
+	
 	public void addMethodCallDependency(Method client, Method supplier){
 		if (!callMap.containsKey(client, supplier)){
 			MethodCallDependency dependency = new MethodCallDependency(client, supplier);
@@ -116,7 +117,7 @@ public class DependencyReport implements Serializable{
 			
 			typeMetaDepsMap.put(client,supplier,typeMetaDep);
 		}
-		
+				
 		inferDependenciesFromMethodCalls(typeMetaDepsMap);
 		
 		return typeMetaDepsMap.values();
@@ -127,15 +128,15 @@ public class DependencyReport implements Serializable{
 		
 		Collection<MethodCallDependency> methodCallDependencies = 
 				getMethodCallDependencies();
-		
+			
 		for(MethodCallDependency methodCallDependency : methodCallDependencies){
 			
 			Type clientType = 
 					methodCallDependency.getClient().getContainingType();
-			
+						
 			Type supplierType = 
 					methodCallDependency.getSupplier().getContainingType();
-			
+						
 			int strength = methodCallDependency.getStrength();
 			
 			//Somente deps entre types diferentes

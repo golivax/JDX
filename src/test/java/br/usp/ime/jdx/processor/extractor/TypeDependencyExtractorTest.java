@@ -36,7 +36,7 @@ public class TypeDependencyExtractorTest {
 		JDX jdx = new JDX();
 		
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter());
+				"*.java", new JavaNativeClassFilter(), true);
 		
 		Collection<TypeDependency> typeDependencies = 
 				depReport.getTypeDependencies();
