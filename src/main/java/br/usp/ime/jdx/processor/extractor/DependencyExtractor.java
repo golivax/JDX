@@ -22,6 +22,7 @@ public class DependencyExtractor{
 		
 		DependencyReport depReport = new DependencyReport(
 				new JavaProject(
+						cacher.getPackages(),
 						cacher.getCompUnits(), 
 						cacher.getTypes(),
 						cacher.getMethods()));

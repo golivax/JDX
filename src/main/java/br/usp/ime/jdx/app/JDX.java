@@ -88,6 +88,11 @@ public class JDX {
 		DependencyReport depReport = jdx.calculateDepsFrom(
 				rootDir, true, "*.java", new JavaNativeClassFilter(),true);
 
+		System.out.println(depReport.getJavaProject().getPackages());
+		System.out.println(depReport.getJavaProject().getCompUnits());
+		System.out.println(depReport.getJavaProject().getTypes());
+		System.out.println(depReport.getJavaProject().getMethods());
+		
 		System.out.println(depReport.getCompUnitMetaDependencies());
 		System.out.println(new Date(System.currentTimeMillis()));
 	}

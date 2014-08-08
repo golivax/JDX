@@ -10,11 +10,15 @@ public class CompUnit implements Serializable{
 
 	private static final long serialVersionUID = 5569390666734073800L;
 
+	private Package pkg;
 	private String path;
 	private byte[] sourceCode;
 	private Set<Type> types;
 	
-	public CompUnit(String path, String sourceCode){
+	public CompUnit(Package pkg, String path, String sourceCode){
+		
+		this.pkg = pkg;
+		
 		//Always replace back slashes with forward slashes
 		this.path = path.replaceAll("\\\\", "/");
 		
@@ -23,6 +27,10 @@ public class CompUnit implements Serializable{
 		}
 		
 		types = new HashSet<Type>();
+	}
+	
+	public Package getPackage(){
+		return pkg;
 	}
 	
 	public void addType(Type type){

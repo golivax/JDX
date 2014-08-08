@@ -16,6 +16,7 @@ import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
@@ -25,11 +26,14 @@ import br.usp.ime.jdx.entity.Clazz;
 import br.usp.ime.jdx.entity.CompUnit;
 import br.usp.ime.jdx.entity.Interface;
 import br.usp.ime.jdx.entity.Method;
+import br.usp.ime.jdx.entity.Package;
 import br.usp.ime.jdx.entity.Type;
 
 public class Cacher extends FileASTRequestor{
 	
 	private boolean recoverSourceCode = false;
+	
+	private Map<PackageDeclaration, Package> pkgMap = new HashMap<>();
 	
 	private Map<CompilationUnit,CompUnit> compUnitMap =	new HashMap<>();	
 	
@@ -54,15 +58,23 @@ public class Cacher extends FileASTRequestor{
 	}	
 	
 	private void cache(String sourceFilePath, CompilationUnit compilationUnit) {
-
+		cachePackage(compilationUnit);
 		cacheCompilationUnit(sourceFilePath, compilationUnit);
 		cacheTypes(compilationUnit);
 		cacheMethods(compilationUnit); 
 	}
 
+	private void cachePackage(CompilationUnit compilationUnit) {
+		PackageDeclaration packageDeclaration = compilationUnit.getPackage(); 
+		String packageFQN = packageDeclaration.getName().toString();
+		Package pkg = new Package(packageFQN);
+		pkgMap.put(packageDeclaration, pkg);
+	}
+
 	private void cacheCompilationUnit(String sourceFilePath,
 			CompilationUnit compilationUnit) {
 		
+		Package pkg = pkgMap.get(compilationUnit.getPackage());
 		String compUnitName = sourceFilePath;
 		
 		String compUnitSourceCode;
@@ -74,9 +86,8 @@ public class Cacher extends FileASTRequestor{
 			compUnitSourceCode = null;
 		}
 		
-		CompUnit compUnit = new CompUnit(compUnitName,compUnitSourceCode);
+		CompUnit compUnit = new CompUnit(pkg, compUnitName,compUnitSourceCode);
 		compUnitMap.put(compilationUnit,compUnit);
-		
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -365,6 +376,12 @@ public class Cacher extends FileASTRequestor{
 		Set<CompUnit> compUnits = new HashSet<>();
 		compUnits.addAll(compUnitMap.values());
 		return compUnits;
+	}
+	
+	public Set<Package> getPackages(){
+		Set<Package> pkgs = new HashSet<>();
+		pkgs.addAll(pkgMap.values());
+		return pkgs;
 	}
 	
 }
