@@ -8,24 +8,18 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import br.usp.ime.jdx.util.compress.StringCompressor;
-
-public abstract class Type implements Serializable{
+public abstract class Type implements Serializable, SystemEntity{
 
 	private static final long serialVersionUID = -7126906063529157990L;
 
 	private String fqn;
-	private byte[] sourceCode;
+	private String sourceCode;
 	private CompUnit compUnit;
 	private Set<Method> methods;
 	
 	public Type(String fqn, String sourceCode){
 		this.fqn = fqn;
-		
-		if(sourceCode != null){
-			this.sourceCode = StringCompressor.compress(sourceCode);
-		}
-		
+		this.sourceCode = sourceCode;
 		this.methods = new HashSet<Method>();
 	}
 	
@@ -38,7 +32,7 @@ public abstract class Type implements Serializable{
 	}
 	
 	public String getSourceCode(){
-		return StringCompressor.decompress(sourceCode);
+		return sourceCode;
 	}
 	
 	public CompUnit getCompUnit(){

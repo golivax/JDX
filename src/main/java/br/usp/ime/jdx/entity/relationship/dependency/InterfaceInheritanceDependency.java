@@ -1,4 +1,4 @@
-package br.usp.ime.jdx.entity.dependency;
+package br.usp.ime.jdx.entity.relationship.dependency;
 
 import br.usp.ime.jdx.entity.Interface;
 
@@ -8,6 +8,11 @@ public class InterfaceInheritanceDependency extends TypeDependency{
 
 	public InterfaceInheritanceDependency(Interface client, Interface supplier) {
 		super(client, supplier, "extends");
+	}
+
+	@Override
+	public DependencyType getDependencyType() {
+		return DependencyType.INTERFACE_INHERITANCE;
 	}
 	
 }

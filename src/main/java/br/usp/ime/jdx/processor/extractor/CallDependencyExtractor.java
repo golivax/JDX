@@ -8,6 +8,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AssertStatement;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.CastExpression;
 import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.ConstructorInvocation;
@@ -37,13 +38,14 @@ import org.eclipse.jdt.core.dom.WhileStatement;
 
 import br.usp.ime.jdx.entity.Method;
 import br.usp.ime.jdx.entity.Type;
-import br.usp.ime.jdx.entity.dependency.DependencyReport;
-import br.usp.ime.jdx.filter.Filter;
+import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
+import br.usp.ime.jdx.filter.SimpleStringMatcher;
+import br.usp.ime.jdx.filter.StringMatcher;
 
 public class CallDependencyExtractor {
 	
 	private Cacher cacher;
-	private Filter classFilter;
+	private StringMatcher classFilter;
 	private DependencyReport dependencyReport;
 	private Method clientMethod;
 	
@@ -52,7 +54,7 @@ public class CallDependencyExtractor {
 	}
 	
 	public DependencyReport run(DependencyReport dependencyReport, 
-			Filter classFilter) {
+			StringMatcher classFilter) {
 		
 		this.classFilter = classFilter;
 		this.dependencyReport = dependencyReport;
@@ -93,6 +95,7 @@ public class CallDependencyExtractor {
 		for (FieldDeclaration fieldDeclaration : typeDeclaration.getFields()){
 
 			Type type = cacher.getType(typeDeclaration);
+			
 			this.clientMethod = type.getAttribMethod();
 			
 			List<VariableDeclarationFragment> fragments = 
@@ -437,7 +440,20 @@ public class CallDependencyExtractor {
 			
 			methodBinding = instanceCreation.resolveConstructorBinding();
 			
-		}else if (expression != null){
+		}else if (expression instanceof CastExpression){
+						
+			CastExpression castExpression = 
+					(CastExpression)expression;
+			
+			if(castExpression.getExpression() instanceof MethodInvocation){
+				
+				MethodInvocation methodInv = 
+						(MethodInvocation)castExpression.getExpression();
+				
+				methodBinding = methodInv.resolveMethodBinding();
+			}		
+			
+		}else if(expression != null){
 			//There are other types of expressions, including
 			//class org.eclipse.jdt.core.dom.PostfixExpression, 
 			//class org.eclipse.jdt.core.dom.ThisExpression, 

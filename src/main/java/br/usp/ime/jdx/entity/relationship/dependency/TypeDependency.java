@@ -1,8 +1,8 @@
-package br.usp.ime.jdx.entity.dependency;
+package br.usp.ime.jdx.entity.relationship.dependency;
 
 import br.usp.ime.jdx.entity.Type;
 
-public abstract class TypeDependency extends Dependency<Type>{
+public abstract class TypeDependency extends Dependency<Type,Type>{
 
 	private static final long serialVersionUID = -3038818691650424132L;
 

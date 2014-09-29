@@ -10,11 +10,11 @@ import java.util.Collection;
 import org.junit.Test;
 
 import br.usp.ime.jdx.app.JDX;
-import br.usp.ime.jdx.entity.dependency.CompUnitMetaDependency;
-import br.usp.ime.jdx.entity.dependency.DependencyReport;
-import br.usp.ime.jdx.entity.dependency.MethodCallDependency;
-import br.usp.ime.jdx.entity.dependency.TypeMetaDependency;
-import br.usp.ime.jdx.filter.JavaNativeClassFilter;
+import br.usp.ime.jdx.entity.relationship.dependency.CompUnitMetaDependency;
+import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
+import br.usp.ime.jdx.entity.relationship.dependency.MethodCallDependency;
+import br.usp.ime.jdx.entity.relationship.dependency.TypeMetaDependency;
+import br.usp.ime.jdx.filter.JavaAPIMatcher;
 
 public class CallDependencyExtractorTest {
 
@@ -30,7 +30,7 @@ public class CallDependencyExtractorTest {
 		JDX jdx = new JDX();
 		
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		Collection<MethodCallDependency> callDeps = 
 				depReport.getMethodCallDependencies();
@@ -51,7 +51,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		
@@ -76,7 +76,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		
@@ -101,7 +101,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		
@@ -125,7 +125,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		
@@ -149,7 +149,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		
@@ -174,7 +174,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		
@@ -198,7 +198,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		
@@ -222,7 +222,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		
@@ -246,7 +246,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		
@@ -270,7 +270,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		
@@ -294,7 +294,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		
@@ -358,7 +358,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		
@@ -421,7 +421,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		
@@ -466,7 +466,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false,
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		
@@ -490,7 +490,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false,
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		
@@ -514,7 +514,7 @@ public class CallDependencyExtractorTest {
 		
 		JDX jdx = new JDX();
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false,
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		System.out.println(depReport);
 		

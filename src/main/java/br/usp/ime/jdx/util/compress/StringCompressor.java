@@ -1,50 +1,57 @@
 package br.usp.ime.jdx.util.compress;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.apache.commons.io.IOUtils;
-
+/**
+ * Not being used now, but might be useful in the future 
+ * (such as to compress type source code)
+ * @author Gustavo Ansaldi Oliva {@link goliva@ime.usp.br}
+ */
 public class StringCompressor {
 
 	  public static byte[] compress(String text) {
-		    
-		  byte[] bytes = new byte[0];
 		  
-		  GZIPOutputStream gzipos = null;
-		  try{			  
-			  ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			  BufferedOutputStream bos = new BufferedOutputStream(baos);
-			  gzipos = new GZIPOutputStream(bos);
-			  gzipos.write(text.getBytes());
-			  bytes = baos.toByteArray();
+		  byte[] b = null;
+		  
+		  try{
+			  ByteArrayOutputStream os = new ByteArrayOutputStream(text.length());
+			  GZIPOutputStream gos = new GZIPOutputStream(os);
+			  gos.write(text.getBytes());
+			  gos.close();
+			  b = os.toByteArray();
+			  os.close();
 		  }catch(Exception e){
 			  e.printStackTrace();
-		  }finally{
-			  IOUtils.closeQuietly(gzipos);
 		  }
+		  return b;
 		  
-		  return bytes;
 	  }
 	  
 	  public static String decompress(byte[] text) {
-		  
-		  String decompressedString = new String();
+
+		  String s = null;
 		  
 		  try{
-			  
-			  GZIPInputStream gzipis = new GZIPInputStream(
-					new ByteArrayInputStream(text));
-			  
-			  decompressedString = IOUtils.toString(gzipis);
+			  final int BUFFER_SIZE = 32;
+			  ByteArrayInputStream is = new ByteArrayInputStream(text);
+			  GZIPInputStream gis = new GZIPInputStream(is, BUFFER_SIZE);
+			  StringBuilder string = new StringBuilder();
+			  byte[] data = new byte[BUFFER_SIZE];
+			  int bytesRead;
+			  while ((bytesRead = gis.read(data)) != -1) {
+				  string.append(new String(data, 0, bytesRead));
+			  }
+			  gis.close();
+			  is.close();  
+			  s = string.toString();
 		  }catch(Exception e){
 			  e.printStackTrace();
 		  }
 		  
-		  return decompressedString;
+		  return s;
 	  }
 	
 }

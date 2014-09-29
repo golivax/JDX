@@ -6,8 +6,8 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
-import br.usp.ime.jdx.entity.dependency.DependencyReport;
-import br.usp.ime.jdx.filter.Filter;
+import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
+import br.usp.ime.jdx.filter.StringMatcher;
 
 /**
  * Extracts relationships between types. For now it detects
@@ -18,7 +18,7 @@ import br.usp.ime.jdx.filter.Filter;
 public class TypeDependencyExtractor {
 
 	private Cacher cacher;
-	private Filter classFilter;
+	private StringMatcher classFilter;
 	private DependencyReport dependencyReport;
 	
 	public TypeDependencyExtractor(Cacher cacher){
@@ -26,7 +26,7 @@ public class TypeDependencyExtractor {
 	}
 	
 	public DependencyReport run(DependencyReport dependencyReport, 
-			Filter classFilter) {
+			StringMatcher classFilter) {
 		
 		this.classFilter = classFilter;
 		this.dependencyReport = dependencyReport;

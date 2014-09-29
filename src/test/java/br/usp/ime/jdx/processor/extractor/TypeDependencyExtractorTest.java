@@ -8,10 +8,10 @@ import java.util.Collection;
 import org.junit.Test;
 
 import br.usp.ime.jdx.app.JDX;
-import br.usp.ime.jdx.entity.dependency.ClazzInheritanceDependency;
-import br.usp.ime.jdx.entity.dependency.DependencyReport;
-import br.usp.ime.jdx.entity.dependency.TypeDependency;
-import br.usp.ime.jdx.filter.JavaNativeClassFilter;
+import br.usp.ime.jdx.entity.relationship.dependency.ClazzInheritanceDependency;
+import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
+import br.usp.ime.jdx.entity.relationship.dependency.TypeDependency;
+import br.usp.ime.jdx.filter.JavaAPIMatcher;
 
 public class TypeDependencyExtractorTest {
 
@@ -36,7 +36,7 @@ public class TypeDependencyExtractorTest {
 		JDX jdx = new JDX();
 		
 		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
-				"*.java", new JavaNativeClassFilter(), true);
+				"*.java", new JavaAPIMatcher(), true);
 		
 		Collection<TypeDependency> typeDependencies = 
 				depReport.getTypeDependencies();

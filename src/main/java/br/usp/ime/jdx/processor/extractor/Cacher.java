@@ -58,21 +58,35 @@ public class Cacher extends FileASTRequestor{
 	}	
 	
 	private void cache(String sourceFilePath, CompilationUnit compilationUnit) {
-		cachePackage(compilationUnit);
-		cacheCompilationUnit(sourceFilePath, compilationUnit);
-		cacheTypes(compilationUnit);
-		cacheMethods(compilationUnit); 
+		if(!compilationUnit.toString().isEmpty()){
+			cachePackage(sourceFilePath, compilationUnit);
+			cacheCompilationUnit(sourceFilePath, compilationUnit);
+			cacheTypes(compilationUnit);
+			cacheMethods(compilationUnit);
+		}
 	}
 
-	private void cachePackage(CompilationUnit compilationUnit) {
-		PackageDeclaration packageDeclaration = compilationUnit.getPackage();
-		String packageFQN = packageDeclaration.getName().toString();
+	private void cachePackage(String sourceFilePath, CompilationUnit compilationUnit) {
+			 
+		String packageFQN = getPackageName(compilationUnit);
+		
 		if(!pkgMap.containsKey(packageFQN)){
 			Package pkg = new Package(packageFQN);
 			pkgMap.put(packageFQN, pkg);
 			
 			if(packageFQN.contains(".")) cacheParentPackage(pkg);	
 		}		
+	}
+
+	private String getPackageName(CompilationUnit compilationUnit) {
+		PackageDeclaration packageDeclaration = compilationUnit.getPackage();
+		
+		//If compilation Unit lies in the default package
+		if(packageDeclaration == null){
+			return "(default package)";
+		}
+		
+		return packageDeclaration.getName().toString();
 	}
 
 	private void cacheParentPackage(Package pkg) {
@@ -97,7 +111,7 @@ public class Cacher extends FileASTRequestor{
 	private void cacheCompilationUnit(String sourceFilePath,
 			CompilationUnit compilationUnit) {
 		
-		String pkgFQN = compilationUnit.getPackage().getName().toString();
+		String pkgFQN = getPackageName(compilationUnit);		
 		Package pkg = pkgMap.get(pkgFQN);
 		
 		String compUnitName = sourceFilePath;
@@ -150,7 +164,6 @@ public class Cacher extends FileASTRequestor{
 			CompUnit compUnit = compUnitMap.get(compilationUnit);
 			compUnit.addType(type);
 			
-
 			for(TypeDeclaration subType : getSubTypes(typeDeclaration)){
 				typeStack.push(subType);
 			}
@@ -294,8 +307,7 @@ public class Cacher extends FileASTRequestor{
 			}
 			if(node instanceof CompilationUnit){
 				CompilationUnit compilationUnit = (CompilationUnit)node;
-				typeName = compilationUnit.getPackage().getName() + 
-						"." + typeName;
+				typeName = getPackageName(compilationUnit) + "." + typeName;
 			}
 			node = node.getParent();
 		}
@@ -343,7 +355,9 @@ public class Cacher extends FileASTRequestor{
 	
 	public Set<Method> getMethods(){
 		Set<Method> methods = new HashSet<>();
-		methods.addAll(methodDeclarationMap.values());
+		for(Type type : getTypes()){
+			methods.addAll(type.getMethods());
+		}
 		return methods;
 	}
 	

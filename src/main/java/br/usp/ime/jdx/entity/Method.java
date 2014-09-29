@@ -1,18 +1,19 @@
 package br.usp.ime.jdx.entity;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import br.usp.ime.jdx.util.compress.StringCompressor;
+public class Method implements Serializable, SystemEntity{
 
-public class Method{
+	private static final long serialVersionUID = -4865185051823887456L;
 
 	private String name;
 	private List<String> parameters;
-	private byte[] sourceCode;
+	private String sourceCode;
 	private String returnType;
 	private Type containingType;
 	private boolean isConstructor = false;
@@ -23,10 +24,7 @@ public class Method{
 		this.name = name;
 		this.parameters = parameters;
 		this.returnType = returnType;
-		
-		if(sourceCode != null){
-			this.sourceCode = StringCompressor.compress(sourceCode);	
-		}
+		this.sourceCode = sourceCode;	
 		
 	}
 	
@@ -80,7 +78,7 @@ public class Method{
 	}
 	
 	public String getSourceCode(){
-		return StringCompressor.decompress(sourceCode);
+		return sourceCode;
 	}
 	
 	public String toString(){

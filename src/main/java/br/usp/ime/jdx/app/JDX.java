@@ -8,9 +8,10 @@ import java.util.Date;
 import java.util.List;
 
 import br.usp.ime.jdx.entity.SourceCodeUnit;
-import br.usp.ime.jdx.entity.dependency.DependencyReport;
-import br.usp.ime.jdx.filter.Filter;
-import br.usp.ime.jdx.filter.JavaNativeClassFilter;
+import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
+import br.usp.ime.jdx.filter.JavaAPIMatcher;
+import br.usp.ime.jdx.filter.SimpleStringMatcher;
+import br.usp.ime.jdx.filter.StringMatcher;
 import br.usp.ime.jdx.processor.extractor.DependencyExtractor;
 import br.usp.ime.jdx.util.filesystem.FilesystemUtils;
 
@@ -27,7 +28,7 @@ public class JDX {
 
 	//TODO: Change to truly fluent API
 	public DependencyReport calculateDepsFrom(String sourceDir, 
-			boolean recursive, String globPattern, Filter classFilter, 
+			boolean recursive, String globPattern, StringMatcher classFilter, 
 			boolean recoverSourceCode) {
 		
 		DependencyExtractor extractor = new DependencyExtractor();
@@ -43,7 +44,7 @@ public class JDX {
 	
 	//TODO: Change to truly fluent API
 	public DependencyReport calculateDepsFrom(List<String> sourceDirs, 
-			boolean recursive, String globPattern, Filter classFilter,
+			boolean recursive, String globPattern, StringMatcher classFilter,
 			boolean recoverSourceCode) {
 
 		DependencyExtractor extractor = new DependencyExtractor();
@@ -81,19 +82,15 @@ public class JDX {
 		String fileSeparator = FileSystems.getDefault().getSeparator();
 		System.out.println(fileSeparator);
 		
-		String rootDir = "C:/tmp/moenia/122";
+		String rootDir = "C:/tmp/moenia";
 				
 		JDX jdx = new JDX();
 		
 		DependencyReport depReport = jdx.calculateDepsFrom(
-				rootDir, true, "*.java", new JavaNativeClassFilter(),true);
+				rootDir, true, "*.java", new JavaAPIMatcher(),true);
 
-		System.out.println(depReport.getJavaProject().getPackages());
-		System.out.println(depReport.getJavaProject().getCompUnits());
-		System.out.println(depReport.getJavaProject().getTypes());
 		System.out.println(depReport.getJavaProject().getMethods());
 		
-		System.out.println(depReport.getCompUnitMetaDependencies());
 		System.out.println(new Date(System.currentTimeMillis()));
 	}
 	

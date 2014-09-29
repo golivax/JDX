@@ -1,4 +1,4 @@
-package br.usp.ime.jdx.entity.dependency;
+package br.usp.ime.jdx.entity.relationship.dependency;
 
 import br.usp.ime.jdx.entity.Clazz;
 
@@ -8,6 +8,11 @@ public class ClazzInheritanceDependency extends TypeDependency{
 	
 	public ClazzInheritanceDependency(Clazz client, Clazz supplier) {
 		super(client, supplier, "extends");
+	}
+
+	@Override
+	public DependencyType getDependencyType() {
+		return DependencyType.CLASS_INHERITANCE;
 	}
 	
 }

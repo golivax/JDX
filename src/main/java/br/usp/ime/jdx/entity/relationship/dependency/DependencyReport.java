@@ -1,4 +1,4 @@
-﻿package br.usp.ime.jdx.entity.dependency;
+﻿package br.usp.ime.jdx.entity.relationship.dependency;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -235,7 +235,7 @@ public class DependencyReport implements Serializable{
 
 	public String toString(){
 		StringBuilder builder = new StringBuilder();
-		for (Dependency<Method> dependency : callMap.values()){
+		for (MethodCallDependency dependency : getMethodCallDependencies()){
 			
 			builder.append(dependency.toString());
 			builder.append("\n");

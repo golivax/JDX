@@ -4,15 +4,13 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import br.usp.ime.jdx.util.compress.StringCompressor;
-
-public class CompUnit implements Serializable{
+public class CompUnit implements Serializable, SystemEntity{
 
 	private static final long serialVersionUID = 5569390666734073800L;
 
 	private Package pkg;
 	private String path;
-	private byte[] sourceCode;
+	private String sourceCode;
 	private Set<Type> types;
 	
 	public CompUnit(Package pkg, String path, String sourceCode){
@@ -22,9 +20,7 @@ public class CompUnit implements Serializable{
 		//Always replace back slashes with forward slashes
 		this.path = path.replaceAll("\\\\", "/");
 		
-		if(sourceCode != null){
-			this.sourceCode = StringCompressor.compress(sourceCode);
-		}
+		this.sourceCode = sourceCode;
 		
 		types = new HashSet<Type>();
 	}
@@ -56,7 +52,7 @@ public class CompUnit implements Serializable{
 	}
 	
 	public String getSourceCode(){
-		return StringCompressor.decompress(sourceCode);
+		return sourceCode;
 	}
 	
 	@Override

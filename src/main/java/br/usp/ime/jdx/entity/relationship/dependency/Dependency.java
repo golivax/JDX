@@ -1,33 +1,36 @@
-﻿package br.usp.ime.jdx.entity.dependency;
+﻿package br.usp.ime.jdx.entity.relationship.dependency;
 
 import java.io.Serializable;
 
-public abstract class Dependency<E> implements Serializable{
+import br.usp.ime.jdx.entity.SystemEntity;
+import br.usp.ime.jdx.entity.relationship.Relationship;
+import br.usp.ime.jdx.entity.relationship.RelationshipType;
+
+public abstract class Dependency<E extends SystemEntity,T extends SystemEntity> extends Relationship<E,T> implements Serializable{
 
 	private static final long serialVersionUID = -320459234337627245L;
 
 	private E client;
-	private E supplier;
+	private T supplier;
 	private Integer strength = 1;
-	protected String label = new String("[no label]");
+	protected String label = new String("depends");
 	
-	public Dependency(E client, E supplier){
+	public Dependency(E client, T supplier){
 		this.client = client;
 		this.supplier = supplier;
 	}
 	
-	public Dependency(E client, E supplier, int strength){
+	public Dependency(E client, T supplier, int strength){
 		this(client,supplier);
 		this.strength = strength;
 	}
 	
-	public Dependency(E client, E supplier, String label){
+	public Dependency(E client, T supplier, String label){
 		this(client,supplier);
 		this.label = label;
 	}
-
 	
-	public Dependency(E client, E supplier, String label, int strength){
+	public Dependency(E client, T supplier, String label, int strength){
 		this(client,supplier,strength);
 		this.label = label;
 	}
@@ -36,7 +39,7 @@ public abstract class Dependency<E> implements Serializable{
 		return client;
 	}
 
-	public E getSupplier() {
+	public T getSupplier() {
 		return supplier;
 	}
 
@@ -94,4 +97,10 @@ public abstract class Dependency<E> implements Serializable{
 		return "(" + client + "," + label + "," + supplier + "," + strength + ")";
 	}
 	
+	@Override
+	public RelationshipType getRelationshipType(){
+		return RelationshipType.DEPENDENCY;
+	}
+	
+	public abstract DependencyType getDependencyType();
 }

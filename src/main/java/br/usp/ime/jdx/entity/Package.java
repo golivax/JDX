@@ -1,9 +1,13 @@
 package br.usp.ime.jdx.entity;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang3.StringUtils;
 
-public class Package {
+public class Package implements Serializable, SystemEntity {
 
+	private static final long serialVersionUID = 289893988698799520L;
+	
 	private Package parent;
 	private String FQN;
 	
@@ -54,6 +58,10 @@ public class Package {
 	
 	public String toString(){
 		return FQN;
+	}
+	
+	public boolean hasParent(){
+		return getParent() != null;
 	}
 	
 }

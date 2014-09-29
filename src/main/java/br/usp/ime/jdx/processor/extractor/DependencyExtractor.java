@@ -3,14 +3,14 @@
 import java.util.List;
 
 import br.usp.ime.jdx.entity.JavaProject;
-import br.usp.ime.jdx.entity.dependency.DependencyReport;
-import br.usp.ime.jdx.filter.Filter;
+import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
+import br.usp.ime.jdx.filter.StringMatcher;
 import br.usp.ime.jdx.processor.BatchCompilationUnitProcessor;
 
 public class DependencyExtractor{
 	
 	public DependencyReport run(List<String> sourceDirs, String[] paths, 
-			Filter classFilter, boolean recoverSourceCode){
+			StringMatcher classFilter, boolean recoverSourceCode){
 		
 		Cacher cacher = new Cacher(recoverSourceCode);
 
@@ -19,7 +19,6 @@ public class DependencyExtractor{
 
 		batchCompilationUnitProcessor.run(sourceDirs, cacher, paths);
 
-		
 		DependencyReport depReport = new DependencyReport(
 				new JavaProject(
 						cacher.getPackages(),
