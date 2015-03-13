@@ -1,13 +1,9 @@
 package br.usp.ime.jdx.processor.extractor.methodinv.localvariable.methodbody;
 
-public class B {
-	
-	public void bar(){
+public abstract class C {
+
+	public void foo(){
 		
-	}
-	
-	public boolean isSomething(){
-		return true;
 	}
 	
 }

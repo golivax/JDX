@@ -82,7 +82,7 @@ public class JDX {
 		String fileSeparator = FileSystems.getDefault().getSeparator();
 		System.out.println(fileSeparator);
 		
-		String rootDir = "C:/tmp/moenia";
+		String rootDir = "C:/tmp/ase2015/9/workspace1";
 				
 		JDX jdx = new JDX();
 		

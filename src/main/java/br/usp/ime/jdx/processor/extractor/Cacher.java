@@ -116,13 +116,9 @@ public class Cacher extends FileASTRequestor{
 		
 		String compUnitName = sourceFilePath;
 		
-		String compUnitSourceCode;
-		
+		String compUnitSourceCode = null;		
 		if(recoverSourceCode){
 			compUnitSourceCode = compilationUnit.toString();
-		}
-		else{
-			compUnitSourceCode = null;
 		}
 		
 		CompUnit compUnit = new CompUnit(pkg, compUnitName,compUnitSourceCode);
@@ -139,11 +135,9 @@ public class Cacher extends FileASTRequestor{
 
 			String typeFQN = getTypeFQN(typeDeclaration);
 			
-			String sourceCode;
+			String sourceCode = null;
 			if(recoverSourceCode){
 				sourceCode = typeDeclaration.toString();
-			}else{
-				sourceCode = null;
 			}
 			
 			Type type;
@@ -210,16 +204,27 @@ public class Cacher extends FileASTRequestor{
 				returnType = type.getName();
 			}
 			
-			String sourceCode;
+			String body = null;
+			String sourceCode = null;
 			if(recoverSourceCode){
+				if(methodDeclaration.getBody() != null){
+					body = methodDeclaration.getBody().toString();	
+				}
+				else{
+					//FIXME: for now, null bodies (e.g. from abstract methods) and
+					//empty bodies will be treated as if they were the same thing.
+					//This is because some applications that use JDX compare method bodies
+					//and having a NULL value would break it. In the future, provide a 
+					//more elegant solution like a NullBody or a Body class that answers
+					//if its NULL or not, whatever.
+					body = new String();
+				}				
 				sourceCode = methodDeclaration.toString();
-			}else{
-				sourceCode = null;
 			}
 			
 			Method method = new Method(
 					methodName, parameterTypes, returnType, 
-					sourceCode, isConstructor);
+					body, sourceCode, isConstructor);
 			
 			type.addMethod(method);
 
@@ -231,7 +236,7 @@ public class Cacher extends FileASTRequestor{
 			
 			Method constructor = new Method(type.getName(), 
 					new ArrayList<String>(), type.getName(), 
-					new String(), true);
+					new String(), new String(), true);
 			
 			type.addMethod(constructor);
 		}
@@ -239,7 +244,7 @@ public class Cacher extends FileASTRequestor{
 		//Adding artificial "attrib<>" method		
 		Method attribMethod = new Method(
 				"attrib<>", new ArrayList<String>(), new String(), 
-				new String(), false);
+				new String(), new String(), false);
 		
 		type.addMethod(attribMethod);
 	}

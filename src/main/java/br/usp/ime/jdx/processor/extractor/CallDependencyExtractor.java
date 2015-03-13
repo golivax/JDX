@@ -25,8 +25,11 @@ import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.LabeledStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.PostfixExpression;
+import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 import org.eclipse.jdt.core.dom.SwitchCase;
 import org.eclipse.jdt.core.dom.SwitchStatement;
 import org.eclipse.jdt.core.dom.SynchronizedStatement;
@@ -39,7 +42,6 @@ import org.eclipse.jdt.core.dom.WhileStatement;
 import br.usp.ime.jdx.entity.Method;
 import br.usp.ime.jdx.entity.Type;
 import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
-import br.usp.ime.jdx.filter.SimpleStringMatcher;
 import br.usp.ime.jdx.filter.StringMatcher;
 
 public class CallDependencyExtractor {
@@ -305,11 +307,7 @@ public class CallDependencyExtractor {
 
 		processStatement(forBody);
 		
-		if(forExpression instanceof InfixExpression){
-			InfixExpression infixExpression = (InfixExpression)forExpression;
-			processBindings(infixExpression.getLeftOperand());
-			processBindings(infixExpression.getRightOperand());
-		}
+		processBindings(forExpression);
 		
 		for(Expression initializerExpression : initializerExpressions){
 			processBindings(initializerExpression);
@@ -423,7 +421,26 @@ public class CallDependencyExtractor {
 	}
 
 	private void processBindings(Expression expression){
-
+		
+		if(expression instanceof InfixExpression){
+			InfixExpression infixExpression = (InfixExpression)expression;
+			_processBindings(infixExpression.getLeftOperand());
+			_processBindings(infixExpression.getRightOperand());
+		}
+		else if(expression instanceof PrefixExpression){
+			PrefixExpression prefixExpression = (PrefixExpression)expression;
+			_processBindings(prefixExpression.getOperand());
+		}
+		else if(expression instanceof PostfixExpression){
+			PostfixExpression postfixExpression = (PostfixExpression)expression;
+			_processBindings(postfixExpression.getOperand());
+		}
+		else{
+			_processBindings(expression);
+		}
+	}
+	
+	private void _processBindings(Expression expression){
 		IMethodBinding methodBinding = null;
 		
 		//Dependency due to method invocation
@@ -431,7 +448,13 @@ public class CallDependencyExtractor {
 			
 			MethodInvocation methodInv = (MethodInvocation)expression;
 			methodBinding = methodInv.resolveMethodBinding();
+		
+		//Dependency due to method invocation
+		}else if (expression instanceof SuperMethodInvocation){
 			
+			SuperMethodInvocation superMethodInv = (SuperMethodInvocation)expression;
+			methodBinding = superMethodInv.resolveMethodBinding();
+		
 		//Dependency due to instance creation
 		}else if (expression instanceof ClassInstanceCreation){
 			
@@ -455,7 +478,6 @@ public class CallDependencyExtractor {
 			
 		}else if(expression != null){
 			//There are other types of expressions, including
-			//class org.eclipse.jdt.core.dom.PostfixExpression, 
 			//class org.eclipse.jdt.core.dom.ThisExpression, 
 			//class org.eclipse.jdt.core.dom.VariableDeclarationExpression, 
 			//class org.eclipse.jdt.core.dom.Assignment, 
@@ -473,10 +495,8 @@ public class CallDependencyExtractor {
 			//class org.eclipse.jdt.core.dom.CastExpression, 
 			//class org.eclipse.jdt.core.dom.StringLiteral, 
 			//class org.eclipse.jdt.core.dom.BooleanLiteral, 
-			//class org.eclipse.jdt.core.dom.InfixExpression, 
 			//class org.eclipse.jdt.core.dom.ArrayAccess, 
 			//class org.eclipse.jdt.core.dom.ParenthesizedExpression, 
-			//class org.eclipse.jdt.core.dom.PrefixExpression]
 		}
 		
 		//MethodBinding may be null when it involves external classes 

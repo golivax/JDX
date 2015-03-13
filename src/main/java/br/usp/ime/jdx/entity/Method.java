@@ -2,36 +2,35 @@ package br.usp.ime.jdx.entity;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
-
+//TODO: getJavaDoc(), getAnnotations()
 public class Method implements Serializable, SystemEntity{
 
 	private static final long serialVersionUID = -4865185051823887456L;
 
 	private String name;
 	private List<String> parameters;
-	private String sourceCode;
 	private String returnType;
+	private String body;
+	private String sourceCode;
 	private Type containingType;
 	private boolean isConstructor = false;
 
 	public Method(String name, List<String> parameters, String returnType, 
-			String sourceCode){
+			String body, String sourceCode){
 		
 		this.name = name;
 		this.parameters = parameters;
 		this.returnType = returnType;
+		this.body = body;
 		this.sourceCode = sourceCode;	
 		
 	}
 	
 	public Method(String name, List<String> parameters, String returnType, 
-			String sourceCode, boolean isConstructor){
+			String body, String sourceCode, boolean isConstructor){
 		
-		this(name,parameters,returnType,sourceCode);
+		this(name,parameters,returnType,body,sourceCode);
 		this.isConstructor = isConstructor;
 	}
 	
@@ -39,23 +38,7 @@ public class Method implements Serializable, SystemEntity{
 		return returnType;
 	}
 
-	//TODO: Do it more beautifully
 	public String getBody() {
-		String sourceCode = getSourceCode();
-		
-		//This removes JavaDoc
-		String javadoc = "/**" + 
-				StringUtils.substringBetween(sourceCode, "/**", "*/") 
-				+ "*/";
-		
-		String methodWOJavaDoc = StringUtils.removeStart(
-				sourceCode, javadoc).trim();
-		
-		//This removes the method signature
-		Matcher m = Pattern.compile(".+?(?=((\n)|(\r)|(\r\n)))").matcher(
-				methodWOJavaDoc);
-		
-		String body = m.replaceFirst("{");
 		return body;
 	}
 

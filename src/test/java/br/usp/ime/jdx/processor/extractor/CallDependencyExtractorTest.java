@@ -39,7 +39,7 @@ public class CallDependencyExtractorTest {
 		
 		for(MethodCallDependency callDep : callDeps){
 			assertEquals(callDep.getClient().getContainingType(),
-					callDep.getClient().getContainingType());
+					callDep.getSupplier().getContainingType());
 		}				
 	}
 	
@@ -91,7 +91,7 @@ public class CallDependencyExtractorTest {
 		//to B
 		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 10 calls (2 from each method)
-		assertEquals(new Integer(10), dep.getStrength());
+		assertEquals(new Integer(20), dep.getStrength());
 		
 	}
 	
@@ -530,6 +530,19 @@ public class CallDependencyExtractorTest {
 		assertEquals(rootDir + "/B.java", dep.getSupplier().getPath());
 		//with 2 calls
 		assertEquals(new Integer(2), dep.getStrength());
+	}
+	
+	@Test
+	public void shouldFindSuperMethodInvocation(){
+		String rootDir = this.rootDir + "/supervariable/methodbody";
+		
+		JDX jdx = new JDX();
+		DependencyReport depReport = jdx.calculateDepsFrom(rootDir, false, 
+				"*.java", new JavaAPIMatcher(), true);
+				
+		//Method Call Dependencies
+		assertEquals(depReport.getMethodCallDependencies().toString(), 
+				3, depReport.getMethodCallDependencies().size());
 	}
 	
 	/**
