@@ -22,20 +22,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.tycho</groupId>
+            <groupId>org.eclipse.jdt</groupId>
             <artifactId>org.eclipse.jdt.core</artifactId>
-            <version>3.9.1.v20130905-0837</version>
+            <version>3.10.0</version>
         </dependency> 
-        <dependency>
-			<groupId>org.eclipse.core</groupId>
-			<artifactId>org.eclipse.core.runtime</artifactId>
-			<version>3.7.0</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.eclipse.core</groupId>
-		    <artifactId>org.eclipse.core.resources</artifactId>
-		    <version>3.7.100</version>
-		</dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
