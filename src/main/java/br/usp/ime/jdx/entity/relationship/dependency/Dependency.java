@@ -2,11 +2,11 @@
 
 import java.io.Serializable;
 
-import br.usp.ime.jdx.entity.SystemEntity;
 import br.usp.ime.jdx.entity.relationship.Relationship;
 import br.usp.ime.jdx.entity.relationship.RelationshipType;
+import br.usp.ime.jdx.entity.system.JavaElement;
 
-public abstract class Dependency<E extends SystemEntity,T extends SystemEntity> extends Relationship<E,T> implements Serializable{
+public abstract class Dependency<E extends JavaElement,T extends JavaElement> extends Relationship<E,T> implements Serializable{
 
 	private static final long serialVersionUID = -320459234337627245L;
 
@@ -65,12 +65,14 @@ public abstract class Dependency<E extends SystemEntity,T extends SystemEntity> 
 		int result = 1;
 		result = prime * result + ((client == null) ? 0 : client.hashCode());
 		result = prime * result
+				+ ((getDependencyType() == null) ? 0 : getDependencyType().hashCode());
+		result = prime * result
 				+ ((supplier == null) ? 0 : supplier.hashCode());
 		return result;
 	}
 
-	@Override
 	@SuppressWarnings("rawtypes")
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
@@ -84,6 +86,8 @@ public abstract class Dependency<E extends SystemEntity,T extends SystemEntity> 
 				return false;
 		} else if (!client.equals(other.client))
 			return false;
+		if (getDependencyType() != other.getDependencyType())
+			return false;
 		if (supplier == null) {
 			if (other.supplier != null)
 				return false;
@@ -91,14 +95,13 @@ public abstract class Dependency<E extends SystemEntity,T extends SystemEntity> 
 			return false;
 		return true;
 	}
-
+	
 	@Override
 	public String toString(){
 		return "(" + client + "," + label + "," + supplier + "," + strength + ")";
 	}
 	
-	@Override
-	public RelationshipType getRelationshipType(){
+	public final RelationshipType getRelationshipType(){
 		return RelationshipType.DEPENDENCY;
 	}
 	

@@ -1,8 +1,9 @@
-package br.usp.ime.jdx.entity.relationship.dependency;
+package br.usp.ime.jdx.entity.relationship.dependency.m2m;
 
-import br.usp.ime.jdx.entity.Method;
+import br.usp.ime.jdx.entity.relationship.dependency.DependencyType;
+import br.usp.ime.jdx.entity.system.Method;
 
-public class MethodCallDependency extends Dependency<Method,Method>{
+public class MethodCallDependency extends MethodToMethodDependency{
 	
 	private static final long serialVersionUID = -7891072247689345065L;
 	

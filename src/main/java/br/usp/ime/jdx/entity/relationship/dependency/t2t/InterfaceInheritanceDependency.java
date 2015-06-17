@@ -1,8 +1,9 @@
-package br.usp.ime.jdx.entity.relationship.dependency;
+package br.usp.ime.jdx.entity.relationship.dependency.t2t;
 
-import br.usp.ime.jdx.entity.Interface;
+import br.usp.ime.jdx.entity.relationship.dependency.DependencyType;
+import br.usp.ime.jdx.entity.system.Interface;
 
-public class InterfaceInheritanceDependency extends TypeDependency{
+public class InterfaceInheritanceDependency extends TypeToTypeDependency{
 
 	private static final long serialVersionUID = -8571413829767869303L;
 

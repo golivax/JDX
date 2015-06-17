@@ -1,4 +1,4 @@
-package br.usp.ime.jdx.entity;
+package br.usp.ime.jdx.entity.system;
 
 public class Interface extends Type{
 

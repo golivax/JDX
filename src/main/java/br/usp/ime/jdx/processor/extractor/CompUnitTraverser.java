@@ -1,16 +1,15 @@
 package br.usp.ime.jdx.processor.extractor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AssertStatement;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Block;
-import org.eclipse.jdt.core.dom.CastExpression;
 import org.eclipse.jdt.core.dom.CatchClause;
-import org.eclipse.jdt.core.dom.ClassInstanceCreation;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ConstructorInvocation;
 import org.eclipse.jdt.core.dom.DoStatement;
 import org.eclipse.jdt.core.dom.EnhancedForStatement;
@@ -18,18 +17,15 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IfStatement;
+import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.LabeledStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.Statement;
-import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 import org.eclipse.jdt.core.dom.SwitchCase;
 import org.eclipse.jdt.core.dom.SwitchStatement;
 import org.eclipse.jdt.core.dom.SynchronizedStatement;
@@ -39,54 +35,93 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
 
-import br.usp.ime.jdx.entity.Method;
-import br.usp.ime.jdx.entity.Type;
-import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
-import br.usp.ime.jdx.filter.StringMatcher;
+import br.usp.ime.jdx.entity.system.CompUnit;
+import br.usp.ime.jdx.entity.system.Method;
 
-public class CallDependencyExtractor {
+public class CompUnitTraverser {
 	
-	private Cacher cacher;
-	private StringMatcher classFilter;
-	private DependencyReport dependencyReport;
+	private Cache cache;
+	
+	private List<FieldDeclarationProcessor> fdProcessors = new ArrayList<>();
+	private List<VariableDeclarationStatementProcessor> vdsProcessors = new ArrayList<>();
+	private List<ExpressionProcessor> expProcessors = new ArrayList<>();
+	private List<ConstructorInvocationProcessor> ciProcessors = new ArrayList<>();
+	private List<MethodDeclarationProcessor> mdProcessors = new ArrayList<>();
+	private List<ImportDeclarationProcessor> idProcessors = new ArrayList<>();
+	
+	private CompUnit clientCompUnit;
 	private Method clientMethod;
 	
-	public CallDependencyExtractor(Cacher cacher){
-		this.cacher = cacher;
+	public CompUnitTraverser(Cache cache){
+		
+		this.cache = cache;
 	}
 	
-	public DependencyReport run(DependencyReport dependencyReport, 
-			StringMatcher classFilter) {
+	public void addFieldDeclarationProcessor(
+			FieldDeclarationProcessor... fdProcessors){
 		
-		this.classFilter = classFilter;
-		this.dependencyReport = dependencyReport;
-		
-		extractImplicitDependencies();
-		extractExplicitDependencies();	
-
-		return dependencyReport;
+		this.fdProcessors = Arrays.asList(fdProcessors);
 	}
-
-	private void extractImplicitDependencies() {
 	
-		//First off, we add dependencies from constructors to attrib<>
-		for(Type type : cacher.getTypes()){
-			for(Method constructor : type.getConstructors()){
-				this.clientMethod = constructor;
-				setUse(type.getAttribMethod());
+	public void addVariableDeclarationStatementProcessor(
+			VariableDeclarationStatementProcessor... vdsProcessors){
+		
+		this.vdsProcessors = Arrays.asList(vdsProcessors);
+	}
+	
+	public void addExpressionProcessor(
+			ExpressionProcessor... expProcessors){
+		
+		this.expProcessors = Arrays.asList(expProcessors);
+	}
+	
+	public void addConstructorInvocationProcessor(
+			ConstructorInvocationProcessor... ciProcessors){
+		
+		this.ciProcessors = Arrays.asList(ciProcessors);
+	}
+	
+	public void addMethodDeclarationProcessor(
+			MethodDeclarationProcessor... mdProcessors){
+		
+		this.mdProcessors = Arrays.asList(mdProcessors);
+	}
+	
+	public void addImportDeclarationProcessor(
+			ImportDeclarationProcessor... idProcessors){
+		
+		this.idProcessors = Arrays.asList(idProcessors);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void run() {
+			
+		//Process the import declarations of each compilation unit
+		for(CompilationUnit compUnit : cache.getCompilationUnits()){
+			this.clientCompUnit = cache.getJDXCompilationUnit(compUnit);
+			List<ImportDeclaration> importDeclarations = compUnit.imports();
+			for(ImportDeclaration importDeclaration : importDeclarations){
+				processImportDeclarations(importDeclaration);
 			}
 		}
 		
-		//TODO: Deal with superclasses
-		//if G extends A and a constructor from G does not invoke any 
-		//constructor from A, then the constructor from G implicitly calls the
-		//default constructor from A
+		//Now we process the fields and methods of each type
+		for(TypeDeclaration typeDeclaration : cache.getTypeDeclarations()){
+			processFieldsAndMethods(typeDeclaration);
+		}
 	}
 	
-	private void extractExplicitDependencies() {
-		//Now we process the fields and methods of each type
-		for(TypeDeclaration typeDeclaration : cacher.getTypeDeclarations()){
-			processFieldsAndMethods(typeDeclaration);
+	private void processImportDeclarations(ImportDeclaration importDeclaration) {
+		delegateImportDeclarationProcessing(importDeclaration);
+	}
+	
+	private void delegateImportDeclarationProcessing(
+			ImportDeclaration importDeclaration) {
+		
+		for(ImportDeclarationProcessor idProcessor : idProcessors){
+	
+			idProcessor.processImportDeclaration(
+					importDeclaration, clientCompUnit);
 		}
 	}
 	
@@ -96,37 +131,59 @@ public class CallDependencyExtractor {
 		//Processing fields
 		for (FieldDeclaration fieldDeclaration : typeDeclaration.getFields()){
 
-			Type type = cacher.getType(typeDeclaration);
+			this.clientMethod = 
+					cache.getType(typeDeclaration).getAttribMethod();
 			
-			this.clientMethod = type.getAttribMethod();
-			
-			List<VariableDeclarationFragment> fragments = 
-					fieldDeclaration.fragments();
-
-			for(VariableDeclarationFragment fragment : fragments){
-				processVariableDeclarationFragment(fragment);
-			}
+			processFieldDeclaration(fieldDeclaration);
 		}
 		
 		//Processing method declarations
 		for (MethodDeclaration methodDeclaration : typeDeclaration.getMethods()){
 			
-			this.clientMethod = cacher.getMethod(methodDeclaration);
+			this.clientMethod = cache.getMethod(methodDeclaration);
 		
-			Block codeBlock = methodDeclaration.getBody();
-			if (codeBlock != null) processBlock(codeBlock);			
+			processMethodSignature(methodDeclaration);
+			processMethodBody(methodDeclaration);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
+	private void processFieldDeclaration(FieldDeclaration fieldDeclaration) {
+		
+		delegateFieldDeclarationProcessing(fieldDeclaration);
+		
+		List<VariableDeclarationFragment> fragments = 
+				fieldDeclaration.fragments();
+
+		for(VariableDeclarationFragment fragment : fragments){
+			processVariableDeclarationFragment(fragment);
+		}
+	}
+	
+	private void processMethodSignature(MethodDeclaration methodDeclaration) {
+		delegateMethodDeclarationProcessing(methodDeclaration);
+	}
+
+	private void delegateMethodDeclarationProcessing(
+			MethodDeclaration methodDeclaration) {
+		
+		for(MethodDeclarationProcessor mdProcessor : mdProcessors){
+			
+			mdProcessor.processMethodDeclaration(
+					methodDeclaration, clientMethod);
+		}
+	}
+
+	private void processMethodBody(MethodDeclaration methodDeclaration){
+		Block codeBlock = methodDeclaration.getBody();
+		if (codeBlock != null) processBlock(codeBlock);
+	}
+
+	@SuppressWarnings("unchecked")
 	private void processBlock(Block codeBlock){
-		try{
-			List<Statement> statements = codeBlock.statements();
-			for(Statement currentStatement : statements){
-				processStatement(currentStatement);
-			}
-		} catch (Exception e){
-			e.printStackTrace();
+		List<Statement> statements = codeBlock.statements();
+		for(Statement currentStatement : statements){
+			processStatement(currentStatement);
 		}
 	}
 
@@ -208,7 +265,7 @@ public class CallDependencyExtractor {
 						(ConstructorInvocation) currentStatement);
 				break;
 	
-			// do nothing for the following statements/cases
+			// For now, do nothing for the following statements/cases
 			case ASTNode.TYPE_DECLARATION_STATEMENT: break; // Local classes
 			
 			case ASTNode.SUPER_CONSTRUCTOR_INVOCATION: break;	
@@ -233,16 +290,10 @@ public class CallDependencyExtractor {
 		List<Expression> expressions = constructorInvocation.arguments();
 		
 		for(Expression expression : expressions){
-			processBindings(expression);
+			delegateExpressionProcessing(expression);
 		}
 		
-		IMethodBinding methodBinding = 
-				constructorInvocation.resolveConstructorBinding();
-		
-		if (methodBinding != null){
-			processMethodBinding(methodBinding);	
-		}
-		
+		delegateConstructorInvocationProcessing(constructorInvocation);		
 	}
 
 	private void processLabeledStatement(LabeledStatement ls){
@@ -257,7 +308,7 @@ public class CallDependencyExtractor {
 		Expression expression = efs.getExpression();
 
 		processStatement(body);
-		processBindings(expression);
+		delegateExpressionProcessing(expression);
 
 	}
 
@@ -267,7 +318,7 @@ public class CallDependencyExtractor {
 		Expression doExpression = doStatement.getExpression();
 
 		processStatement(statement);
-		processBindings(doExpression);
+		delegateExpressionProcessing(doExpression);
 
 	}
 
@@ -277,14 +328,14 @@ public class CallDependencyExtractor {
 		Expression whileExpression = whileStatement.getExpression();
 
 		processStatement(whileBody);
-		processBindings(whileExpression);
+		delegateExpressionProcessing(whileExpression);
 	}
 
 	@SuppressWarnings("unchecked")
 	private void processSwitchStatement(SwitchStatement switchStatement){
 		
 		Expression switchExpression = switchStatement.getExpression();
-		processBindings(switchExpression);
+		delegateExpressionProcessing(switchExpression);
 
 		List<Statement> switchStatements = switchStatement.statements();
 		for(Statement statement : switchStatements){
@@ -294,7 +345,7 @@ public class CallDependencyExtractor {
 
 	private void processSwitchCase(SwitchCase switchCase){
 		Expression switchCaseExpression = switchCase.getExpression();
-		processBindings(switchCaseExpression);
+		delegateExpressionProcessing(switchCaseExpression);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -307,21 +358,21 @@ public class CallDependencyExtractor {
 
 		processStatement(forBody);
 		
-		processBindings(forExpression);
+		delegateExpressionProcessing(forExpression);
 		
 		for(Expression initializerExpression : initializerExpressions){
-			processBindings(initializerExpression);
+			delegateExpressionProcessing(initializerExpression);
 		}
 
 		for(Expression updaterExpression : updaterExpressions){
-			processBindings(updaterExpression);
+			delegateExpressionProcessing(updaterExpression);
 		}
 	}
 
 	private void processIfStatement(IfStatement ifStatement){
 
 		Expression ifExpression = ifStatement.getExpression();
-		processBindings(ifExpression);
+		delegateExpressionProcessing(ifExpression);
 
 		Statement thenStatement = ifStatement.getThenStatement();
 		if (thenStatement != null) processStatement(thenStatement);
@@ -338,11 +389,11 @@ public class CallDependencyExtractor {
 		
 		if(expression instanceof Assignment){
 			Assignment assignment = (Assignment)expression;
-			processBindings(assignment.getLeftHandSide());
-			processBindings(assignment.getRightHandSide());
+			delegateExpressionProcessing(assignment.getLeftHandSide());
+			delegateExpressionProcessing(assignment.getRightHandSide());
 		}
 		else{
-			processBindings(expression);
+			delegateExpressionProcessing(expression);
 		}
 		
 	}
@@ -352,17 +403,19 @@ public class CallDependencyExtractor {
 		if(returnStatement != null){
 			Expression expression = returnStatement.getExpression();
 			if (expression != null){
-				processBindings(expression);
+				delegateExpressionProcessing(expression);
 			}
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	private void processVariableDeclarationStatement(
-			VariableDeclarationStatement currentVariableDeclaration){
+			VariableDeclarationStatement variableDeclarationSt){
 	
+		delegateVariableDeclarationStatementProcessing(variableDeclarationSt);
+		
 		List<VariableDeclarationFragment> fragments = 
-				currentVariableDeclaration.fragments();
+				variableDeclarationSt.fragments();
 
 		for(VariableDeclarationFragment fragment : fragments){
 			processVariableDeclarationFragment(fragment);
@@ -373,7 +426,7 @@ public class CallDependencyExtractor {
 			VariableDeclarationFragment fragment){
 
 		Expression initializer = fragment.getInitializer();
-		processBindings(initializer);
+		delegateExpressionProcessing(initializer);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -407,158 +460,76 @@ public class CallDependencyExtractor {
 			Expression syncExpression = synchronizedStat.getExpression();
 
 			processBlock(synchronizedBlock);
-			processBindings(syncExpression);
+			delegateExpressionProcessing(syncExpression);
 		}
 	}
 
 	private void processAssertStatement(AssertStatement as){
 		
 		Expression expression = as.getExpression();
-		processBindings(expression);
+		delegateExpressionProcessing(expression);
 		
 		Expression message = as.getMessage();		
-		processBindings(message);		
+		delegateExpressionProcessing(message);		
 	}
 
-	private void processBindings(Expression expression){
+	private void delegateExpressionProcessing(Expression expression){
+		
+		List<Expression> expressions = new ArrayList<>();
 		
 		if(expression instanceof InfixExpression){
 			InfixExpression infixExpression = (InfixExpression)expression;
-			_processBindings(infixExpression.getLeftOperand());
-			_processBindings(infixExpression.getRightOperand());
+			expressions.add(infixExpression.getLeftOperand());
+			expressions.add(infixExpression.getRightOperand());
 		}
 		else if(expression instanceof PrefixExpression){
 			PrefixExpression prefixExpression = (PrefixExpression)expression;
-			_processBindings(prefixExpression.getOperand());
+			expressions.add(prefixExpression.getOperand());
 		}
 		else if(expression instanceof PostfixExpression){
 			PostfixExpression postfixExpression = (PostfixExpression)expression;
-			_processBindings(postfixExpression.getOperand());
+			expressions.add(postfixExpression.getOperand());
 		}
 		else{
-			_processBindings(expression);
-		}
-	}
-	
-	private void _processBindings(Expression expression){
-		IMethodBinding methodBinding = null;
-		
-		//Dependency due to method invocation
-		if(expression instanceof MethodInvocation){ 
-			
-			MethodInvocation methodInv = (MethodInvocation)expression;
-			methodBinding = methodInv.resolveMethodBinding();
-		
-		//Dependency due to method invocation
-		}else if (expression instanceof SuperMethodInvocation){
-			
-			SuperMethodInvocation superMethodInv = (SuperMethodInvocation)expression;
-			methodBinding = superMethodInv.resolveMethodBinding();
-		
-		//Dependency due to instance creation
-		}else if (expression instanceof ClassInstanceCreation){
-			
-			ClassInstanceCreation instanceCreation = 
-					(ClassInstanceCreation)expression;
-			
-			methodBinding = instanceCreation.resolveConstructorBinding();
-			
-		}else if (expression instanceof CastExpression){
-						
-			CastExpression castExpression = 
-					(CastExpression)expression;
-			
-			if(castExpression.getExpression() instanceof MethodInvocation){
-				
-				MethodInvocation methodInv = 
-						(MethodInvocation)castExpression.getExpression();
-				
-				methodBinding = methodInv.resolveMethodBinding();
-			}		
-			
-		}else if(expression != null){
-			//There are other types of expressions, including
-			//class org.eclipse.jdt.core.dom.ThisExpression, 
-			//class org.eclipse.jdt.core.dom.VariableDeclarationExpression, 
-			//class org.eclipse.jdt.core.dom.Assignment, 
-			//class org.eclipse.jdt.core.dom.NullLiteral, 
-			//class org.eclipse.jdt.core.dom.ArrayCreation, 
-			//class org.eclipse.jdt.core.dom.SimpleName, 
-			//class org.eclipse.jdt.core.dom.FieldAccess, 
-			//class org.eclipse.jdt.core.dom.ArrayInitializer, 
-			//class org.eclipse.jdt.core.dom.InstanceofExpression, 
-			//class org.eclipse.jdt.core.dom.CharacterLiteral, 
-			//class org.eclipse.jdt.core.dom.QualifiedName, 
-			//class org.eclipse.jdt.core.dom.SuperMethodInvocation, 
-			//class org.eclipse.jdt.core.dom.ConditionalExpression, 
-			//class org.eclipse.jdt.core.dom.NumberLiteral, 
-			//class org.eclipse.jdt.core.dom.CastExpression, 
-			//class org.eclipse.jdt.core.dom.StringLiteral, 
-			//class org.eclipse.jdt.core.dom.BooleanLiteral, 
-			//class org.eclipse.jdt.core.dom.ArrayAccess, 
-			//class org.eclipse.jdt.core.dom.ParenthesizedExpression, 
+			expressions.add(expression);
 		}
 		
-		//MethodBinding may be null when it involves external classes 
-		//(JAR files, etc). That is, class files which are not available 
-		//in the provided context (environment)
-		if (methodBinding != null){	
-			
-			//We actually process the method declaration to avoid resolving
-			//parameter types
-			processMethodBinding(methodBinding.getMethodDeclaration());
-		}
-	}
-
-	private void processMethodBinding(IMethodBinding binding){
-				
-		//It is null when a generic class/interface takes a certain 
-		//type parameter that does not exist in source code
-		//e.g. "ArrayList<Player> opponents = new ArrayList<Player>();" and
-		//the Player class/interface does not exist in source code
-		if(binding.getDeclaringClass() != null){			
-			if (!binding.getDeclaringClass().isAnonymous() && 
-				!binding.getDeclaringClass().isLocal()){		
-				
-				String providerTypeName = ExtractorUtils.getQualifiedTypeName(
- 						binding.getDeclaringClass());
-				
-				if (!classFilter.matches(providerTypeName)){
-					
-					String methodName = binding.getName();
-					if(binding.getDeclaringClass().isParameterizedType()){
-						methodName = StringUtils.substringBefore(methodName, "<");
-					}
-					
-					List<String> parameterTypes = new ArrayList<>();
-										
-					for(ITypeBinding typeBinding : binding.getParameterTypes()){
-						String parameterType = typeBinding.getName();
-						parameterTypes.add(parameterType);
-					}
-										
-					Type providerType =	cacher.getType(providerTypeName);
-					
-					//FIXME: Check why this is happening in JHotDraw
-					if(providerType != null){
-					
-						Method providerMethod =	
-								providerType.getMethod(methodName, parameterTypes);
-
-						//FIXME: Check why this is happening in JHotDraw
-						if(providerMethod != null){
-							setUse(providerMethod);	
-						}
-						
-					}
-				}
+		//Each expression processor processes each expression
+		for(ExpressionProcessor expProcessor : expProcessors){
+			for(Expression _expression : expressions){
+				expProcessor.processExpression(_expression,clientMethod);
 			}
 		}
-	}
-
-	private void setUse(Method providerMethod){	
-		dependencyReport.addMethodCallDependency(clientMethod, providerMethod);
-	}
-		
+	}	
 	
+	private void delegateConstructorInvocationProcessing(
+			ConstructorInvocation constructorInvocation) {
+		
+		for(ConstructorInvocationProcessor ciProcessor : ciProcessors){
+			ciProcessor.processConstructorInvocation(
+					constructorInvocation,clientMethod);
+		}
+		
+	}
+	
+	private void delegateVariableDeclarationStatementProcessing(
+			VariableDeclarationStatement variableDeclarationSt) {
+		
+		for(VariableDeclarationStatementProcessor vdsProcessor : vdsProcessors){
+			vdsProcessor.processVariableDeclarationStatement(
+					variableDeclarationSt, clientMethod);
+		}
+		
+	}
+	
+
+	private void delegateFieldDeclarationProcessing(
+			FieldDeclaration fieldDeclaration) {
+
+		for(FieldDeclarationProcessor fdProcessor : fdProcessors){
+			fdProcessor.processFieldDeclaration(
+					fieldDeclaration, clientMethod);
+		}
+		
+	}	
 }

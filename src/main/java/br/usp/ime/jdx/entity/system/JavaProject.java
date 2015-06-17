@@ -1,24 +1,31 @@
-package br.usp.ime.jdx.entity;
+package br.usp.ime.jdx.entity.system;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 public class JavaProject implements Serializable {
 
 	private static final long serialVersionUID = 5055713865573892829L;
 
+	private List<String> sourceDirs;
 	private Set<Package> packages;
 	private Set<CompUnit> compUnits;
 	private Set<Type> types;
 	private Set<Method> methods;
 	
-	public JavaProject(Set<Package> packages, Set<CompUnit> compUnits, 
+	public JavaProject(List<String> sourceDirs, Set<Package> packages, Set<CompUnit> compUnits, 
 			Set<Type> types, Set<Method> methods){
 		
+		this.sourceDirs = sourceDirs;
 		this.packages = packages;
 		this.compUnits = compUnits;
 		this.types = types;
 		this.methods = methods;
+	}
+	
+	public List<String> getSourceDirs() {
+		return sourceDirs;
 	}
 	
 	public Set<Package> getPackages(){
@@ -47,6 +54,5 @@ public class JavaProject implements Serializable {
 		}
 		return searchedCompUnit;
 	}
-	
 	
 }

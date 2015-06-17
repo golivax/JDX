@@ -1,10 +1,10 @@
-package br.usp.ime.jdx.entity;
+package br.usp.ime.jdx.entity.system;
 
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CompUnit implements Serializable, SystemEntity{
+public class CompUnit implements Serializable, JavaElement{
 
 	private static final long serialVersionUID = 5569390666734073800L;
 

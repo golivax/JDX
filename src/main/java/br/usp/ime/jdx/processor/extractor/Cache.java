@@ -14,6 +14,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
@@ -22,14 +23,14 @@ import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclarationStatement;
 
-import br.usp.ime.jdx.entity.Clazz;
-import br.usp.ime.jdx.entity.CompUnit;
-import br.usp.ime.jdx.entity.Interface;
-import br.usp.ime.jdx.entity.Method;
-import br.usp.ime.jdx.entity.Package;
-import br.usp.ime.jdx.entity.Type;
+import br.usp.ime.jdx.entity.system.Clazz;
+import br.usp.ime.jdx.entity.system.CompUnit;
+import br.usp.ime.jdx.entity.system.Interface;
+import br.usp.ime.jdx.entity.system.Method;
+import br.usp.ime.jdx.entity.system.Package;
+import br.usp.ime.jdx.entity.system.Type;
 
-public class Cacher extends FileASTRequestor{
+public class Cache extends FileASTRequestor{
 	
 	private boolean recoverSourceCode = false;
 	
@@ -46,7 +47,7 @@ public class Cacher extends FileASTRequestor{
 	private Map<MethodDeclaration,Method> methodDeclarationMap = 
 			new HashMap<>();
 	
-	public Cacher(boolean recoverSourceCode) {
+	public Cache(boolean recoverSourceCode) {
 		this.recoverSourceCode = recoverSourceCode;
 	}
 
@@ -127,57 +128,71 @@ public class Cacher extends FileASTRequestor{
 	
 	@SuppressWarnings("unchecked")
 	private void cacheTypes(CompilationUnit compilationUnit){
-		Stack<TypeDeclaration> typeStack = new Stack<TypeDeclaration>();
+		Stack<AbstractTypeDeclaration> typeStack = new Stack<>();
 		typeStack.addAll(compilationUnit.types());
 
 		while(!typeStack.isEmpty()){
-			TypeDeclaration typeDeclaration = typeStack.pop();
-
-			String typeFQN = getTypeFQN(typeDeclaration);
+			AbstractTypeDeclaration abstractTypeDecl = typeStack.pop();
 			
-			String sourceCode = null;
-			if(recoverSourceCode){
-				sourceCode = typeDeclaration.toString();
+			//FIXME: Add support for enums (EnumDeclaration)
+			if(abstractTypeDecl.getNodeType() == ASTNode.TYPE_DECLARATION){
+				
+				TypeDeclaration typeDeclaration = (TypeDeclaration) abstractTypeDecl;
+				String typeFQN = getTypeFQN(typeDeclaration);
+				
+				String sourceCode = null;
+				if(recoverSourceCode){
+					sourceCode = typeDeclaration.toString();
+				}
+				
+				Type type;
+				
+				if(typeDeclaration.isInterface()){
+					Interface interf = new Interface(typeFQN, sourceCode);
+					interfaceMap.put(typeDeclaration, interf);
+					interfaceNameMap.put(typeFQN, interf);
+					type = interf;
+				}
+				else{
+					Clazz clazz = new Clazz(typeFQN, sourceCode);
+					clazzMap.put(typeDeclaration, clazz);
+					clazzNameMap.put(typeFQN, clazz);
+					type = clazz;
+				}
+				
+				CompUnit compUnit = compUnitMap.get(compilationUnit);
+				compUnit.addType(type);
+				
+				for(TypeDeclaration subType : getSubTypes(typeDeclaration)){
+					typeStack.push(subType);
+				}				
 			}
 			
-			Type type;
-			
-			if(typeDeclaration.isInterface()){
-				Interface interf = new Interface(typeFQN, sourceCode);
-				interfaceMap.put(typeDeclaration, interf);
-				interfaceNameMap.put(typeFQN, interf);
-				type = interf;
-			}
-			else{
-				Clazz clazz = new Clazz(typeFQN, sourceCode);
-				clazzMap.put(typeDeclaration, clazz);
-				clazzNameMap.put(typeFQN, clazz);
-				type = clazz;
-			}
-			
-			CompUnit compUnit = compUnitMap.get(compilationUnit);
-			compUnit.addType(type);
-			
-			for(TypeDeclaration subType : getSubTypes(typeDeclaration)){
-				typeStack.push(subType);
-			}
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
 	private void cacheMethods(CompilationUnit compilationUnit) {
 		
-		Stack<TypeDeclaration> typeStack = new Stack<TypeDeclaration>();
+		Stack<AbstractTypeDeclaration> typeStack = new Stack<>();
 		typeStack.addAll(compilationUnit.types());
 
 		while(!typeStack.isEmpty()){
-			TypeDeclaration typeDeclaration = typeStack.pop();
 			
-			cacheMethods(typeDeclaration);
+			AbstractTypeDeclaration abstractTypeDecl = typeStack.pop();
 			
-			for(TypeDeclaration subType : getSubTypes(typeDeclaration)){
-				typeStack.push(subType);
-			}
+			//FIXME: Add support for enums (EnumDeclaration)
+			if(abstractTypeDecl.getNodeType() == ASTNode.TYPE_DECLARATION){
+				
+				TypeDeclaration typeDeclaration = 
+						(TypeDeclaration)abstractTypeDecl;
+				
+				cacheMethods(typeDeclaration);
+				
+				for(TypeDeclaration subType : getSubTypes(typeDeclaration)){
+					typeStack.push(subType);
+				}
+			}			
 		}
 	}
 	
@@ -196,12 +211,13 @@ public class Cacher extends FileASTRequestor{
 			boolean isConstructor = methodDeclaration.isConstructor();
 			
 			String returnType;
-			//Constructors have null returnType
-			if(methodDeclaration.getReturnType2() != null){
-				returnType = methodDeclaration.getReturnType2().toString();
+			//Constructors have null returnType. In this case, we set the
+			//return type to be the type itself.
+			if(methodDeclaration.getReturnType2() == null){
+				returnType = type.getName();
 			}
 			else{
-				returnType = type.getName();
+				returnType = methodDeclaration.getReturnType2().toString();
 			}
 			
 			String body = null;
@@ -241,10 +257,18 @@ public class Cacher extends FileASTRequestor{
 			type.addMethod(constructor);
 		}
 		
-		//Adding artificial "attrib<>" method		
+		//Recovering attributes
+		StringBuilder attributesBuilder = new StringBuilder();
+		for(FieldDeclaration fieldDeclaration : typeDeclaration.getFields()){
+			attributesBuilder.append(fieldDeclaration.toString().trim());
+			attributesBuilder.append(System.lineSeparator());
+		}
+		String attributes = attributesBuilder.toString();
+		
+		//Adding artificial "attrib<>" method
 		Method attribMethod = new Method(
 				"attrib<>", new ArrayList<String>(), new String(), 
-				new String(), new String(), false);
+				attributes,attributes, false);
 		
 		type.addMethod(attribMethod);
 	}
@@ -299,7 +323,7 @@ public class Cacher extends FileASTRequestor{
 		return parameterTypes;
 	}
 
-	private String getTypeFQN(TypeDeclaration typeDeclaration) {
+	private String getTypeFQN(AbstractTypeDeclaration typeDeclaration) {
 
 		String typeName = typeDeclaration.getName().toString();
 
@@ -322,7 +346,7 @@ public class Cacher extends FileASTRequestor{
 
 	@SuppressWarnings("unchecked")
 	private List<TypeDeclaration> getSubTypes(TypeDeclaration typeDeclaration) {
-		List<TypeDeclaration> subTypes = new ArrayList<TypeDeclaration>();
+		List<TypeDeclaration> subTypes = new ArrayList<>();
 
 		try{
 			//Recovers static nested classes and "regular" inner classes
@@ -416,10 +440,22 @@ public class Cacher extends FileASTRequestor{
 		return type;
 	}
 	
-	public Set<CompUnit> getCompUnits(){
+	public Set<CompUnit> getJDXCompilationUnits(){
 		Set<CompUnit> compUnits = new HashSet<>();
 		compUnits.addAll(compUnitMap.values());
 		return compUnits;
+	}
+	
+	public Set<CompilationUnit> getCompilationUnits(){
+		return compUnitMap.keySet();
+	}
+	
+	public CompUnit getJDXCompilationUnit(CompilationUnit compilationUnit){
+		return compUnitMap.get(compilationUnit);
+	}
+	
+	public Package getPackage(String packageName){
+		return pkgMap.get(packageName);
 	}
 	
 	public Set<Package> getPackages(){

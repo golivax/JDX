@@ -59,6 +59,8 @@ public class JavaAPIMatcher implements StringMatcher{
 		System.out.println("Should be false");
 		
 		System.out.println(filter.matches("java.utila.Vector"));
+		System.out.println(filter.matches("java.lang"));
+		System.out.println(filter.matches("java.lang."));
 		
 		filter.allowClassesIn(JavaNativePackage.JAVAX_SERVLET);
 		

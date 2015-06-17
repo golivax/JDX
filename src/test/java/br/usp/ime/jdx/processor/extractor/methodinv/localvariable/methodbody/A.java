@@ -2,7 +2,7 @@ package br.usp.ime.jdx.processor.extractor.methodinv.localvariable.methodbody;
 
 public class A {
 		
-	private C c;
+	//TODO: Write test case for calling methods of abstract classes
 	
 	//To be tested for method invocations inside methods 
 	//(excluding constructors) 
@@ -12,7 +12,6 @@ public class A {
 		b.bar();
 		boolean x = b.isSomething();
 		boolean y = !b.isSomething();
-		c.foo();
 	}
 	
 	protected void fooProtected(){

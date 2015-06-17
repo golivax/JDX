@@ -1,10 +1,10 @@
-package br.usp.ime.jdx.entity;
+package br.usp.ime.jdx.entity.system;
 
 import java.io.Serializable;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Package implements Serializable, SystemEntity {
+public class Package implements Serializable, JavaElement {
 
 	private static final long serialVersionUID = 289893988698799520L;
 	

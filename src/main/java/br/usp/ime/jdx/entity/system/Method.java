@@ -1,10 +1,10 @@
-package br.usp.ime.jdx.entity;
+package br.usp.ime.jdx.entity.system;
 
 import java.io.Serializable;
 import java.util.List;
 
 //TODO: getJavaDoc(), getAnnotations()
-public class Method implements Serializable, SystemEntity{
+public class Method implements Serializable, JavaElement{
 
 	private static final long serialVersionUID = -4865185051823887456L;
 

@@ -1,7 +1,7 @@
 ﻿package br.usp.ime.jdx.util.printer;
 
 import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
-import br.usp.ime.jdx.entity.relationship.dependency.TypeMetaDependency;
+import br.usp.ime.jdx.entity.relationship.dependency.meta.TypeMetaDependency;
 
 public class DependencyPrinter {
 

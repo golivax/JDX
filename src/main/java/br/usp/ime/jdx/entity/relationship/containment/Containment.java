@@ -2,11 +2,11 @@
 
 import java.io.Serializable;
 
-import br.usp.ime.jdx.entity.SystemEntity;
 import br.usp.ime.jdx.entity.relationship.Relationship;
 import br.usp.ime.jdx.entity.relationship.RelationshipType;
+import br.usp.ime.jdx.entity.system.JavaElement;
 
-public class Containment<E extends SystemEntity,T extends SystemEntity> extends Relationship<E,T> implements Serializable{
+public class Containment<E extends JavaElement,T extends JavaElement> extends Relationship<E,T> implements Serializable{
 
 	private static final long serialVersionUID = -320459234337627245L;
 

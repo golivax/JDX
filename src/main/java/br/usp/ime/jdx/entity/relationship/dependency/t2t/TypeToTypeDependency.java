@@ -1,12 +1,13 @@
-package br.usp.ime.jdx.entity.relationship.dependency;
+package br.usp.ime.jdx.entity.relationship.dependency.t2t;
 
-import br.usp.ime.jdx.entity.Type;
+import br.usp.ime.jdx.entity.relationship.dependency.Dependency;
+import br.usp.ime.jdx.entity.system.Type;
 
-public abstract class TypeDependency extends Dependency<Type,Type>{
+public abstract class TypeToTypeDependency extends Dependency<Type,Type>{
 
 	private static final long serialVersionUID = -3038818691650424132L;
 
-	public TypeDependency(Type client, Type supplier, String label) {
+	public TypeToTypeDependency(Type client, Type supplier, String label) {
 		super(client, supplier, label);
 	}
 

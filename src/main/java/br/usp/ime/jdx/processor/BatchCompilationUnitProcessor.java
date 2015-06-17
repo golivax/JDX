@@ -1,7 +1,9 @@
 ﻿package br.usp.ime.jdx.processor;
 
 import java.util.List;
+import java.util.Map;
 
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
@@ -13,18 +15,23 @@ public class BatchCompilationUnitProcessor {
 		
 		try{
 			
-			// creating the parser
-			ASTParser parser = ASTParser.newParser(AST.JLS4);
+			//Creates the parser for JLS8 (Java 8)
+			ASTParser parser = ASTParser.newParser(AST.JLS8);
 			
-			// should resolve bindings?
-			parser.setResolveBindings(true); 
+			//Must resolve bindings
+			parser.setResolveBindings(true);
+			
+			//Set compliance level to Java 1.8
+			Map options = JavaCore.getOptions();
+			JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
+			parser.setCompilerOptions(options);
 			
 			System.out.println("Sourcepath Entries: " + sourceDirs);
 			
 			String[] sourceDirsArray = 
 					sourceDirs.toArray(new String[sourceDirs.size()]);
 			
-			// setting the environment			
+			//Sets the environment			
 			parser.setEnvironment(null, sourceDirsArray, null, true);			
 			
 			parser.createASTs(paths, null, new String[0], req, null);

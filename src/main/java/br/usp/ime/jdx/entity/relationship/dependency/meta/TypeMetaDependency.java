@@ -1,20 +1,35 @@
-package br.usp.ime.jdx.entity.relationship.dependency;
+package br.usp.ime.jdx.entity.relationship.dependency.meta;
 
-import br.usp.ime.jdx.entity.Type;
+import java.util.HashSet;
+import java.util.Set;
+
+import br.usp.ime.jdx.entity.relationship.dependency.Dependency;
+import br.usp.ime.jdx.entity.relationship.dependency.DependencyType;
+import br.usp.ime.jdx.entity.system.JavaElement;
+import br.usp.ime.jdx.entity.system.Type;
 
 public class TypeMetaDependency extends Dependency<Type,Type>{
 	
 	private static final long serialVersionUID = 737621518094256388L;
 	
-	public TypeMetaDependency(Type client, Type supplier, int strength) {
-		super(client, supplier, "meta", strength);
+	private Set<Dependency<? extends JavaElement, ? extends JavaElement>> dependencies = 
+			new HashSet<>();
+	
+	public TypeMetaDependency(Type client, Type supplier) {
+		super(client, supplier, "meta", 1);
 	}
 
 	@Override
 	public DependencyType getDependencyType() {
-		// TODO Auto-generated method stub
-		return null;
+		return DependencyType.TYPE_META_DEPENDENCY;
 	}
 	
-	//addDependency(Method etc)
+	public void addDependency(Dependency<? extends JavaElement, ? extends JavaElement> dependency){
+		this.dependencies.add(dependency);
+	}
+	
+	public Set<Dependency<? extends JavaElement, ? extends JavaElement>> getDependencies(){
+		return dependencies;
+	}
+	
 }

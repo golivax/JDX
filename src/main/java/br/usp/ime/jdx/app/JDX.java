@@ -2,15 +2,15 @@
 
 import java.io.File;
 import java.io.InputStream;
-import java.nio.file.FileSystems;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import br.usp.ime.jdx.entity.SourceCodeUnit;
 import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
+import br.usp.ime.jdx.entity.system.Method;
+import br.usp.ime.jdx.entity.system.SourceCodeUnit;
 import br.usp.ime.jdx.filter.JavaAPIMatcher;
-import br.usp.ime.jdx.filter.SimpleStringMatcher;
 import br.usp.ime.jdx.filter.StringMatcher;
 import br.usp.ime.jdx.processor.extractor.DependencyExtractor;
 import br.usp.ime.jdx.util.filesystem.FilesystemUtils;
@@ -79,17 +79,28 @@ public class JDX {
 		
 		System.out.println(new Date(System.currentTimeMillis()));
 		
-		String fileSeparator = FileSystems.getDefault().getSeparator();
-		System.out.println(fileSeparator);
-		
-		String rootDir = "C:/tmp/ase2015/9/workspace1";
+		String rootDir = "C:/Users/user/workspace/Teste3/src";
 				
 		JDX jdx = new JDX();
 		
 		DependencyReport depReport = jdx.calculateDepsFrom(
 				rootDir, true, "*.java", new JavaAPIMatcher(),true);
 
-		System.out.println(depReport.getJavaProject().getMethods());
+		System.out.println("Reference deps: " + depReport.getReferenceDependencies());
+		System.out.println("Method call deps: " + depReport.getMethodCallDependencies());
+		System.out.println("Access deps: " + depReport.getAccessDependencies());
+		System.out.println("Method Par deps: " + depReport.getMethodParameterDependencies());
+		System.out.println("Return Type deps: " + depReport.getReturnTypeDependencies());
+		System.out.println("Throw deps: " + depReport.getThrowDependencies());
+		System.out.println("Package Import deps: " + depReport.getPackageImportDependencies());
+		System.out.println("Type Import deps: " + depReport.getTypeImportDependencies());
+		System.out.println("Method Import deps: " + depReport.getMethodImportDependencies());
+		
+		Collection<Method> methodsFromA = depReport.getJavaProject().getCompUnit(
+				"C:/Users/user/workspace/Teste3/src/p1/A.java").getMethods();
+
+		Collection<Method> methodsFromC = depReport.getJavaProject().getCompUnit(
+				"C:/Users/user/workspace/Teste3/src/p1/C.java").getMethods();
 		
 		System.out.println(new Date(System.currentTimeMillis()));
 	}

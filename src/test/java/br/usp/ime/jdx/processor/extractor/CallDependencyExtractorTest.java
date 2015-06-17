@@ -10,10 +10,10 @@ import java.util.Collection;
 import org.junit.Test;
 
 import br.usp.ime.jdx.app.JDX;
-import br.usp.ime.jdx.entity.relationship.dependency.CompUnitMetaDependency;
 import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
-import br.usp.ime.jdx.entity.relationship.dependency.MethodCallDependency;
-import br.usp.ime.jdx.entity.relationship.dependency.TypeMetaDependency;
+import br.usp.ime.jdx.entity.relationship.dependency.m2m.MethodCallDependency;
+import br.usp.ime.jdx.entity.relationship.dependency.meta.CompUnitMetaDependency;
+import br.usp.ime.jdx.entity.relationship.dependency.meta.TypeMetaDependency;
 import br.usp.ime.jdx.filter.JavaAPIMatcher;
 
 public class CallDependencyExtractorTest {
@@ -81,6 +81,7 @@ public class CallDependencyExtractorTest {
 		System.out.println(depReport);
 		
 		//One compilation unit dependency
+		System.out.println("Dependencias: " + depReport.getCompUnitMetaDependencies());
 		assertEquals(1, depReport.getCompUnitMetaDependencies().size());
 		
 		CompUnitMetaDependency dep = 

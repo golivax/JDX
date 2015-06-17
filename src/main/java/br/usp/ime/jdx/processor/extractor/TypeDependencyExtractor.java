@@ -17,11 +17,11 @@ import br.usp.ime.jdx.filter.StringMatcher;
  */
 public class TypeDependencyExtractor {
 
-	private Cacher cacher;
+	private Cache cacher;
 	private StringMatcher classFilter;
 	private DependencyReport dependencyReport;
 	
-	public TypeDependencyExtractor(Cacher cacher){
+	public TypeDependencyExtractor(Cache cacher){
 		this.cacher = cacher;
 	}
 	
@@ -119,11 +119,10 @@ public class TypeDependencyExtractor {
 		
 		if(typeBinding == null){
 			
-			/**
 			System.out.println("WARNING: Could not find binding for " + 
 					type + " in class " + 
 					cacher.getType(typeDeclaration).getCompUnit());
-			*/
+
 			return null;
 		}
 		else{
