@@ -99,7 +99,14 @@ public class ExplicitCallDependencyExtractor implements ExpressionProcessor,
 			
 			//We actually process the method declaration to avoid 
 			//having parameter types resolved
-			processMethodBinding(methodBinding.getMethodDeclaration());
+			if(methodBinding.getMethodDeclaration() != null){
+				processMethodBinding(methodBinding.getMethodDeclaration());	
+			}
+			//In the weird case where getMethodDeclaration returns null, we
+			//process the method binding
+			else{
+				processMethodBinding(methodBinding);
+			}
 		}
 	}
 	

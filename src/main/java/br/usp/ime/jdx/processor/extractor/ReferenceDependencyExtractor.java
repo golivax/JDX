@@ -59,8 +59,10 @@ public class ReferenceDependencyExtractor implements FieldDeclarationProcessor,
 
 	private void processITypeBinding(Method clientMethod,
 			ITypeBinding iTypeBinding) {
-		if(iTypeBinding != null){
 		
+		//We don't want bindings to primitive types
+		if(iTypeBinding != null && !iTypeBinding.isPrimitive()){
+					
 			Type type = BindingResolver.resolveTypeBinding(
 					classFilter, cache, iTypeBinding);
 

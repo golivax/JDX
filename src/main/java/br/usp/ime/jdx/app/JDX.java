@@ -1,14 +1,12 @@
 ﻿package br.usp.ime.jdx.app;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
-import br.usp.ime.jdx.entity.system.Method;
 import br.usp.ime.jdx.entity.system.SourceCodeUnit;
 import br.usp.ime.jdx.filter.JavaAPIMatcher;
 import br.usp.ime.jdx.filter.StringMatcher;
@@ -29,26 +27,22 @@ public class JDX {
 	//TODO: Change to truly fluent API
 	public DependencyReport calculateDepsFrom(String sourceDir, 
 			boolean recursive, String globPattern, StringMatcher classFilter, 
-			boolean recoverSourceCode) {
-		
-		DependencyExtractor extractor = new DependencyExtractor();
-		
-		String[] paths = FilesystemUtils.getPathsFromSourceDir(
-				sourceDir, globPattern, recursive);
+			boolean recoverSourceCode) throws IOException{
 		
 		List<String> sourceDirs = new ArrayList<String>();
 		sourceDirs.add(sourceDir);
-				
-		return extractor.run(sourceDirs, paths, classFilter, recoverSourceCode);
+		
+		return calculateDepsFrom(sourceDirs, recursive, globPattern, 
+				classFilter, recoverSourceCode);
 	}
 	
 	//TODO: Change to truly fluent API
 	public DependencyReport calculateDepsFrom(List<String> sourceDirs, 
 			boolean recursive, String globPattern, StringMatcher classFilter,
-			boolean recoverSourceCode) {
-
+			boolean recoverSourceCode) throws IOException{
+		
 		DependencyExtractor extractor = new DependencyExtractor();
-
+		
 		String[] paths = FilesystemUtils.getPathsFromSourceDirs(
 				sourceDirs, globPattern, recursive);
 		
@@ -75,34 +69,14 @@ public class JDX {
 				"This operation has not been implemented yet");
 	}
 	
-	public static void main(String[] args) {
-		
-		System.out.println(new Date(System.currentTimeMillis()));
-		
-		String rootDir = "C:/Users/user/workspace/Teste3/src";
-				
+	public static void main(String[] args) throws IOException{
 		JDX jdx = new JDX();
 		
-		DependencyReport depReport = jdx.calculateDepsFrom(
-				rootDir, true, "*.java", new JavaAPIMatcher(),true);
-
-		System.out.println("Reference deps: " + depReport.getReferenceDependencies());
-		System.out.println("Method call deps: " + depReport.getMethodCallDependencies());
-		System.out.println("Access deps: " + depReport.getAccessDependencies());
-		System.out.println("Method Par deps: " + depReport.getMethodParameterDependencies());
-		System.out.println("Return Type deps: " + depReport.getReturnTypeDependencies());
-		System.out.println("Throw deps: " + depReport.getThrowDependencies());
-		System.out.println("Package Import deps: " + depReport.getPackageImportDependencies());
-		System.out.println("Type Import deps: " + depReport.getTypeImportDependencies());
-		System.out.println("Method Import deps: " + depReport.getMethodImportDependencies());
+		DependencyReport report = 
+				jdx.calculateDepsFrom("/home/gustavo/tmp/test", 
+						true, "*.java", new JavaAPIMatcher(), false);
 		
-		Collection<Method> methodsFromA = depReport.getJavaProject().getCompUnit(
-				"C:/Users/user/workspace/Teste3/src/p1/A.java").getMethods();
-
-		Collection<Method> methodsFromC = depReport.getJavaProject().getCompUnit(
-				"C:/Users/user/workspace/Teste3/src/p1/C.java").getMethods();
-		
-		System.out.println(new Date(System.currentTimeMillis()));
+		System.out.println(report);
 	}
 	
 }

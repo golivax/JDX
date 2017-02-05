@@ -2,6 +2,7 @@ package br.usp.ime.jdx.processor.extractor;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collection;
 
@@ -25,7 +26,7 @@ public class TypeDependencyExtractorTest {
 	private String rootDir = currentDir + "/" + testPath + "/" + packagePath;
 		
 	@Test
-	public void shouldFindNoCallsFromOneTypeToAnother(){
+	public void shouldFindNoCallsFromOneTypeToAnother() throws IOException{
 		
 		String innerPackage = "/inheritance/clazz";
 		String rootDir = this.rootDir + innerPackage;

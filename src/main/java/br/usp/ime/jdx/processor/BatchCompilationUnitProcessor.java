@@ -11,7 +11,7 @@ import org.eclipse.jdt.core.dom.FileASTRequestor;
 public class BatchCompilationUnitProcessor {
 		
 	public void run(List<String> sourceDirs, FileASTRequestor req, 
-			String[] paths){
+			String[] paths, boolean recoverSourceCode){
 		
 		try{
 			
@@ -25,6 +25,10 @@ public class BatchCompilationUnitProcessor {
 			Map options = JavaCore.getOptions();
 			JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
 			parser.setCompilerOptions(options);
+			
+			//If source code is not wanted, then we can ask JDT to skip
+			//method bodies (does not impact binding)
+			if(!recoverSourceCode) parser.setIgnoreMethodBodies(true);
 			
 			System.out.println("Sourcepath Entries: " + sourceDirs);
 			
@@ -63,4 +67,9 @@ public class BatchCompilationUnitProcessor {
 
 		return sourcepathEntry;
 	}*/
+	
+	public static void main(String[] args) {
+		Map options = JavaCore.getOptions();
+		System.out.println(options);
+	}
 }

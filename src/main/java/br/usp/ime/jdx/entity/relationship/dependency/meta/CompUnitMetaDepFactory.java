@@ -24,7 +24,7 @@ public class CompUnitMetaDepFactory {
 		//Type Meta Dependencies
 		for(TypeMetaDependency typeMetaDep : 
 				depReport.getTypeMetaDependencies()){
-			
+						
 			CompUnit clientCU = typeMetaDep.getClient().getCompUnit();
 			CompUnit supplierCU = typeMetaDep.getSupplier().getCompUnit();
 			

@@ -13,12 +13,12 @@ import java.util.ArrayList;
 import java.util.List;
  
 
-public class PathFinder extends SimpleFileVisitor<Path> {
+public class FileFinder extends SimpleFileVisitor<Path> {
 
 	private List<String> foundPaths;
     private final PathMatcher matcher;
 
-    public PathFinder(String pattern) {
+    public FileFinder(String pattern) {
     	
     	foundPaths = new ArrayList<String>();
         matcher = FileSystems.getDefault()
@@ -38,14 +38,6 @@ public class PathFinder extends SimpleFileVisitor<Path> {
 	public FileVisitResult visitFile(Path file,
             BasicFileAttributes attrs) {
         find(file);
-        return CONTINUE;
-    }
-
-    // Invoke the pattern matching method on each directory.
-    @Override
-    public FileVisitResult preVisitDirectory(Path dir,
-            BasicFileAttributes attrs) {
-        find(dir);
         return CONTINUE;
     }
 

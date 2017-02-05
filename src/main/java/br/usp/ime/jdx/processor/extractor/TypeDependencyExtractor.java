@@ -7,6 +7,8 @@ import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
+import br.usp.ime.jdx.entity.system.Clazz;
+import br.usp.ime.jdx.entity.system.Interface;
 import br.usp.ime.jdx.filter.StringMatcher;
 
 /**
@@ -15,36 +17,38 @@ import br.usp.ime.jdx.filter.StringMatcher;
  * @author Gustavo Ansaldi Oliva {@link goliva@ime.usp.br}
  *
  */
+
+//FIXME: Refactor this class in order to make it use "Binding Resolver"
 public class TypeDependencyExtractor {
 
-	private Cache cacher;
+	private Cache cache;
 	private StringMatcher classFilter;
-	private DependencyReport dependencyReport;
+	private DependencyReport depReport;
 	
 	public TypeDependencyExtractor(Cache cacher){
-		this.cacher = cacher;
+		this.cache = cacher;
 	}
 	
-	public DependencyReport run(DependencyReport dependencyReport, 
+	public DependencyReport run(DependencyReport depReport, 
 			StringMatcher classFilter) {
 		
 		this.classFilter = classFilter;
-		this.dependencyReport = dependencyReport;
+		this.depReport = depReport;
 		
 		for(TypeDeclaration clazzTypeDeclaration : 
-			cacher.getClazzTypeDeclarations()){
+			cache.getClazzTypeDeclarations()){
 			
 			detectClassInheritance(clazzTypeDeclaration);
 			detectInterfaceImplementation(clazzTypeDeclaration);
 		}
 		
 		for(TypeDeclaration interfaceTypeDeclaration : 
-			cacher.getInterfaceTypeDeclarations()){
+			cache.getInterfaceTypeDeclarations()){
 
 			detectInterfaceInheritance(interfaceTypeDeclaration);
 		}
 	
-		return dependencyReport;
+		return depReport;
 	}
 	
 	private void detectClassInheritance(TypeDeclaration clazzTypeDeclaration) {
@@ -52,15 +56,28 @@ public class TypeDependencyExtractor {
 		Type superClassType = clazzTypeDeclaration.getSuperclassType();
 
 		if(superClassType != null){
-
+			
 			String superClassName = getBindingName(
 					clazzTypeDeclaration, superClassType);
 
 			if (superClassName != null && !classFilter.matches(superClassName)){
 
-				dependencyReport.addClazzInheritanceDependency(
-						cacher.getClazz(clazzTypeDeclaration), 
-						cacher.getClazz(superClassName));
+				Clazz client = cache.getClazz(clazzTypeDeclaration);
+				Clazz supplier = cache.getClazz(superClassName);
+
+				//In a weird situation in which a class C1 extends a class C2 (that is not part of the environment) 
+				//and the system has a class C3 with the same name as C2. 
+				//JDT ends up binding the C1 to C3, which is wrong. 
+				//Worse than that, if C3 is an annotation, if won't be found in the cache 
+				//and an invalid dependency with no supplier will be build
+				//Example: ASF commit 1580656
+				//tomee\trunk\container\openejb-loader\src\test\java\org\apache\openejb\observer\EventSpeedTest.java
+				//tomee\trunk\container\openejb-loader\src\test\java\org\apache\openejb\observer\Assert.java
+				//JDT incorrectly binds EventSpeedTest to this Assert class and then does find this Assert class in the cache (because it is an annotation)
+				
+				if(client != null && supplier != null){				
+					depReport.addClazzInheritanceDependency(client,supplier);
+				}
 			}
 		}
 	}
@@ -68,7 +85,7 @@ public class TypeDependencyExtractor {
 	@SuppressWarnings("unchecked")
 	private void detectInterfaceImplementation(
 			TypeDeclaration clazzTypeDeclaration){
-			
+		
 		//For a class declaration, these are the interfaces that 
 		//this class implements
 		List<Type> implementedInterfaces = 
@@ -82,9 +99,18 @@ public class TypeDependencyExtractor {
 			if (implementedInterfaceName != null && 
 				!classFilter.matches(implementedInterfaceName)){
 
-				dependencyReport.addImplementsDependency(
-						cacher.getClazz(clazzTypeDeclaration), 
-						cacher.getInterface(implementedInterfaceName));
+				Clazz clazz = cache.getClazz(clazzTypeDeclaration);
+				
+				//Java does not issue a compilation error when a class implements an Annotation.
+				//In this case, cacher does not find the annotation
+				//Example: ASF commit 1498347
+				//bval\branches\bval-11\bval-jsr303\src\main\java\org\apache\bval\cdi\BValAnnotatedType.java
+				//BValBindingLitteral implements an annotation (BValBinding).
+				Interface interf = cache.getInterface(implementedInterfaceName); 
+				 
+				if(clazz != null && interf != null){
+					depReport.addImplementsDependency(clazz,interf);	
+				}				
 			}
 		}					
 	}
@@ -105,28 +131,37 @@ public class TypeDependencyExtractor {
 
 			if (extendedInterfaceName != null && 
 					!classFilter.matches(extendedInterfaceName)){
+				
+				Interface client = cache.getInterface(interfaceTypeDeclaration);
+				Interface supplier = cache.getInterface(extendedInterfaceName);
 
-				dependencyReport.addInterfaceInheritanceDependency(
-						cacher.getInterface(interfaceTypeDeclaration), 
-						cacher.getInterface(extendedInterfaceName));
+				//See comment in "detectClassInheritance". Same thing can happen for interface inheritance.
+				//This happens when processing commit 1385407 in ASF for project 'ctakes' (asf/ctakes) for class
+				//'trunk/cTAKES/core/src/edu/mayo/bmi/uima/core/cc/NonTerminalConsumer.java'
+				if(client != null && supplier != null){
+					depReport.addInterfaceInheritanceDependency(client,supplier);
+				}
+				
 			}
 		}			
 	}
 
 	private String getBindingName(TypeDeclaration typeDeclaration, Type type) {
 		
-		ITypeBinding typeBinding = type.resolveBinding();
+		ITypeBinding iTypeBinding = type.resolveBinding();
 		
-		if(typeBinding == null){
-			
+		if(iTypeBinding == null){
+		
+			/**
 			System.out.println("WARNING: Could not find binding for " + 
 					type + " in class " + 
-					cacher.getType(typeDeclaration).getCompUnit());
-
+					cache.getType(typeDeclaration).getCompUnit());
+			*/
+			
 			return null;
 		}
 		else{
-			return ExtractorUtils.getQualifiedTypeName(typeBinding);
+			return ExtractorUtils.getQualifiedTypeName(iTypeBinding);
 		}
 		
 	}

@@ -105,7 +105,9 @@ public class DependencyExtractor{
 		BatchCompilationUnitProcessor batchCompilationUnitProcessor = 
 				new BatchCompilationUnitProcessor();
 
-		batchCompilationUnitProcessor.run(sourceDirs, cacher, paths);
+		batchCompilationUnitProcessor.run(sourceDirs, cacher, paths, 
+				recoverSourceCode);
+		
 		return cacher;
 	}
 

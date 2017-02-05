@@ -64,4 +64,8 @@ public class Package implements Serializable, JavaElement {
 		return getParent() != null;
 	}
 	
+	public boolean isDefault(){
+		return this.FQN.equals("(default package)");
+	}
+	
 }

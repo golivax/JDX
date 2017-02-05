@@ -3,6 +3,7 @@ package br.usp.ime.jdx.util.filesystem;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public class FilesystemUtils {
 	}
 	
 	public static String[] getPathsFromSourceDirs(List<String> sourceDirs,
-			String globPattern, boolean recursive){
+			String globPattern, boolean recursive) throws IOException{
 		
 		String[] paths = new String[0];
 		
@@ -32,7 +33,11 @@ public class FilesystemUtils {
 	}
 	
 	public static String[] getPathsFromSourceDir(String sourceDir, 
-			String globPattern, boolean recursive){
+			String globPattern, boolean recursive) throws IOException{
+		
+		if(!Files.exists(Paths.get(sourceDir))){
+			throw new NoSuchFileException(sourceDir);
+		}
 		
 		if(recursive){
 			return getPathsFromSourceDirRecursively(sourceDir, globPattern);
@@ -43,24 +48,20 @@ public class FilesystemUtils {
 	}
 
 	private static String[] getPathsFromSourceDirRecursively(String sourceDir,
-			String globPattern) {
+			String globPattern) throws IOException {
 
 		List<String> paths = new ArrayList<String>();
 		
-		try{
-			PathFinder finder = new PathFinder(globPattern);
-	        Files.walkFileTree(Paths.get(sourceDir), finder);
-	        paths.addAll(finder.getResults());
-		}catch(IOException e){
-			e.printStackTrace();
-		}
-		
+		FileFinder finder = new FileFinder(globPattern);
+	    Files.walkFileTree(Paths.get(sourceDir), finder);
+	    paths.addAll(finder.getResults());
+	    		
 		String[] pathsArray = paths.toArray(new String[paths.size()]);
 		return pathsArray;
 	}
 
 	private static String[] getPathsFromSourceDir(String sourceDir,
-			String globPattern) {
+			String globPattern) throws IOException{
 		
 		List<String> paths = new ArrayList<String>();
 		
@@ -72,9 +73,6 @@ public class FilesystemUtils {
 				paths.add(path.toString());
 			}
 			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		
 		String[] pathsArray = paths.toArray(new String[paths.size()]);
@@ -82,15 +80,22 @@ public class FilesystemUtils {
 	}
 	
 	public static void main(String[] args) {
-		String[] paths = FilesystemUtils.getPathsFromSourceDir(
-		  "C:/tmp/tomcat/tomcat/tc7.0.x/trunk/java/org/apache/catalina", 
-		  "*.java", true);
 		
-		for(String path : paths){
-			System.out.println(path);
+		try{
+		
+			String[] paths = FilesystemUtils.getPathsFromSourceDir(
+			  "C:/tmp/tomcat/tomcat/tc7.0.x/trunk/java/org/apache/catalina", 
+			  "*.java", true);
+			
+			for(String path : paths){
+				System.out.println(path);
+			}
+			
+			System.out.println(paths.length);
+			
+		}catch(IOException e){
+			e.printStackTrace();
 		}
-		
-		System.out.println(paths.length);
 	}
 	
 }

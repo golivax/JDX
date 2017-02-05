@@ -19,7 +19,7 @@ public abstract class CompilationUnitProcessor {
 		try{
 			
 			// creating the parser
-			ASTParser parser = ASTParser.newParser(AST.JLS4);
+			ASTParser parser = ASTParser.newParser(AST.JLS8);
 
 			/**Binding information is obtained from the Java model. 
 			 * This means that the compilation unit must be located relative to 

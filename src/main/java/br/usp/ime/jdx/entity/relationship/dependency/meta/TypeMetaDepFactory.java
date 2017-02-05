@@ -41,6 +41,12 @@ public class TypeMetaDepFactory {
 			Type supplierType = 
 					m2tDep.getSupplier();
 			
+			if(supplierType == null){
+				System.out.println("m2t - Null supplier");
+				System.out.println(m2tDep);
+				System.out.println(clientType.getCompUnit().getPath());
+			}
+			
 			addTypeMetaDep(clientType, supplierType, m2tDep);
 		}
 					
@@ -49,6 +55,12 @@ public class TypeMetaDepFactory {
 			
 			Type clientType = t2tDep.getClient();
 			Type supplierType = t2tDep.getSupplier();
+			
+			if(supplierType == null){
+				System.out.println("t2t - Null supplier");
+				System.out.println(t2tDep);
+				System.out.println(clientType.getCompUnit().getPath());
+			}
 			
 			addTypeMetaDep(clientType, supplierType, t2tDep);
 		}
@@ -63,7 +75,7 @@ public class TypeMetaDepFactory {
 		
 		//Somente deps entre types diferentes
 		if(!clientType.equals(supplierType)){
-		
+					
 			if (typeMetaDepsMap.containsKey(clientType,supplierType)){
 				
 				TypeMetaDependency typeMetaDep = 

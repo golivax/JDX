@@ -22,6 +22,7 @@ import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.LabeledStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.ReturnStatement;
@@ -384,13 +385,26 @@ public class CompUnitTraverser {
 
 	private void processExpressionStatement(
 			ExpressionStatement	expressionStatement){
-
 		Expression expression = expressionStatement.getExpression();
 		
 		if(expression instanceof Assignment){
 			Assignment assignment = (Assignment)expression;
 			delegateExpressionProcessing(assignment.getLeftHandSide());
 			delegateExpressionProcessing(assignment.getRightHandSide());
+		}
+		else if(expression instanceof MethodInvocation){
+			MethodInvocation method = (MethodInvocation)expression;
+			
+			//Process the parameters
+			List<Expression> parameters = method.arguments(); 
+			if(parameters != null){
+				for(Expression parameter : parameters){
+					delegateExpressionProcessing(parameter);
+				}
+			}
+		
+			//Process the method itself
+			delegateExpressionProcessing(expression);
 		}
 		else{
 			delegateExpressionProcessing(expression);

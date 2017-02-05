@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collection;
 
@@ -24,7 +25,7 @@ public class CallDependencyExtractorTest {
  
 	//No dep
 	@Test
-	public void shouldFindNoCallsFromOneTypeToAnother(){
+	public void shouldFindNoCallsFromOneTypeToAnother() throws IOException{
 		String rootDir = this.rootDir + "/nodep";
 			
 		JDX jdx = new JDX();
@@ -46,7 +47,7 @@ public class CallDependencyExtractorTest {
 	//Local variable tests
 	
 	@Test
-	public void shouldFindMethodInvocationsInsideConstructors(){
+	public void shouldFindMethodInvocationsInsideConstructors() throws IOException{
 		String rootDir = this.rootDir + "/localvariable/constructorbody";
 		
 		JDX jdx = new JDX();
@@ -71,7 +72,7 @@ public class CallDependencyExtractorTest {
 	
 	
 	@Test
-	public void shouldFindMethodInvocationsInsideMethods(){
+	public void shouldFindMethodInvocationsInsideMethods() throws IOException{
 		String rootDir = this.rootDir + "/localvariable/methodbody";
 		
 		JDX jdx = new JDX();
@@ -97,7 +98,7 @@ public class CallDependencyExtractorTest {
 	}
 	
 	@Test
-	public void shouldFindMethodInvocationsInDoWhile(){
+	public void shouldFindMethodInvocationsInDoWhile() throws IOException{
 		String rootDir = this.rootDir + "/localvariable/methodbody/dowhileexp";
 		
 		JDX jdx = new JDX();
@@ -121,7 +122,7 @@ public class CallDependencyExtractorTest {
 	}
 	
 	@Test
-	public void shouldFindMethodInvocationsInFor(){
+	public void shouldFindMethodInvocationsInFor() throws IOException{
 		String rootDir = this.rootDir + "/localvariable/methodbody/forexp";
 		
 		JDX jdx = new JDX();
@@ -145,7 +146,7 @@ public class CallDependencyExtractorTest {
 	}
 	
 	@Test
-	public void shouldFindMethodInvocationsInIfThenElse(){
+	public void shouldFindMethodInvocationsInIfThenElse() throws IOException{
 		String rootDir = this.rootDir + "/localvariable/methodbody/ifthenelseexp";
 		
 		JDX jdx = new JDX();
@@ -170,7 +171,7 @@ public class CallDependencyExtractorTest {
 	
 	
 	@Test
-	public void shouldFindMethodInvocationInReturn(){
+	public void shouldFindMethodInvocationInReturn() throws IOException{
 		String rootDir = this.rootDir + "/localvariable/methodbody/returnexp";
 		
 		JDX jdx = new JDX();
@@ -194,7 +195,7 @@ public class CallDependencyExtractorTest {
 	}
 	
 	@Test
-	public void shouldFindMethodInvocationsInSwitch(){
+	public void shouldFindMethodInvocationsInSwitch() throws IOException{
 		String rootDir = this.rootDir + "/localvariable/methodbody/switchexp";
 		
 		JDX jdx = new JDX();
@@ -218,7 +219,7 @@ public class CallDependencyExtractorTest {
 	}
 	
 	@Test
-	public void shouldFindMethodInvocationsInTryCatch(){
+	public void shouldFindMethodInvocationsInTryCatch() throws IOException{
 		String rootDir = this.rootDir + "/localvariable/methodbody/trycatchexp";
 		
 		JDX jdx = new JDX();
@@ -242,7 +243,7 @@ public class CallDependencyExtractorTest {
 	}
 	
 	@Test
-	public void shouldFindMethodInvocationsInWhile(){
+	public void shouldFindMethodInvocationsInWhile() throws IOException{
 		String rootDir = this.rootDir + "/localvariable/methodbody/whileexp";
 		
 		JDX jdx = new JDX();
@@ -266,7 +267,7 @@ public class CallDependencyExtractorTest {
 	}
 	
 	@Test
-	public void shouldFindMultipleMethodInvocations(){
+	public void shouldFindMultipleMethodInvocations() throws IOException{
 		String rootDir = this.rootDir + "/localvariable/methodbody/misc/multiplecalls";
 		
 		JDX jdx = new JDX();
@@ -290,7 +291,7 @@ public class CallDependencyExtractorTest {
 	}
 	
 	@Test
-	public void shouldFindChainedMethodInvocations(){
+	public void shouldFindChainedMethodInvocations() throws IOException{
 		String rootDir = this.rootDir + "/localvariable/methodbody/misc/chainedcalls";
 		
 		JDX jdx = new JDX();
@@ -354,7 +355,7 @@ public class CallDependencyExtractorTest {
 	}
 	
 	@Test
-	public void shouldFindCallToAttrib(){
+	public void shouldFindCallToAttrib() throws IOException{
 		String rootDir = this.rootDir + "/localvariable/methodbody/misc/callatrib";
 		
 		JDX jdx = new JDX();
@@ -417,7 +418,7 @@ public class CallDependencyExtractorTest {
 	}
 	
 	@Test
-	public void shouldFindMethodInvocationsInsideInnerClass(){
+	public void shouldFindMethodInvocationsInsideInnerClass() throws IOException{
 		String rootDir = this.rootDir + "/localvariable/innerclassbody";
 		
 		JDX jdx = new JDX();
@@ -462,7 +463,7 @@ public class CallDependencyExtractorTest {
 	}
 	
 	@Test
-	public void shouldFindMethodInvocationsInsideLocalClass(){
+	public void shouldFindMethodInvocationsInsideLocalClass() throws IOException{
 		String rootDir = this.rootDir + "/localvariable/localclassbody";
 		
 		JDX jdx = new JDX();
@@ -486,7 +487,7 @@ public class CallDependencyExtractorTest {
 	}
 	
 	@Test
-	public void shouldFindAttributeInitialization(){
+	public void shouldFindAttributeInitialization() throws IOException{
 		String rootDir = this.rootDir + "/attribute/declaration";
 		
 		JDX jdx = new JDX();
@@ -510,7 +511,7 @@ public class CallDependencyExtractorTest {
 	}
 	
 	@Test
-	public void shouldFindAttributeMethodInvocationsInMethodBody(){
+	public void shouldFindAttributeMethodInvocationsInMethodBody() throws IOException{
 		String rootDir = this.rootDir + "/attribute/methodbody";
 		
 		JDX jdx = new JDX();
@@ -534,7 +535,7 @@ public class CallDependencyExtractorTest {
 	}
 	
 	@Test
-	public void shouldFindSuperMethodInvocation(){
+	public void shouldFindSuperMethodInvocation() throws IOException{
 		String rootDir = this.rootDir + "/supervariable/methodbody";
 		
 		JDX jdx = new JDX();
