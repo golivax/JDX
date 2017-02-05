@@ -4,7 +4,7 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
+# *.jar (jars are now allowed, sorry)
 *.war
 *.ear
 
