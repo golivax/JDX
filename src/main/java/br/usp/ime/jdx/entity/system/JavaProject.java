@@ -1,7 +1,10 @@
 package br.usp.ime.jdx.entity.system;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class JavaProject implements Serializable {
@@ -10,7 +13,7 @@ public class JavaProject implements Serializable {
 
 	private List<String> sourceDirs;
 	private Set<Package> packages;
-	private Set<CompUnit> compUnits;
+	private Map<String,CompUnit> compUnitMap;
 	private Set<Type> types;
 	private Set<Method> methods;
 	
@@ -19,9 +22,13 @@ public class JavaProject implements Serializable {
 		
 		this.sourceDirs = sourceDirs;
 		this.packages = packages;
-		this.compUnits = compUnits;
 		this.types = types;
 		this.methods = methods;
+		
+		this.compUnitMap = new HashMap<>();
+		for(CompUnit compUnit : compUnits){
+			this.compUnitMap.put(compUnit.getPath(), compUnit);
+		}
 	}
 	
 	public List<String> getSourceDirs() {
@@ -33,7 +40,7 @@ public class JavaProject implements Serializable {
 	}
 
 	public Set<CompUnit> getCompUnits() {
-		return compUnits;
+		return new HashSet<>(compUnitMap.values());
 	}
 
 	public Set<Type> getTypes() {
@@ -45,14 +52,7 @@ public class JavaProject implements Serializable {
 	}
 
 	public CompUnit getCompUnit(String compUnitPath) {
-		CompUnit searchedCompUnit = null;
-		for(CompUnit compUnit : compUnits){
-			if(compUnit.getPath().equals(compUnitPath)) {
-				searchedCompUnit = compUnit;
-				break;
-			}
-		}
-		return searchedCompUnit;
+		return compUnitMap.get(compUnitPath);
 	}
 	
 }

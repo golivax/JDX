@@ -3,6 +3,8 @@
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -10,6 +12,8 @@ import org.eclipse.jdt.core.dom.FileASTRequestor;
 
 public class BatchCompilationUnitProcessor {
 		
+	private static final Logger logger = LogManager.getLogger();
+	
 	public void run(List<String> sourceDirs, FileASTRequestor req, 
 			String[] paths, boolean recoverSourceCode){
 		
@@ -30,7 +34,7 @@ public class BatchCompilationUnitProcessor {
 			//method bodies (does not impact binding)
 			if(!recoverSourceCode) parser.setIgnoreMethodBodies(true);
 			
-			System.out.println("Sourcepath Entries: " + sourceDirs);
+			logger.info("Source directories for dependency extraction: {}", sourceDirs);
 			
 			String[] sourceDirsArray = 
 					sourceDirs.toArray(new String[sourceDirs.size()]);

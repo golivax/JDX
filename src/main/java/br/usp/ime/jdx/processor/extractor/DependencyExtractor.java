@@ -10,7 +10,7 @@ import br.usp.ime.jdx.processor.BatchCompilationUnitProcessor;
 public class DependencyExtractor{
 	
 	//TODO: Refactor. Idea is that every processor should be added to 
-	//CompUnitTraverser, i.e. no indepent processors anymore
+	//CompUnitTraverser, i.e. no independent processors anymore
 	public DependencyReport run(List<String> sourceDirs, String[] paths, 
 			StringMatcher classFilter, boolean recoverSourceCode){
 		
