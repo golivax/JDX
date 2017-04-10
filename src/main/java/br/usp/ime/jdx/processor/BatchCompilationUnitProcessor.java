@@ -45,7 +45,7 @@ public class BatchCompilationUnitProcessor {
 			parser.createASTs(paths, null, new String[0], req, null);
 			
 		}catch(Exception e){
-			e.printStackTrace();
+			logger.error("Exception log", e);
 		}
 		
 	}
