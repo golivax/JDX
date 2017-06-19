@@ -69,29 +69,26 @@ public class CompUnitMetaDepFactory {
 	
 	private void addCompUnitMetaDep(CompUnit clientCU, CompUnit supplierCU, 
 			Set<Dependency<? extends JavaElement, ? extends JavaElement>> deps){
-		
-		//Somente deps entre comp units diferentes
-		if(!clientCU.equals(supplierCU)){
-		
-			if (compUnitMetaDepsMap.containsKey(clientCU,supplierCU)){
-				
-				CompUnitMetaDependency compUnitMetaDep = 
-						compUnitMetaDepsMap.get(clientCU,supplierCU);
-				
-				for(Dependency<? extends JavaElement, ? extends JavaElement> dep : deps){
-					compUnitMetaDep.addDependency(dep);
-				}
-			}
-			else{
-				CompUnitMetaDependency compUnitMetaDep = 
-						new CompUnitMetaDependency(clientCU, supplierCU);
-				
-				for(Dependency<? extends JavaElement, ? extends JavaElement> dep : deps){
-					compUnitMetaDep.addDependency(dep);
-				}
-				
-				compUnitMetaDepsMap.put(clientCU, supplierCU, compUnitMetaDep);
+
+		if (compUnitMetaDepsMap.containsKey(clientCU,supplierCU)){
+
+			CompUnitMetaDependency compUnitMetaDep = 
+					compUnitMetaDepsMap.get(clientCU,supplierCU);
+
+			for(Dependency<? extends JavaElement, ? extends JavaElement> dep : deps){
+				compUnitMetaDep.addDependency(dep);
 			}
 		}
+		else{
+			CompUnitMetaDependency compUnitMetaDep = 
+					new CompUnitMetaDependency(clientCU, supplierCU);
+
+			for(Dependency<? extends JavaElement, ? extends JavaElement> dep : deps){
+				compUnitMetaDep.addDependency(dep);
+			}
+
+			compUnitMetaDepsMap.put(clientCU, supplierCU, compUnitMetaDep);
+		}
 	}
+
 }
