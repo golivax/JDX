@@ -72,25 +72,22 @@ public class TypeMetaDepFactory {
 	
 	private void addTypeMetaDep(Type clientType, Type supplierType, 
 			Dependency<? extends JavaElement, ? extends JavaElement> dependency){
-		
-		//Somente deps entre types diferentes
-		if(!clientType.equals(supplierType)){
-					
-			if (typeMetaDepsMap.containsKey(clientType,supplierType)){
-				
-				TypeMetaDependency typeMetaDep = 
-						typeMetaDepsMap.get(clientType,supplierType);
-				
-				typeMetaDep.addDependency(dependency);
-			}
-			else{
-				TypeMetaDependency typeMetaDep = new TypeMetaDependency(
-						clientType, supplierType);
-				
-				typeMetaDep.addDependency(dependency);
-				
-				typeMetaDepsMap.put(clientType, supplierType, typeMetaDep);
-			}
+
+		if (typeMetaDepsMap.containsKey(clientType,supplierType)){
+
+			TypeMetaDependency typeMetaDep = 
+					typeMetaDepsMap.get(clientType,supplierType);
+
+			typeMetaDep.addDependency(dependency);
+		}
+		else{
+			TypeMetaDependency typeMetaDep = new TypeMetaDependency(
+					clientType, supplierType);
+
+			typeMetaDep.addDependency(dependency);
+
+			typeMetaDepsMap.put(clientType, supplierType, typeMetaDep);
 		}
 	}
+
 }
