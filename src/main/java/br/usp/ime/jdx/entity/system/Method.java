@@ -13,6 +13,7 @@ public class Method implements Serializable, JavaElement{
 	private String returnType;
 	private String body;
 	private String sourceCode;
+	
 	private Type containingType;
 	private boolean isConstructor = false;
 
@@ -66,7 +67,7 @@ public class Method implements Serializable, JavaElement{
 	
 	public String toString(){
 		String s = new String();
-		if (containingType != null) s= containingType.getFQN() + ".";
+		if (containingType != null) s= containingType.getFQN() + "[" + containingType.getClass().getSimpleName() + "].";
 		s += getSignature();
 		return s;
 	}
@@ -129,6 +130,4 @@ public class Method implements Serializable, JavaElement{
 			return false;
 		return true;
 	}
-	
-	
 }
