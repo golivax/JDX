@@ -286,7 +286,7 @@ public class CompUnitTraverser {
 	
 	@SuppressWarnings("unchecked")
 	private void processConstructorInvocation(
-			ConstructorInvocation constructorInvocation){
+			ConstructorInvocation constructorInvocation){ //this()
 		
 		List<Expression> expressions = constructorInvocation.arguments();
 		
@@ -385,6 +385,7 @@ public class CompUnitTraverser {
 
 	private void processExpressionStatement(
 			ExpressionStatement	expressionStatement){
+		
 		Expression expression = expressionStatement.getExpression();
 		
 		if(expression instanceof Assignment){
