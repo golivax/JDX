@@ -2,12 +2,16 @@ package br.usp.ime.jdx.util.compress;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import org.apache.commons.io.IOUtils;
+
 /**
  * Not being used now, but might be useful in the future 
- * (such as to compress type source code)
+ * (such as to compress source code). 
+ * Based on: https://gist.github.com/yfnick/227e0c12957a329ad138 
  * @author Gustavo Ansaldi Oliva {@link goliva@ime.usp.br}
  */
 public class StringCompressor {
@@ -30,6 +34,7 @@ public class StringCompressor {
 		  
 	  }
 	  
+	  /**
 	  public static String decompress(byte[] text) {
 
 		  String s = null;
@@ -47,6 +52,23 @@ public class StringCompressor {
 			  gis.close();
 			  is.close();  
 			  s = string.toString();
+		  }catch(Exception e){
+			  e.printStackTrace();
+		  }
+		  
+		  return s;
+	  }
+	  */
+	  
+	  public static String decompress(byte[] text) {
+		  
+		  String s = null;
+		  
+		  try{
+			  ByteArrayInputStream bis = new ByteArrayInputStream(text);
+		      GZIPInputStream gis = new GZIPInputStream(bis);
+		      byte[] bytes = IOUtils.toByteArray(gis);
+		      s = new String(bytes, StandardCharsets.UTF_8);
 		  }catch(Exception e){
 			  e.printStackTrace();
 		  }
