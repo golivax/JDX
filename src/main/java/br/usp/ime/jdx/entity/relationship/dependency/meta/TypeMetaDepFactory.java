@@ -14,11 +14,9 @@ import br.usp.ime.jdx.entity.system.Type;
 
 public class TypeMetaDepFactory {
 	
-	private MultiKeyMap<Type,TypeMetaDependency> typeMetaDepsMap = 
-			new MultiKeyMap<>();
-
-	public Collection<TypeMetaDependency> getTypeMetaDependencies(
-			DependencyReport depReport){
+	public Collection<TypeMetaDependency> getTypeMetaDependencies(DependencyReport depReport){
+	
+		MultiKeyMap<Type,TypeMetaDependency> typeMetaDepsMap = new MultiKeyMap<>();
 		
 		for(MethodToMethodDependency m2mDep : 
 				depReport.getMethodToMethodDependencies()){
@@ -29,7 +27,7 @@ public class TypeMetaDepFactory {
 			Type supplierType = 
 					m2mDep.getSupplier().getContainingType();
 			
-			addTypeMetaDep(clientType, supplierType, m2mDep);
+			addTypeMetaDep(typeMetaDepsMap, clientType, supplierType, m2mDep);
 		}
 		
 		for(MethodToTypeDependency m2tDep : 
@@ -44,10 +42,10 @@ public class TypeMetaDepFactory {
 			if(supplierType == null){
 				System.out.println("m2t - Null supplier");
 				System.out.println(m2tDep);
-				System.out.println(clientType.getCompUnit().getPath());
+				System.out.println(clientType.getCompUnit().getRelativePath());
 			}
 			
-			addTypeMetaDep(clientType, supplierType, m2tDep);
+			addTypeMetaDep(typeMetaDepsMap, clientType, supplierType, m2tDep);
 		}
 					
 		for(TypeToTypeDependency t2tDep : 
@@ -59,10 +57,10 @@ public class TypeMetaDepFactory {
 			if(supplierType == null){
 				System.out.println("t2t - Null supplier");
 				System.out.println(t2tDep);
-				System.out.println(clientType.getCompUnit().getPath());
+				System.out.println(clientType.getCompUnit().getRelativePath());
 			}
 			
-			addTypeMetaDep(clientType, supplierType, t2tDep);
+			addTypeMetaDep(typeMetaDepsMap, clientType, supplierType, t2tDep);
 		}
 		
 		//No import dependencies
@@ -70,7 +68,8 @@ public class TypeMetaDepFactory {
 		return typeMetaDepsMap.values();
 	}
 	
-	private void addTypeMetaDep(Type clientType, Type supplierType, 
+	private void addTypeMetaDep(MultiKeyMap<Type,TypeMetaDependency> typeMetaDepsMap, 
+			Type clientType, Type supplierType, 
 			Dependency<? extends JavaElement, ? extends JavaElement> dependency){
 
 		if (typeMetaDepsMap.containsKey(clientType,supplierType)){

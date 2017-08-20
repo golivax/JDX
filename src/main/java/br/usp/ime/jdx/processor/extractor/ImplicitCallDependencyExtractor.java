@@ -1,18 +1,19 @@
 package br.usp.ime.jdx.processor.extractor;
 
-import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
+import br.usp.ime.jdx.entity.relationship.dependency.RawDependencyReport;
 import br.usp.ime.jdx.entity.system.Method;
 import br.usp.ime.jdx.entity.system.Type;
+import br.usp.ime.jdx.processor.parser.CodeParser;
 
 public class ImplicitCallDependencyExtractor{
 	
-	private Cache cacher;
+	private CodeParser cacher;
 	
-	public ImplicitCallDependencyExtractor(Cache cacher){
+	public ImplicitCallDependencyExtractor(CodeParser cacher){
 		this.cacher = cacher;
 	}
 	
-	public void run(DependencyReport depReport) {
+	public void run(RawDependencyReport depReport) {
 		
 		//First off, we add implicit dependencies from constructors to attrib<>
 		for(Type type : cacher.getTypes()){

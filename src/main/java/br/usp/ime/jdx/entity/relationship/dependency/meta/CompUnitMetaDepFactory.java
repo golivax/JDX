@@ -15,15 +15,13 @@ import br.usp.ime.jdx.entity.system.JavaElement;
 
 public class CompUnitMetaDepFactory {
 	
-	private MultiKeyMap<CompUnit,CompUnitMetaDependency> compUnitMetaDepsMap = 
-			new MultiKeyMap<>();
-
 	public Collection<CompUnitMetaDependency> getCompUnitMetaDependencies(
-			DependencyReport depReport){	
-					
+			DependencyReport depReport, boolean skipSelfDependencies){	
+	
+		MultiKeyMap<CompUnit,CompUnitMetaDependency> compUnitMetaDepsMap = new MultiKeyMap<>();		
+		
 		//Type Meta Dependencies
-		for(TypeMetaDependency typeMetaDep : 
-				depReport.getTypeMetaDependencies()){
+		for(TypeMetaDependency typeMetaDep : depReport.getTypeMetaDependencies()){
 						
 			CompUnit clientCU = typeMetaDep.getClient().getCompUnit();
 			CompUnit supplierCU = typeMetaDep.getSupplier().getCompUnit();
@@ -31,7 +29,9 @@ public class CompUnitMetaDepFactory {
 			Set<Dependency<? extends JavaElement, ? extends JavaElement>> deps = 
 					typeMetaDep.getDependencies();
 			
-			addCompUnitMetaDep(clientCU, supplierCU, deps);
+			if(!clientCU.equals(supplierCU) || !skipSelfDependencies) {
+				this.addCompUnitMetaDep(compUnitMetaDepsMap, clientCU, supplierCU, deps);	
+			}			
 		}
 		
 		//CompUnit to Type import dependencies
@@ -46,7 +46,9 @@ public class CompUnitMetaDepFactory {
 			
 			deps.add(typeImportDep);
 			
-			addCompUnitMetaDep(clientCU, supplierCU, deps);
+			if(!clientCU.equals(supplierCU) || !skipSelfDependencies) {
+				addCompUnitMetaDep(compUnitMetaDepsMap, clientCU, supplierCU, deps);
+			}
 		}
 		
 		//CompUnit to Method import dependencies
@@ -61,13 +63,17 @@ public class CompUnitMetaDepFactory {
 			
 			deps.add(methodImportDep);
 			
-			addCompUnitMetaDep(clientCU, supplierCU, deps);
+			if(!clientCU.equals(supplierCU) || !skipSelfDependencies) {
+				addCompUnitMetaDep(compUnitMetaDepsMap, clientCU, supplierCU, deps);
+			}
 		}
 		
 		return compUnitMetaDepsMap.values();
 	}
 	
-	private void addCompUnitMetaDep(CompUnit clientCU, CompUnit supplierCU, 
+	private void addCompUnitMetaDep(
+			MultiKeyMap<CompUnit,CompUnitMetaDependency> compUnitMetaDepsMap,
+			CompUnit clientCU, CompUnit supplierCU, 
 			Set<Dependency<? extends JavaElement, ? extends JavaElement>> deps){
 
 		if (compUnitMetaDepsMap.containsKey(clientCU,supplierCU)){
@@ -90,5 +96,4 @@ public class CompUnitMetaDepFactory {
 			compUnitMetaDepsMap.put(clientCU, supplierCU, compUnitMetaDep);
 		}
 	}
-
 }

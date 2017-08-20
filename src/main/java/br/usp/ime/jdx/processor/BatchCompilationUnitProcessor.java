@@ -1,6 +1,5 @@
 ﻿package br.usp.ime.jdx.processor;
 
-import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -14,7 +13,7 @@ public class BatchCompilationUnitProcessor {
 		
 	private static final Logger logger = LogManager.getLogger();
 	
-	public void run(List<String> sourceDirs, FileASTRequestor req, 
+	public void run(String sourceDir, FileASTRequestor req, 
 			String[] paths, boolean recoverSourceCode){
 		
 		try{
@@ -32,12 +31,13 @@ public class BatchCompilationUnitProcessor {
 			
 			//If source code is not wanted, then we can ask JDT to skip
 			//method bodies (does not impact binding)
-			if(!recoverSourceCode) parser.setIgnoreMethodBodies(true);
+			if(!recoverSourceCode) {
+				parser.setIgnoreMethodBodies(true);
+			}
 			
-			logger.info("Source directories for dependency extraction: {}", sourceDirs);
+			logger.info("Source directory for dependency extraction: {}", sourceDir);
 			
-			String[] sourceDirsArray = 
-					sourceDirs.toArray(new String[sourceDirs.size()]);
+			String[] sourceDirsArray = {sourceDir};
 			
 			//Sets the environment			
 			parser.setEnvironment(null, sourceDirsArray, null, true);			
@@ -74,6 +74,9 @@ public class BatchCompilationUnitProcessor {
 	
 	public static void main(String[] args) {
 		Map options = JavaCore.getOptions();
+		for(Object entry : options.entrySet()) {
+			System.out.println(entry);
+		}
 		System.out.println(options);
 	}
 }

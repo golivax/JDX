@@ -5,18 +5,19 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.QualifiedName;
 
-import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
+import br.usp.ime.jdx.entity.relationship.dependency.RawDependencyReport;
 import br.usp.ime.jdx.entity.system.Method;
 import br.usp.ime.jdx.entity.system.Type;
 import br.usp.ime.jdx.filter.StringMatcher;
+import br.usp.ime.jdx.processor.parser.CodeParser;
 
 public class AccessDependencyExtractor implements ExpressionProcessor{
 	
-	private Cache cache;
-	private DependencyReport depReport;
+	private CodeParser cache;
+	private RawDependencyReport depReport;
 	private StringMatcher classFilter;
 		
-	public AccessDependencyExtractor(Cache cache, DependencyReport depReport, 
+	public AccessDependencyExtractor(CodeParser cache, RawDependencyReport depReport, 
 			StringMatcher classFilter){
 		
 		this.cache = cache;

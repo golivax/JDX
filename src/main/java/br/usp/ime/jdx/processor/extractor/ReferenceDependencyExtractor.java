@@ -6,19 +6,20 @@ import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
-import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
+import br.usp.ime.jdx.entity.relationship.dependency.RawDependencyReport;
 import br.usp.ime.jdx.entity.system.Method;
 import br.usp.ime.jdx.entity.system.Type;
 import br.usp.ime.jdx.filter.StringMatcher;
+import br.usp.ime.jdx.processor.parser.CodeParser;
 
 public class ReferenceDependencyExtractor implements FieldDeclarationProcessor,
 	ExpressionProcessor, VariableDeclarationStatementProcessor{
 	
-	private Cache cache;
-	private DependencyReport depReport;
+	private CodeParser cache;
+	private RawDependencyReport depReport;
 	private StringMatcher classFilter;
 		
-	public ReferenceDependencyExtractor(Cache cache, DependencyReport depReport, 
+	public ReferenceDependencyExtractor(CodeParser cache, RawDependencyReport depReport, 
 			StringMatcher classFilter){
 		
 		this.cache = cache;

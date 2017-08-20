@@ -1,24 +1,24 @@
 ﻿package br.usp.ime.jdx.processor.extractor;
 
-import java.util.List;
-
 import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
+import br.usp.ime.jdx.entity.relationship.dependency.RawDependencyReport;
 import br.usp.ime.jdx.entity.system.JavaProject;
 import br.usp.ime.jdx.filter.StringMatcher;
 import br.usp.ime.jdx.processor.BatchCompilationUnitProcessor;
+import br.usp.ime.jdx.processor.parser.CodeParser;
 
 public class DependencyExtractor{
 	
 	//TODO: Refactor. Idea is that every processor should be added to 
 	//CompUnitTraverser, i.e. no independent processors anymore
-	public DependencyReport run(List<String> sourceDirs, String[] paths, 
+	public DependencyReport run(String sourceDir, String[] paths, 
 			StringMatcher classFilter, boolean recoverSourceCode){
 		
-		Cache cache = buildCache(sourceDirs, paths, recoverSourceCode);
+		CodeParser cache = buildCache(sourceDir, paths, recoverSourceCode);
 
-		DependencyReport depReport = new DependencyReport(
+		RawDependencyReport rawDepReport = new RawDependencyReport(
 				new JavaProject(
-						sourceDirs,
+						sourceDir,
 						cache.getPackages(),
 						cache.getJDXCompilationUnits(), 
 						cache.getTypes(),
@@ -26,7 +26,7 @@ public class DependencyExtractor{
 		
 		//Running the extractors that rely on the traverser
 		CompUnitTraverser compUnitTraverser = 
-				buildAndLoadCompUnitTraverser(classFilter, cache, depReport);
+				buildAndLoadCompUnitTraverser(classFilter, cache, rawDepReport);
 		
 		compUnitTraverser.run();
 
@@ -34,19 +34,19 @@ public class DependencyExtractor{
 		ImplicitCallDependencyExtractor implicitCallDepExtractor = 
 				new ImplicitCallDependencyExtractor(cache);
 		
-		implicitCallDepExtractor.run(depReport);
+		implicitCallDepExtractor.run(rawDepReport);
 		
 		TypeDependencyExtractor typeDepExtractor = 
 				new TypeDependencyExtractor(cache);
 		
-		typeDepExtractor.run(depReport, classFilter);	
+		typeDepExtractor.run(rawDepReport, classFilter);	
 		
-		return depReport;
+		return rawDepReport.getDependencyReport();
 	}
 
 	//FIXME:Encapsulate in a Factory
 	private CompUnitTraverser buildAndLoadCompUnitTraverser(
-			StringMatcher classFilter, Cache cache, DependencyReport depReport){
+			StringMatcher classFilter, CodeParser cache, RawDependencyReport depReport){
 		
 		CompUnitTraverser compUnitTraverser = new CompUnitTraverser(cache);
 		
@@ -98,14 +98,15 @@ public class DependencyExtractor{
 		return compUnitTraverser;
 	}
 
-	private Cache buildCache(List<String> sourceDirs, String[] paths,
+	private CodeParser buildCache(String sourceDir, String[] paths,
 			boolean recoverSourceCode) {
-		Cache cacher = new Cache(recoverSourceCode);
+		
+		CodeParser cacher = new CodeParser(sourceDir, recoverSourceCode);
 
 		BatchCompilationUnitProcessor batchCompilationUnitProcessor = 
 				new BatchCompilationUnitProcessor();
 
-		batchCompilationUnitProcessor.run(sourceDirs, cacher, paths, 
+		batchCompilationUnitProcessor.run(sourceDir, cacher, paths, 
 				recoverSourceCode);
 		
 		return cacher;

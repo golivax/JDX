@@ -10,11 +10,12 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import br.usp.ime.jdx.entity.system.Method;
 import br.usp.ime.jdx.entity.system.Type;
 import br.usp.ime.jdx.filter.StringMatcher;
+import br.usp.ime.jdx.processor.parser.CodeParser;
 
 public class BindingResolver {
 
 	public static Type resolveTypeBinding(StringMatcher classFilter, 
-			Cache cache, ITypeBinding iTypeBinding){
+			CodeParser cache, ITypeBinding iTypeBinding){
 		
 		Type type = null;
 		
@@ -32,7 +33,7 @@ public class BindingResolver {
 	}
 	
 	public static Method resolveMethodBinding(StringMatcher classFilter, 
-			Cache cache, IMethodBinding binding){
+			CodeParser cache, IMethodBinding binding){
 		
 		Method method = null;
 		

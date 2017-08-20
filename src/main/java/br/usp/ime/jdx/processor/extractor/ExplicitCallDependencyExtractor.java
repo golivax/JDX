@@ -8,20 +8,21 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 
-import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
+import br.usp.ime.jdx.entity.relationship.dependency.RawDependencyReport;
 import br.usp.ime.jdx.entity.system.Method;
 import br.usp.ime.jdx.filter.StringMatcher;
+import br.usp.ime.jdx.processor.parser.CodeParser;
 
 public class ExplicitCallDependencyExtractor implements ExpressionProcessor, 
 	ConstructorInvocationProcessor{
 	
-	private Cache cache;
-	private DependencyReport depReport;
+	private CodeParser cache;
+	private RawDependencyReport depReport;
 	private StringMatcher classFilter;
 	
 	private Method clientMethod;
 	
-	public ExplicitCallDependencyExtractor(Cache cache, DependencyReport depReport, 
+	public ExplicitCallDependencyExtractor(CodeParser cache, RawDependencyReport depReport, 
 			StringMatcher classFilter){
 		
 		this.cache = cache;

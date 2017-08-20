@@ -3,43 +3,84 @@ package br.usp.ime.jdx.entity.system;
 import java.io.Serializable;
 import java.util.List;
 
-//TODO: getJavaDoc(), getAnnotations()
+import org.apache.commons.lang3.StringUtils;
+
+//TODO: getAnnotations()
 public class Method implements Serializable, JavaElement{
 
 	private static final long serialVersionUID = -4865185051823887456L;
 
+	private String javaDoc;
 	private String name;
 	private List<String> parameters;
 	private String returnType;
-	private String body;
+	
+	private int[] sourceCodeLocation;
 	private String sourceCode;
 	
 	private Type containingType;
 	private boolean isConstructor = false;
-
-	public Method(String name, List<String> parameters, String returnType, 
-			String body, String sourceCode){
+	
+	public Method(String javaDoc, String name, List<String> parameters, String returnType,
+			int[] sourceCodeLocation) {
 		
+		this.javaDoc = javaDoc;
 		this.name = name;
 		this.parameters = parameters;
 		this.returnType = returnType;
-		this.body = body;
-		this.sourceCode = sourceCode;	
-		
+		this.sourceCodeLocation = sourceCodeLocation;	
 	}
 	
-	public Method(String name, List<String> parameters, String returnType, 
-			String body, String sourceCode, boolean isConstructor){
+	public Method(String javaDoc, String name, List<String> parameters, String returnType,
+			int[] sourceCodeLocation, boolean isConstructor) {
 		
-		this(name,parameters,returnType,body,sourceCode);
+		this(javaDoc, name, parameters, returnType, sourceCodeLocation);
 		this.isConstructor = isConstructor;
 	}
+
+	public Method(String javaDoc, String name, List<String> parameters, String returnType, 
+			String sourceCode){
+		
+		this.javaDoc = javaDoc;
+		this.name = name;
+		this.parameters = parameters;
+		this.returnType = returnType;
+		this.sourceCode = sourceCode;	
+	}
+	
+	public Method(String javaDoc, String name, List<String> parameters, String returnType, 
+			String sourceCode, boolean isConstructor){
+		
+		this(javaDoc, name, parameters, returnType, sourceCode);
+		this.isConstructor = isConstructor;
+	}
+	
 	
 	public String getReturnType() {
 		return returnType;
 	}
+	
+	public String getSourceCodeWithoutJavaDoc() {
+		String sourceWithoutJavaDoc = StringUtils.substringAfter(this.getSourceCode(), this.getJavaDoc()).trim();
+		return sourceWithoutJavaDoc;
+	}
 
 	public String getBody() {
+		
+		//FIXME: for now, null bodies (e.g. from abstract methods) and
+		//empty bodies will be treated as if they were the same thing.
+		//This is because some applications that use JDX compare method bodies
+		//and having a NULL value would break it. In the future, provide a 
+		//more elegant solution like a NullBody or a Body class that answers
+		//if its NULL or not, whatever.
+		
+		String body = new String();
+		
+		String sourceWithoutJavaDoc = this.getSourceCodeWithoutJavaDoc();
+		if(sourceWithoutJavaDoc.contains("{")) {
+			body = "{" + StringUtils.substringAfter(sourceWithoutJavaDoc, "{");
+		}				
+		
 		return body;
 	}
 
@@ -62,6 +103,11 @@ public class Method implements Serializable, JavaElement{
 	}
 	
 	public String getSourceCode(){
+		
+		if(sourceCode != null) return sourceCode;
+		
+		String compUnitSourceCode = this.getContainingCompUnit().getSourceCode();
+		String sourceCode = compUnitSourceCode.substring(sourceCodeLocation[0], sourceCodeLocation[1]);
 		return sourceCode;
 	}
 	
@@ -90,6 +136,13 @@ public class Method implements Serializable, JavaElement{
 	
 	public boolean isConstructor(){
 		return isConstructor;
+	}
+	
+	/*
+	 * If there is no JavaDoc, this returns an empty string
+	 */
+	public String getJavaDoc() {
+		return javaDoc;
 	}
 
 	@Override

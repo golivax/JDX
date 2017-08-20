@@ -6,10 +6,11 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
-import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
+import br.usp.ime.jdx.entity.relationship.dependency.RawDependencyReport;
 import br.usp.ime.jdx.entity.system.Clazz;
 import br.usp.ime.jdx.entity.system.Interface;
 import br.usp.ime.jdx.filter.StringMatcher;
+import br.usp.ime.jdx.processor.parser.CodeParser;
 
 /**
  * Extracts relationships between types. For now it detects
@@ -21,15 +22,15 @@ import br.usp.ime.jdx.filter.StringMatcher;
 //FIXME: Refactor this class in order to make it use "Binding Resolver"
 public class TypeDependencyExtractor {
 
-	private Cache cache;
+	private CodeParser cache;
 	private StringMatcher classFilter;
-	private DependencyReport depReport;
+	private RawDependencyReport depReport;
 	
-	public TypeDependencyExtractor(Cache cacher){
+	public TypeDependencyExtractor(CodeParser cacher){
 		this.cache = cacher;
 	}
 	
-	public DependencyReport run(DependencyReport depReport, 
+	public RawDependencyReport run(RawDependencyReport depReport, 
 			StringMatcher classFilter) {
 		
 		this.classFilter = classFilter;

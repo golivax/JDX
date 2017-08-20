@@ -1,12 +1,9 @@
-﻿package br.usp.ime.jdx.entity.relationship.dependency;
+package br.usp.ime.jdx.entity.relationship.dependency;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.apache.commons.collections4.map.MultiKeyMap;
 
 import br.usp.ime.jdx.entity.relationship.dependency.importdep.MethodImportDependency;
 import br.usp.ime.jdx.entity.relationship.dependency.importdep.PackageImportDependency;
@@ -27,118 +24,107 @@ import br.usp.ime.jdx.entity.relationship.dependency.t2t.ClazzInheritanceDepende
 import br.usp.ime.jdx.entity.relationship.dependency.t2t.ImplementsDependency;
 import br.usp.ime.jdx.entity.relationship.dependency.t2t.InterfaceInheritanceDependency;
 import br.usp.ime.jdx.entity.relationship.dependency.t2t.TypeToTypeDependency;
-import br.usp.ime.jdx.entity.system.Clazz;
-import br.usp.ime.jdx.entity.system.CompUnit;
-import br.usp.ime.jdx.entity.system.Interface;
-import br.usp.ime.jdx.entity.system.JavaElement;
 import br.usp.ime.jdx.entity.system.JavaProject;
-import br.usp.ime.jdx.entity.system.Method;
-import br.usp.ime.jdx.entity.system.Package;
-import br.usp.ime.jdx.entity.system.Type;
 
 public class DependencyReport implements Serializable{
 
-	private static final long serialVersionUID = 2294342917700842739L;
+	private static final long serialVersionUID = -5193207150150151958L;
 
 	private JavaProject javaProject;
 	
-	private MultiKeyMap<Type,ClazzInheritanceDependency> 
-		clazzInheritanceMap = new MultiKeyMap<>();
-			
-	private MultiKeyMap<Type,InterfaceInheritanceDependency> 
-		interfaceInheritanceMap = new MultiKeyMap<>();
+	private Set<ClazzInheritanceDependency> clazzInheritanceDeps;
+	private Set<InterfaceInheritanceDependency> interfaceInheritanceDeps;
+	private Set<ImplementsDependency> implementsDeps;
+	private Set<MethodCallDependency> callDeps;
+	private Set<ReferenceDependency> referenceDeps;
+	private Set<AccessDependency> accessDeps;
+	private Set<ReturnDependency> returnDeps;
+	private Set<ParameterDependency> parameterDeps;
+	private Set<PackageImportDependency> pkgImportDeps;
+	private Set<TypeImportDependency> typeImportDeps;
+	private Set<MethodImportDependency> methodImportDeps;
+	private Set<ThrowDependency> throwDeps;
+	
+	public DependencyReport(JavaProject javaProject, 
+			Collection<ClazzInheritanceDependency> clazzInheritanceDeps,
+			Collection<InterfaceInheritanceDependency> interfaceInheritanceDeps,
+			Collection<ImplementsDependency> implementsDeps,
+			Collection<MethodCallDependency> callDeps,
+			Collection<ReferenceDependency> referenceDeps,
+			Collection<AccessDependency> accessDeps,
+			Collection<ReturnDependency> returnDeps,
+			Collection<ParameterDependency> parameterDeps,
+			Collection<PackageImportDependency> pkgImportDeps,
+			Collection<TypeImportDependency> typeImportDeps,
+			Collection<MethodImportDependency> methodImportDeps,
+			Collection<ThrowDependency> throwDeps){
 		
-	private MultiKeyMap<Type,ImplementsDependency> implementsMap = 
-			new MultiKeyMap<>();
-	
-	private MultiKeyMap<Method,MethodCallDependency> callMap = 
-			new MultiKeyMap<>();
-			
-	private MultiKeyMap<JavaElement,ReferenceDependency> referenceMap = 
-			new MultiKeyMap<>();
-			
-	private MultiKeyMap<Method,AccessDependency> accessMap = 
-			new MultiKeyMap<>();
-	
-	private MultiKeyMap<JavaElement,ReturnDependency> returnMap = 
-			new MultiKeyMap<>();
-	
-	private MultiKeyMap<JavaElement,ParameterDependency> parameterMap = 
-			new MultiKeyMap<>();
-			
-	private MultiKeyMap<JavaElement,PackageImportDependency> pkgImportMap = 
-			new MultiKeyMap<>();
-					
-	private MultiKeyMap<JavaElement,TypeImportDependency> typeImportMap = 
-			new MultiKeyMap<>();
-							
-	private MultiKeyMap<JavaElement,MethodImportDependency> methodImportMap = 
-			new MultiKeyMap<>();
-					
-	private MultiKeyMap<JavaElement,ThrowDependency> throwMap = 
-			new MultiKeyMap<>();
-			
-	public DependencyReport(JavaProject javaProject){
 		this.javaProject = javaProject;
-	}
-	
-	public void addMethodCallDependency(Method client, Method supplier){
-		if (!callMap.containsKey(client, supplier)){
-			MethodCallDependency dependency = new MethodCallDependency(client, supplier);
-			callMap.put(client, supplier, dependency);
-		}
-		else{
-			MethodCallDependency dependency = callMap.get(client, supplier);
-			dependency.increaseStrength();
-		}
-	}
-	
-	public void addClazzInheritanceDependency(Clazz client, Clazz supplier){
 		
-		//TODO: Check whether two clazz inheritances have the same client and 
-		//throw an exception
-		
-		ClazzInheritanceDependency dependency = 
-				new ClazzInheritanceDependency(client, supplier);
+		this.clazzInheritanceDeps = new HashSet<>(clazzInheritanceDeps);
+		this.interfaceInheritanceDeps = new HashSet<>(interfaceInheritanceDeps);
+		this.implementsDeps = new HashSet<>(implementsDeps);
+		this.callDeps = new HashSet<>(callDeps);
+		this.referenceDeps = new HashSet<>(referenceDeps);
+		this.accessDeps = new HashSet<>(accessDeps);
+		this.returnDeps = new HashSet<>(returnDeps);
+		this.parameterDeps = new HashSet<>(parameterDeps);
+		this.pkgImportDeps = new HashSet<>(pkgImportDeps);
+		this.typeImportDeps = new HashSet<>(typeImportDeps);
+		this.methodImportDeps = new HashSet<>(methodImportDeps);
+		this.throwDeps = new HashSet<>(throwDeps);
+	}
 
-		clazzInheritanceMap.put(client, supplier, dependency);
+	public JavaProject getJavaProject() {
+		return javaProject;
 	}
-	
-	public void addInterfaceInheritanceDependency(
-			Interface client, Interface supplier){
-			
-		InterfaceInheritanceDependency dependency = 
-				new InterfaceInheritanceDependency(client, supplier);
-			
-		interfaceInheritanceMap.put(client, supplier, dependency);
-	}
-	
-	public void addImplementsDependency(Clazz client, Interface supplier){
-		ImplementsDependency dependency = 
-				new ImplementsDependency(client, supplier);
 
-		implementsMap.put(client, supplier, dependency);	
+	public Set<ClazzInheritanceDependency> getClazzInheritanceDependencies() {
+		return clazzInheritanceDeps;
 	}
-	
-	public Collection<MethodCallDependency> getMethodCallDependencies(){
-		return callMap.values();
+
+	public Set<InterfaceInheritanceDependency> getInterfaceInheritanceDependencies() {
+		return interfaceInheritanceDeps;
 	}
-	
-	public Collection<ClazzInheritanceDependency> 
-		getClazzInheritanceDependencies(){
-		
-		return clazzInheritanceMap.values();
+
+	public Set<ImplementsDependency> getImplementsDependencies() {
+		return implementsDeps;
 	}
-	
-	public Collection<InterfaceInheritanceDependency> 
-		getInterfaceInheritanceDependencies(){
-		
-		return interfaceInheritanceMap.values();
+
+	public Set<MethodCallDependency> getMethodCallDependencies() {
+		return callDeps;
 	}
-	
-	public Collection<ImplementsDependency> getImplementsDependencies(){
-		
-		return implementsMap.values();
+
+	public Set<ReferenceDependency> getReferenceDependencies() {
+		return referenceDeps;
+	}
+
+	public Set<AccessDependency> getAccessDependencies() {
+		return accessDeps;
+	}
+
+	public Set<ReturnDependency> getReturnTypeDependencies() {
+		return returnDeps;
+	}
+
+	public Set<ParameterDependency> getMethodParameterDependencies() {
+		return parameterDeps;
+	}
+
+	public Set<PackageImportDependency> getPackageImportDependencies() {
+		return pkgImportDeps;
+	}
+
+	public Set<TypeImportDependency> getTypeImportDependencies() {
+		return typeImportDeps;
+	}
+
+	public Set<MethodImportDependency> getMethodImportDependencies() {
+		return methodImportDeps;
+	}
+
+	public Set<ThrowDependency> getThrowDependencies() {
+		return throwDeps;
 	}
 	
 	public Collection<TypeMetaDependency> getTypeMetaDependencies(){
@@ -147,18 +133,15 @@ public class DependencyReport implements Serializable{
 		return typeMetaDepFactory.getTypeMetaDependencies(this);
 	}
 	
-
-	public Collection<CompUnitMetaDependency> getCompUnitMetaDependencies(){
+	public Collection<CompUnitMetaDependency> getCompUnitMetaDependencies(boolean skipSelfDependencies){
 		
 		CompUnitMetaDepFactory compUnitMetaDepFactory = new CompUnitMetaDepFactory();
-		return compUnitMetaDepFactory.getCompUnitMetaDependencies(this);
+		return compUnitMetaDepFactory.getCompUnitMetaDependencies(this, skipSelfDependencies);
 	}
 
-	public TypeMetaDependency getTypeMetaDependency(
-			String clientTypeName, String supplierTypeName){
+	public TypeMetaDependency getTypeMetaDependency(String clientTypeName, String supplierTypeName){
 		
-		Collection<TypeMetaDependency> metaTypeDeps = 
-				getTypeMetaDependencies();
+		Collection<TypeMetaDependency> metaTypeDeps = getTypeMetaDependencies();
 		
 		for(TypeMetaDependency typeMetaDep : metaTypeDeps){
 			
@@ -174,167 +157,25 @@ public class DependencyReport implements Serializable{
 	
 	public TypeToTypeDependency getTypeDependency(
 			String clientName, String supplierName){
-		
-			Collection<TypeToTypeDependency> typeDependencies = getTypeToTypeDependencies();
-			
-			for(TypeToTypeDependency typeDependency : typeDependencies){
-				
-				if(typeDependency.getClient().getFQN().equals(clientName) && 
+
+		Collection<TypeToTypeDependency> typeDependencies = getTypeToTypeDependencies();
+
+		for(TypeToTypeDependency typeDependency : typeDependencies){
+
+			if(typeDependency.getClient().getFQN().equals(clientName) && 
 					typeDependency.getSupplier().getFQN().equals(supplierName)){
-				
-					return typeDependency;
-				}
+
+				return typeDependency;
 			}
-			
-			return null;
-	}
-
-	public String toString(){
-		StringBuilder builder = new StringBuilder();
-		for (MethodCallDependency dependency : getMethodCallDependencies()){
-			
-			builder.append(dependency.toString());
-			builder.append("\n");
 		}
+
+		return null;
+	}
+	
+
+	public Set<MethodToMethodDependency> getMethodToMethodDependencies(){
 		
-		return builder.toString();
-	}
-
-	public JavaProject getJavaProject(){
-		return javaProject;
-	}
-
-	public void addReferenceDependency(Method client, Type supplier) {
-		if (!referenceMap.containsKey(client, supplier)){
-			ReferenceDependency dependency = new ReferenceDependency(client, supplier);
-			referenceMap.put(client, supplier, dependency);
-		}
-		else{
-			ReferenceDependency dependency = referenceMap.get(client, supplier);
-			dependency.increaseStrength();
-		}
-	}
-
-	public void addAccessDependency(Method client, Method supplier) {
-		if (!accessMap.containsKey(client, supplier)){
-			AccessDependency dependency = new AccessDependency(client, supplier);
-			accessMap.put(client, supplier, dependency);
-		}
-		else{
-			AccessDependency dependency = accessMap.get(client, supplier);
-			dependency.increaseStrength();
-		}
-	}
-
-	public void addReturnDependency(Method client, Type supplier) {
-		if (!returnMap.containsKey(client, supplier)){
-			ReturnDependency dependency = new ReturnDependency(client, supplier);
-			returnMap.put(client, supplier, dependency);
-		}
-		else{
-			ReturnDependency dependency = returnMap.get(client, supplier);
-			dependency.increaseStrength();
-		}
-		
-	}
-
-	public void addParameterDependency(Method client, Type supplier) {
-		if (!parameterMap.containsKey(client, supplier)){
-			ParameterDependency dependency = new ParameterDependency(client, supplier);
-			parameterMap.put(client, supplier, dependency);
-		}
-		else{
-			ParameterDependency dependency = parameterMap.get(client, supplier);
-			dependency.increaseStrength();
-		}	
-	}
-
-	public void addThrowDependency(Method client, Type supplier) {
-		if (!throwMap.containsKey(client, supplier)){
-			ThrowDependency dependency = new ThrowDependency(client, supplier);
-			throwMap.put(client, supplier, dependency);
-		}
-		else{
-			ThrowDependency dependency = throwMap.get(client, supplier);
-			dependency.increaseStrength();
-		}
-		
-	}
-
-	public void addPackageImportDependency(CompUnit client, Package supplier) {
-		if (!pkgImportMap.containsKey(client, supplier)){
-			PackageImportDependency dependency = 
-					new PackageImportDependency(client, supplier);
-			pkgImportMap.put(client, supplier, dependency);
-		}
-		else{
-			PackageImportDependency dependency = 
-					pkgImportMap.get(client, supplier);
-			dependency.increaseStrength();
-		}
-	}
-	
-	public void addTypeImportDependency(CompUnit client, Type supplier) {
-		if (!typeImportMap.containsKey(client, supplier)){
-			TypeImportDependency dependency = 
-					new TypeImportDependency(client, supplier);
-			typeImportMap.put(client, supplier, dependency);
-		}
-		else{
-			TypeImportDependency dependency = 
-					typeImportMap.get(client, supplier);
-			dependency.increaseStrength();
-		}		
-	}
-	
-	public void addMethodImportDependency(CompUnit client, Method supplier) {
-		if (!methodImportMap.containsKey(client, supplier)){
-			MethodImportDependency dependency = 
-					new MethodImportDependency(client, supplier);
-			methodImportMap.put(client, supplier, dependency);
-		}
-		else{
-			MethodImportDependency dependency = 
-					methodImportMap.get(client, supplier);
-			dependency.increaseStrength();
-		}			
-	}
-	
-	public Collection<ReferenceDependency> getReferenceDependencies(){
-		return referenceMap.values();
-	}
-	
-	public Collection<AccessDependency> getAccessDependencies(){
-		return accessMap.values();
-	}
-	
-	public Collection<ParameterDependency> getMethodParameterDependencies(){
-		return parameterMap.values();
-	}
-	
-	public Collection<ReturnDependency> getReturnTypeDependencies(){
-		return returnMap.values();
-	}
-	
-	public Collection<PackageImportDependency> getPackageImportDependencies(){
-		return pkgImportMap.values();
-	}
-	
-	public Collection<TypeImportDependency> getTypeImportDependencies(){
-		return typeImportMap.values();
-	}
-	
-	public Collection<MethodImportDependency> getMethodImportDependencies(){
-		return methodImportMap.values();
-	}
-	
-	public Collection<ThrowDependency> getThrowDependencies(){
-		return throwMap.values();
-	}
-
-	public Collection<MethodToMethodDependency> getMethodToMethodDependencies(){
-		
-		Collection<MethodToMethodDependency> methodDependencies = new ArrayList<>();
+		Set<MethodToMethodDependency> methodDependencies = new HashSet<>();
 		
 		methodDependencies.addAll(getAccessDependencies());
 		methodDependencies.addAll(getMethodCallDependencies());
@@ -360,7 +201,6 @@ public class DependencyReport implements Serializable{
 		typeDependencies.addAll(getInterfaceInheritanceDependencies());
 		typeDependencies.addAll(getImplementsDependencies());
 		return typeDependencies;
-	}	
-	
+	}
 	
 }

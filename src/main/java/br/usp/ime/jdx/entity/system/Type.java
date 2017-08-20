@@ -14,8 +14,15 @@ public abstract class Type implements Serializable, JavaElement{
 
 	private String fqn;
 	private String sourceCode;
+	private int[] sourceCodeLocation;
 	private CompUnit compUnit;
 	private Set<Method> methods;
+	
+	public Type(String fqn, int[] sourceCodeLocation) {
+		this.fqn = fqn;
+		this.sourceCodeLocation = sourceCodeLocation;
+		this.methods = new HashSet<Method>();
+	}
 	
 	public Type(String fqn, String sourceCode){
 		this.fqn = fqn;
@@ -32,6 +39,10 @@ public abstract class Type implements Serializable, JavaElement{
 	}
 	
 	public String getSourceCode(){
+		if(sourceCode != null) return sourceCode;
+		
+		String compUnitSourceCode = this.getCompUnit().getSourceCode();
+		String sourceCode = compUnitSourceCode.substring(sourceCodeLocation[0], sourceCodeLocation[1]);
 		return sourceCode;
 	}
 	
@@ -46,31 +57,6 @@ public abstract class Type implements Serializable, JavaElement{
 	public void addMethod(Method method){
 		this.methods.add(method);
 		method.setContainingType(this);
-	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((fqn == null) ? 0 : fqn.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Type other = (Type) obj;
-		if (fqn == null) {
-			if (other.fqn != null)
-				return false;
-		} else if (!fqn.equals(other.fqn))
-			return false;
-		return true;
 	}
 
 	@Override
@@ -117,6 +103,34 @@ public abstract class Type implements Serializable, JavaElement{
 		return getMethod("attrib<>", new ArrayList<String>());
 	}
 
-	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((compUnit == null) ? 0 : compUnit.hashCode());
+		result = prime * result + ((fqn == null) ? 0 : fqn.hashCode());
+		return result;
+	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Type other = (Type) obj;
+		if (compUnit == null) {
+			if (other.compUnit != null)
+				return false;
+		} else if (!compUnit.equals(other.compUnit))
+			return false;
+		if (fqn == null) {
+			if (other.fqn != null)
+				return false;
+		} else if (!fqn.equals(other.fqn))
+			return false;
+		return true;
+	}
 }

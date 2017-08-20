@@ -38,10 +38,11 @@ import org.eclipse.jdt.core.dom.WhileStatement;
 
 import br.usp.ime.jdx.entity.system.CompUnit;
 import br.usp.ime.jdx.entity.system.Method;
+import br.usp.ime.jdx.processor.parser.CodeParser;
 
 public class CompUnitTraverser {
 	
-	private Cache cache;
+	private CodeParser cache;
 	
 	private List<FieldDeclarationProcessor> fdProcessors = new ArrayList<>();
 	private List<VariableDeclarationStatementProcessor> vdsProcessors = new ArrayList<>();
@@ -53,7 +54,7 @@ public class CompUnitTraverser {
 	private CompUnit clientCompUnit;
 	private Method clientMethod;
 	
-	public CompUnitTraverser(Cache cache){
+	public CompUnitTraverser(CodeParser cache){
 		
 		this.cache = cache;
 	}

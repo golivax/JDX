@@ -3,8 +3,9 @@
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.lang3.time.StopWatch;
 
 import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
 import br.usp.ime.jdx.entity.system.SourceCodeUnit;
@@ -23,30 +24,18 @@ public class JDX {
 	//Recursive: true
 	//Glob Pattern: *.java
 	//Class Filter out: Java Native Classes
-
-	//TODO: Change to truly fluent API
 	public DependencyReport calculateDepsFrom(String sourceDir, 
 			boolean recursive, String globPattern, StringMatcher classFilter, 
 			boolean recoverSourceCode) throws IOException{
-		
-		List<String> sourceDirs = new ArrayList<String>();
-		sourceDirs.add(sourceDir);
-		
-		return calculateDepsFrom(sourceDirs, recursive, globPattern, 
-				classFilter, recoverSourceCode);
-	}
-	
-	//TODO: Change to truly fluent API
-	public DependencyReport calculateDepsFrom(List<String> sourceDirs, 
-			boolean recursive, String globPattern, StringMatcher classFilter,
-			boolean recoverSourceCode) throws IOException{
-		
+				
 		DependencyExtractor extractor = new DependencyExtractor();
 		
-		String[] paths = FilesystemUtils.getPathsFromSourceDirs(
-				sourceDirs, globPattern, recursive);
+		String[] paths = FilesystemUtils.getPathsFromSourceDir(
+				sourceDir, globPattern, recursive);
 		
-		return extractor.run(sourceDirs, paths, classFilter, recoverSourceCode);
+		DependencyReport depReport = extractor.run(sourceDir, paths, classFilter, recoverSourceCode);
+		
+		return depReport;
 	}
 
 	public DependencyReport calculateDepsFrom(File file, List<File> allFiles) {
@@ -67,16 +56,6 @@ public class JDX {
 	public DependencyReport calculateDepsFrom(SourceCodeUnit sourceCode) {
 		throw new UnsupportedOperationException(
 				"This operation has not been implemented yet");
-	}
-	
-	public static void main(String[] args) throws IOException{
-		JDX jdx = new JDX();
-		
-		DependencyReport report = 
-				jdx.calculateDepsFrom("/home/gustavo/tmp/test", 
-						true, "*.java", new JavaAPIMatcher(), false);
-		
-		System.out.println(report);
 	}
 	
 }

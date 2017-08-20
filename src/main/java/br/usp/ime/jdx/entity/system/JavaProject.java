@@ -3,7 +3,6 @@ package br.usp.ime.jdx.entity.system;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,28 +10,28 @@ public class JavaProject implements Serializable {
 
 	private static final long serialVersionUID = 5055713865573892829L;
 
-	private List<String> sourceDirs;
+	private String sourceDir;
 	private Set<Package> packages;
 	private Map<String,CompUnit> compUnitMap;
 	private Set<Type> types;
 	private Set<Method> methods;
 	
-	public JavaProject(List<String> sourceDirs, Set<Package> packages, Set<CompUnit> compUnits, 
+	public JavaProject(String sourceDir, Set<Package> packages, Set<CompUnit> compUnits, 
 			Set<Type> types, Set<Method> methods){
 		
-		this.sourceDirs = sourceDirs;
+		this.sourceDir = sourceDir;
 		this.packages = packages;
 		this.types = types;
 		this.methods = methods;
 		
 		this.compUnitMap = new HashMap<>();
 		for(CompUnit compUnit : compUnits){
-			this.compUnitMap.put(compUnit.getPath(), compUnit);
+			this.compUnitMap.put(compUnit.getRelativePath(), compUnit);
 		}
 	}
 	
-	public List<String> getSourceDirs() {
-		return sourceDirs;
+	public String getSourceDir() {
+		return sourceDir;
 	}
 	
 	public Set<Package> getPackages(){

@@ -6,18 +6,19 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 
-import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
+import br.usp.ime.jdx.entity.relationship.dependency.RawDependencyReport;
 import br.usp.ime.jdx.entity.system.Method;
 import br.usp.ime.jdx.entity.system.Type;
 import br.usp.ime.jdx.filter.StringMatcher;
+import br.usp.ime.jdx.processor.parser.CodeParser;
 
 public class ParameterDependencyExtractor implements MethodDeclarationProcessor{
 	
-	private Cache cache;
-	private DependencyReport depReport;
+	private CodeParser cache;
+	private RawDependencyReport depReport;
 	private StringMatcher classFilter;
 		
-	public ParameterDependencyExtractor(Cache cache, DependencyReport depReport, 
+	public ParameterDependencyExtractor(CodeParser cache, RawDependencyReport depReport, 
 			StringMatcher classFilter){
 		
 		this.cache = cache;
