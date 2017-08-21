@@ -2,8 +2,10 @@ package br.usp.ime.jdx.processor.extractor;
 
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.SuperFieldAccess;
 
 import br.usp.ime.jdx.entity.relationship.dependency.RawDependencyReport;
 import br.usp.ime.jdx.entity.system.Method;
@@ -33,17 +35,26 @@ public class AccessDependencyExtractor implements ExpressionProcessor{
 			QualifiedName qualifiedName = (QualifiedName)expression;
 			Name qualifier = qualifiedName.getQualifier();
 			ITypeBinding iTypeBinding = qualifier.resolveTypeBinding();
-			
-			if(iTypeBinding != null){
-				Type type = BindingResolver.resolveTypeBinding(
-						classFilter, cache, iTypeBinding);
-				
-				if(type != null){
-					Method attribMethod = type.getAttribMethod();
-					depReport.addAccessDependency(clientMethod, attribMethod);
-				}
-			}
+			processITypeBinding(clientMethod, iTypeBinding);
+		}
+		else if(expression instanceof SuperFieldAccess) {
+			SuperFieldAccess superFieldAccess = (SuperFieldAccess)expression;
+						
+			//Resolves the "super" keyword (not the field)
+			ITypeBinding bindingForSuper = superFieldAccess.resolveFieldBinding().getDeclaringClass();			
+			processITypeBinding(clientMethod, bindingForSuper);
 		}
 	}
 	
+	private void processITypeBinding(Method clientMethod, ITypeBinding iTypeBinding) {
+		if(iTypeBinding != null){
+			
+			Type type = BindingResolver.resolveTypeBinding(classFilter, cache, iTypeBinding);
+			
+			if(type != null){
+				Method attribMethod = type.getAttribMethod();
+				depReport.addAccessDependency(clientMethod, attribMethod);
+			}
+		}
+	}
 }

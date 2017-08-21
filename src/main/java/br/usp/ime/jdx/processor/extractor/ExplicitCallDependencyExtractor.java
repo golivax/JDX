@@ -57,19 +57,6 @@ public class ExplicitCallDependencyExtractor implements ExpressionProcessor,
 			
 			methodBinding = instanceCreation.resolveConstructorBinding();
 			
-		}else if (expression instanceof CastExpression){
-						
-			CastExpression castExpression = 
-					(CastExpression)expression;
-			
-			if(castExpression.getExpression() instanceof MethodInvocation){
-				
-				MethodInvocation methodInv = 
-						(MethodInvocation)castExpression.getExpression();
-				
-				methodBinding = methodInv.resolveMethodBinding();
-			}		
-			
 		}else if(expression != null){
 			//There are other types of expressions, including
 			//class org.eclipse.jdt.core.dom.ThisExpression, 

@@ -18,14 +18,9 @@ public class BindingResolver {
 			CodeParser cache, ITypeBinding iTypeBinding){
 		
 		Type type = null;
+		String qualifiedTypeName = ExtractorUtils.getQualifiedTypeName(iTypeBinding);
 		
-		String qualifiedTypeName = 
-				ExtractorUtils.getQualifiedTypeName(iTypeBinding);
-		
-		if (qualifiedTypeName != null && 
-			!qualifiedTypeName.endsWith("[]") &&
-			!classFilter.matches(qualifiedTypeName)){
-
+		if (qualifiedTypeName != null && !classFilter.matches(qualifiedTypeName)){
 			type = cache.getType(qualifiedTypeName);
 		}
 		
