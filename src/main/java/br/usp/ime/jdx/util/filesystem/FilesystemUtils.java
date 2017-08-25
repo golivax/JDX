@@ -17,33 +17,20 @@ public class FilesystemUtils {
 		
 	}
 	
-	public static String[] getPathsFromSourceDirs(List<String> sourceDirs,
+	public static String[] getPathsFromSourceDir(String projectDir, String sourceDir, 
 			String globPattern, boolean recursive) throws IOException{
 		
-		String[] paths = new String[0];
+		String finalPath = getPath(projectDir, sourceDir);
 		
-		for(String sourceDir : sourceDirs){
-			String[] filePathsFromDir = 
-					getPathsFromSourceDir(sourceDir, globPattern, recursive);
-			
-			paths = ArrayUtils.addAll(paths, filePathsFromDir);			
-		}
-		
-		return paths;
-	}
-	
-	public static String[] getPathsFromSourceDir(String sourceDir, 
-			String globPattern, boolean recursive) throws IOException{
-		
-		if(!Files.exists(Paths.get(sourceDir))){
-			throw new NoSuchFileException(sourceDir);
+		if(!Files.exists(Paths.get(finalPath))){
+			throw new NoSuchFileException(finalPath);
 		}
 		
 		if(recursive){
-			return getPathsFromSourceDirRecursively(sourceDir, globPattern);
+			return getPathsFromSourceDirRecursively(finalPath, globPattern);
 		}
 		else{
-			return getPathsFromSourceDir(sourceDir, globPattern);
+			return getPathsFromSourceDir(finalPath, globPattern);
 		}
 	}
 
@@ -79,23 +66,12 @@ public class FilesystemUtils {
 		return pathsArray;
 	}
 	
-	public static void main(String[] args) {
-		
-		try{
-		
-			String[] paths = FilesystemUtils.getPathsFromSourceDir(
-			  "C:/tmp/tomcat/tomcat/tc7.0.x/trunk/java/org/apache/catalina", 
-			  "*.java", true);
-			
-			for(String path : paths){
-				System.out.println(path);
-			}
-			
-			System.out.println(paths.length);
-			
-		}catch(IOException e){
-			e.printStackTrace();
+	public static String getPath(String dir, String subDir) {
+		String finalPath = dir;
+		if(!subDir.equals("") || !subDir.equals("./")) {
+			finalPath = finalPath + "/" + subDir;
 		}
-	}
-	
+		return finalPath;
+	}	
+		
 }

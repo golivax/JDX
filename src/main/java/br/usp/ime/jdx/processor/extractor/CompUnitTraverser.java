@@ -29,6 +29,8 @@ import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.ForStatement;
+import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.InfixExpression;
@@ -44,7 +46,9 @@ import org.eclipse.jdt.core.dom.NumberLiteral;
 import org.eclipse.jdt.core.dom.ParenthesizedExpression;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
+import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.ReturnStatement;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.SuperFieldAccess;
@@ -626,9 +630,12 @@ public class CompUnitTraverser {
 			Expression fieldAccessExpression = fieldAccess.getExpression();
 			expressions.addAll(extractInnerExpressions(fieldAccessExpression));
 			
-			//Maybe it is not necessary to process getName()
+			//Not sure if getName() needs to be processed. Let's do it for now
 			Expression name = fieldAccess.getName();
 			expressions.add(name);
+			
+			//Adding the expression as a whole to be dealt with by AccessDepExtractor
+			expressions.add(fieldAccess);
 		}
 		else if(expression instanceof InfixExpression){
 			InfixExpression infixExpression = (InfixExpression)expression;
@@ -688,7 +695,8 @@ public class CompUnitTraverser {
 		}
 		//e.g. C.SOMENUMBER (accessing the static field SOMENUMBER of class C 
 		else if(expression instanceof Name){
-			expressions.add(expression);			
+			Name name = (Name)expression;
+			expressions.add(name);			
 		}
 		else if(expression instanceof NullLiteral){
 			//Primary expression. No need to do anything
@@ -727,7 +735,7 @@ public class CompUnitTraverser {
 			Expression name = superFieldAccess.getName();
 			expressions.add(name);
 			
-			//Adding the expression as a whole to be dealt with by ReferenceDepExtractor
+			//Adding the expression as a whole to be dealt with by AccessDepExtractor
 			expressions.add(superFieldAccess);
 		}
 		else if(expression instanceof SuperMethodInvocation){

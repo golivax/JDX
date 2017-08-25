@@ -8,22 +8,29 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 
 public class CodeLocator {
 	
-	private String NEWLINE = System.getProperty("line.separator");
-	private Pattern EOL_PATTERN = Pattern.compile("\r\n|\r|\n");
+	/**
+	 * Line separators
+	 * \n is for unix
+	 * \r is for mac
+	 * \r\n is for windows format 
+	 */	
+	private String EOL_REGEX = "\r\n|\r|\n";
+	private String NEWLINE = "\n";
 	
 	private String compUnitCode;
 	private String[] compUnitCodeLines;
 	private String compUnitCodeWithoutSpace;
 	
 	public CodeLocator(CompilationUnit compilationUnit) {
-		this.compUnitCode = compilationUnit.toString();		
+		this.compUnitCode = compilationUnit.toString().replaceAll(EOL_REGEX, "\n");
 		this.compUnitCodeWithoutSpace = compUnitCode.replace(" ", "");
-		this.compUnitCodeLines = compUnitCode.split("\r\n|\r|\n",-1);
+		this.compUnitCodeLines = compUnitCode.split("\n",-1);
 	}
 
 	public int[] locateCode(String searchedCode) {
 				
-		String searchedCodeWithoutSpace = searchedCode.replace(" ", "");
+		String searchedCodeStandardNewLine = searchedCode.replaceAll(EOL_REGEX, "\n");
+		String searchedCodeWithoutSpace = searchedCodeStandardNewLine.replace(" ", "");
 		//System.out.println("First check: " + compUnitCodeWithoutSpace.contains(searchedCodeWithoutSpace));
 		
 		String beforeSearchedCode = StringUtils.substringBefore(compUnitCodeWithoutSpace, searchedCodeWithoutSpace);
@@ -51,13 +58,17 @@ public class CodeLocator {
 		return indexes;
 	}
 	
-	
 	private int countLines(String input) {
-		Matcher matcher = EOL_PATTERN.matcher(input);
+		Pattern eolPattern = Pattern.compile("\n");
+		Matcher matcher = eolPattern.matcher(input);
 		int lines = 1;
 		while (matcher.find()){
 		    lines ++;
 		}
 		return lines;
+	}
+	
+	public String getStandardizedCompUnitCode() {
+		return compUnitCode;
 	}
 }

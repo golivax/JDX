@@ -105,7 +105,7 @@ public class Method implements Serializable, JavaElement{
 	public String getSourceCode(){
 		
 		if(sourceCode != null) return sourceCode;
-		
+				
 		String compUnitSourceCode = this.getContainingCompUnit().getSourceCode();
 		String sourceCode = compUnitSourceCode.substring(sourceCodeLocation[0], sourceCodeLocation[1]);
 		return sourceCode;

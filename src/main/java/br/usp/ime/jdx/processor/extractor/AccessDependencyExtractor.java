@@ -1,10 +1,13 @@
 package br.usp.ime.jdx.processor.extractor;
 
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.FieldAccess;
+import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SuperFieldAccess;
 
 import br.usp.ime.jdx.entity.relationship.dependency.RawDependencyReport;
@@ -30,6 +33,19 @@ public class AccessDependencyExtractor implements ExpressionProcessor{
 	@Override
 	public void processExpression(Expression expression, Method clientMethod){
 				
+		//Checks if this simpleName corresponds to a field
+		if(expression instanceof SimpleName) {
+			SimpleName simpleName = (SimpleName)expression;
+			IBinding iBinding =  simpleName.resolveBinding();
+			if(iBinding instanceof IVariableBinding) {
+				IVariableBinding iVariableBinding = (IVariableBinding)iBinding;
+				if(iVariableBinding.isField()) {
+					ITypeBinding fieldsClass = iVariableBinding.getDeclaringClass();
+					processITypeBinding(clientMethod, fieldsClass);
+				}
+			}
+		}
+		
 		if(expression instanceof QualifiedName){ 
 			
 			QualifiedName qualifiedName = (QualifiedName)expression;
@@ -39,10 +55,21 @@ public class AccessDependencyExtractor implements ExpressionProcessor{
 		}
 		else if(expression instanceof SuperFieldAccess) {
 			SuperFieldAccess superFieldAccess = (SuperFieldAccess)expression;
-						
-			//Resolves the "super" keyword (not the field)
-			ITypeBinding bindingForSuper = superFieldAccess.resolveFieldBinding().getDeclaringClass();			
-			processITypeBinding(clientMethod, bindingForSuper);
+			
+			if(superFieldAccess.resolveFieldBinding() != null) {
+				//Resolves the "super" keyword (not the field)
+				ITypeBinding bindingForSuper = superFieldAccess.resolveFieldBinding().getDeclaringClass();			
+				processITypeBinding(clientMethod, bindingForSuper);
+			}			
+		}
+		else if(expression instanceof FieldAccess) {
+			FieldAccess fieldAccess = (FieldAccess)expression;
+			
+			if(fieldAccess.resolveFieldBinding() != null) {
+				//Here we could create a dep. to the actual field (for now, we capture the field's declaring clazz)
+				ITypeBinding bindingForFieldsClass = fieldAccess.resolveFieldBinding().getDeclaringClass();			
+				processITypeBinding(clientMethod, bindingForFieldsClass);
+			}			
 		}
 	}
 	

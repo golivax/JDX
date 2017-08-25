@@ -10,15 +10,17 @@ public class JavaProject implements Serializable {
 
 	private static final long serialVersionUID = 5055713865573892829L;
 
+	private String projectDir;
 	private String sourceDir;
 	private Set<Package> packages;
 	private Map<String,CompUnit> compUnitMap;
 	private Set<Type> types;
 	private Set<Method> methods;
 	
-	public JavaProject(String sourceDir, Set<Package> packages, Set<CompUnit> compUnits, 
-			Set<Type> types, Set<Method> methods){
+	public JavaProject(String projectDir, String sourceDir, 
+			Set<Package> packages, Set<CompUnit> compUnits,	Set<Type> types, Set<Method> methods){
 		
+		this.projectDir = projectDir;
 		this.sourceDir = sourceDir;
 		this.packages = packages;
 		this.types = types;
@@ -32,6 +34,10 @@ public class JavaProject implements Serializable {
 	
 	public String getSourceDir() {
 		return sourceDir;
+	}
+	
+	public String getProjectDir() {
+		return projectDir;
 	}
 	
 	public Set<Package> getPackages(){

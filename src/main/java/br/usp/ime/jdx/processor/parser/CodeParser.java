@@ -32,7 +32,10 @@ import br.usp.ime.jdx.entity.system.Type;
 
 public class CodeParser extends FileASTRequestor{
 	
-	private String sourceDir;
+	private String EOL_REGEX = "\r\n|\r|\n";
+	private String adoptedLineSeparator = "\n";
+	
+	private String projectDir;
 	private boolean recoverSourceCode;
 	
 	private CodeLocator codeLocator;
@@ -47,11 +50,10 @@ public class CodeParser extends FileASTRequestor{
 	private Map<TypeDeclaration,Clazz> clazzMap = new HashMap<>();
 	private Map<String,Clazz> clazzNameMap = new HashMap<>();
 	
-	private Map<MethodDeclaration,Method> methodDeclarationMap = 
-			new HashMap<>();
+	private Map<MethodDeclaration,Method> methodDeclarationMap = new HashMap<>();
 	
-	public CodeParser(String sourceDir, boolean recoverSourceCode) {
-		this.sourceDir = sourceDir;
+	public CodeParser(String projectDir, boolean recoverSourceCode) {
+		this.projectDir = projectDir;
 		this.recoverSourceCode = recoverSourceCode;
 	}
 
@@ -63,7 +65,6 @@ public class CodeParser extends FileASTRequestor{
 	}	
 	
 	private void cache(String sourceFilePath, CompilationUnit compilationUnit) {
-		
 		this.codeLocator = new CodeLocator(compilationUnit);
 
 		//TODO: Maybe store empty comp units just for future reference
@@ -124,14 +125,11 @@ public class CodeParser extends FileASTRequestor{
 		Package pkg = pkgMap.get(pkgFQN);
 		
 		String absolutePath = sourceFilePath.replaceAll("\\\\", "/");
-		
-		String sourceDir = this.sourceDir.replaceAll("\\\\", "/");
-		String toThrowAway = StringUtils.substringBeforeLast(sourceDir, "/") + "/";
-		String relativePath =  StringUtils.substringAfter(absolutePath, toThrowAway);
+		String relativePath = StringUtils.substringAfter(absolutePath, projectDir + "/");
 		
 		String compUnitSourceCode = null;		
 		if(recoverSourceCode){
-			compUnitSourceCode = compilationUnit.toString();
+			compUnitSourceCode = codeLocator.getStandardizedCompUnitCode();
 		}
 		
 		CompUnit compUnit = new CompUnit(pkg, absolutePath, relativePath, compUnitSourceCode);
@@ -238,7 +236,7 @@ public class CodeParser extends FileASTRequestor{
 				
 				String methodCode = methodDeclaration.toString();
 				if(methodDeclaration.getJavadoc() != null) {
-					javaDoc = methodDeclaration.getJavadoc().toString();
+					javaDoc = methodDeclaration.getJavadoc().toString().replaceAll(EOL_REGEX, "\n");
 				}
 				
 				methodCodeLocation = codeLocator.locateCode(methodCode);				
@@ -265,7 +263,7 @@ public class CodeParser extends FileASTRequestor{
 		StringBuilder attributesBuilder = new StringBuilder();
 		for(FieldDeclaration fieldDeclaration : typeDeclaration.getFields()){
 			attributesBuilder.append(fieldDeclaration.toString().trim());
-			attributesBuilder.append(System.lineSeparator());
+			attributesBuilder.append(adoptedLineSeparator);
 		}
 		String attributes = attributesBuilder.toString();
 		

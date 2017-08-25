@@ -6,19 +6,20 @@ import br.usp.ime.jdx.entity.system.JavaProject;
 import br.usp.ime.jdx.filter.StringMatcher;
 import br.usp.ime.jdx.processor.BatchCompilationUnitProcessor;
 import br.usp.ime.jdx.processor.parser.CodeParser;
+import br.usp.ime.jdx.util.filesystem.FilesystemUtils;
 
 public class DependencyExtractor{
 	
 	//TODO: Refactor. Idea is that every processor should be added to 
 	//CompUnitTraverser, i.e. no independent processors anymore
-	public DependencyReport run(String sourceDir, String[] paths, 
+	public DependencyReport run(String projectDir, String sourceDir, String[] paths, 
 			StringMatcher classFilter, boolean recoverSourceCode){
 		
-		CodeParser cache = buildCache(sourceDir, paths, recoverSourceCode);
+		CodeParser cache = buildCache(projectDir, sourceDir, paths, recoverSourceCode);
 
 		RawDependencyReport rawDepReport = new RawDependencyReport(
 				new JavaProject(
-						sourceDir,
+						projectDir, sourceDir,
 						cache.getPackages(),
 						cache.getJDXCompilationUnits(), 
 						cache.getTypes(),
@@ -98,18 +99,18 @@ public class DependencyExtractor{
 		return compUnitTraverser;
 	}
 
-	private CodeParser buildCache(String sourceDir, String[] paths,
+	private CodeParser buildCache(String projectDir, String sourceDir, String[] paths,
 			boolean recoverSourceCode) {
 		
-		CodeParser cacher = new CodeParser(sourceDir, recoverSourceCode);
+		CodeParser codeParser = new CodeParser(projectDir, recoverSourceCode);
 
 		BatchCompilationUnitProcessor batchCompilationUnitProcessor = 
 				new BatchCompilationUnitProcessor();
 
-		batchCompilationUnitProcessor.run(sourceDir, cacher, paths, 
-				recoverSourceCode);
+		String finalDir = FilesystemUtils.getPath(projectDir, sourceDir);
 		
-		return cacher;
+		batchCompilationUnitProcessor.run(finalDir, codeParser, paths, recoverSourceCode);		
+		return codeParser;
 	}
 
 }

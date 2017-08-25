@@ -13,7 +13,7 @@ public class BatchCompilationUnitProcessor {
 		
 	private static final Logger logger = LogManager.getLogger();
 	
-	public void run(String sourceDir, FileASTRequestor req, 
+	public void run(String sourcePathEntry, FileASTRequestor req, 
 			String[] paths, boolean recoverSourceCode){
 		
 		try{
@@ -35,13 +35,12 @@ public class BatchCompilationUnitProcessor {
 				parser.setIgnoreMethodBodies(true);
 			}
 			
-			logger.info("Source directory for dependency extraction: {}", sourceDir);
+			logger.info("Source directory for dependency extraction: {}", sourcePathEntry);
 			
-			String[] sourceDirsArray = {sourceDir};
+			String[] sourcePathEntries = {sourcePathEntry};
 			
 			//Sets the environment			
-			parser.setEnvironment(null, sourceDirsArray, null, true);			
-			
+			parser.setEnvironment(null, sourcePathEntries, null, true);			
 			parser.createASTs(paths, null, new String[0], req, null);
 			
 		}catch(Exception e){
