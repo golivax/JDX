@@ -71,11 +71,4 @@ public class BatchCompilationUnitProcessor {
 		return sourcepathEntry;
 	}*/
 	
-	public static void main(String[] args) {
-		Map options = JavaCore.getOptions();
-		for(Object entry : options.entrySet()) {
-			System.out.println(entry);
-		}
-		System.out.println(options);
-	}
 }
