@@ -76,17 +76,19 @@ public class CompUnitMetaDepFactory {
 			CompUnit clientCU, CompUnit supplierCU, 
 			Set<Dependency<? extends JavaElement, ? extends JavaElement>> deps){
 
-		if (compUnitMetaDepsMap.containsKey(clientCU,supplierCU)){
 
-			CompUnitMetaDependency compUnitMetaDep = 
-					compUnitMetaDepsMap.get(clientCU,supplierCU);
+		CompUnitMetaDependency compUnitMetaDep = 
+				compUnitMetaDepsMap.get(clientCU,supplierCU);
+		
+		if (compUnitMetaDep != null){			
 
 			for(Dependency<? extends JavaElement, ? extends JavaElement> dep : deps){
 				compUnitMetaDep.addDependency(dep);
 			}
+			
 		}
 		else{
-			CompUnitMetaDependency compUnitMetaDep = 
+			compUnitMetaDep = 
 					new CompUnitMetaDependency(clientCU, supplierCU);
 
 			for(Dependency<? extends JavaElement, ? extends JavaElement> dep : deps){
