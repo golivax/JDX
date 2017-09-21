@@ -1,5 +1,6 @@
 package br.usp.ime.jdx.util.filesystem;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -8,8 +9,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.lang3.ArrayUtils;
 
 public class FilesystemUtils {
 
@@ -72,6 +71,15 @@ public class FilesystemUtils {
 			finalPath = finalPath + "/" + subDir;
 		}
 		return finalPath;
+	}
+
+	public static boolean isEmpty(String path) {
+		File file = new File(path);
+		return file.list().length == 0;		
 	}	
+	
+	public static boolean exists(String path) {
+		return Files.exists(Paths.get(path));
+	}
 		
 }
