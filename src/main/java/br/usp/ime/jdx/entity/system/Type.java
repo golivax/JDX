@@ -30,6 +30,10 @@ public abstract class Type implements Serializable, JavaElement{
 		this.methods = new HashSet<Method>();
 	}
 	
+	public String getFullName() {
+		return StringUtils.substringAfter(fqn, this.getCompUnit().getPackage().getFQN() + ".");
+	}
+	
 	public String getName(){
 		return StringUtils.substringAfterLast(fqn, ".");
 	}
