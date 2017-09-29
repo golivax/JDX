@@ -1,5 +1,8 @@
 package br.usp.ime.jdx.processor.parser;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,13 +12,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
+import org.eclipse.jdt.core.dom.Javadoc;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
@@ -32,13 +39,13 @@ import br.usp.ime.jdx.entity.system.Type;
 
 public class CodeParser extends FileASTRequestor{
 	
+	private static final Logger logger = LogManager.getLogger();
+	
 	private String EOL_REGEX = "\r\n|\r|\n";
 	private String adoptedLineSeparator = "\n";
 	
 	private String projectDir;
 	private boolean recoverSourceCode;
-	
-	private CodeLocator codeLocator;
 	
 	private Map<String, Package> pkgMap = new HashMap<>();
 	
@@ -58,25 +65,29 @@ public class CodeParser extends FileASTRequestor{
 	}
 
 	@Override
-	public void acceptAST(String sourceFilePath, 
-			CompilationUnit compilationUnit) {
-
+	public void acceptAST(String sourceFilePath, CompilationUnit compilationUnit) {
 		this.cache(sourceFilePath, compilationUnit);	
 	}	
 	
 	private void cache(String sourceFilePath, CompilationUnit compilationUnit) {
-		this.codeLocator = new CodeLocator(compilationUnit);
-
-		//TODO: Maybe store empty comp units just for future reference
-		if(!compilationUnit.toString().isEmpty()){
-			cachePackage(sourceFilePath, compilationUnit);
-			cacheCompilationUnit(sourceFilePath, compilationUnit);
-			cacheTypes(compilationUnit);
-			cacheMethods(compilationUnit);
-		}		
+		
+		try {
+				
+			//TODO: Maybe store empty comp units just for future reference
+			if(!compilationUnit.toString().isEmpty()){
+				cachePackage(compilationUnit);
+				cacheCompilationUnit(sourceFilePath, compilationUnit);
+				cacheTypes(compilationUnit);
+				cacheMethods(compilationUnit);
+			}	
+			
+		}catch(Exception e) {
+			logger.error("Could not parse compilation unit at {}", sourceFilePath);
+			logger.error("Stacktrace as follows:", e);
+		}
 	}
 
-	private void cachePackage(String sourceFilePath, CompilationUnit compilationUnit) {
+	private void cachePackage(CompilationUnit compilationUnit) {
 			 
 		String packageFQN = getPackageName(compilationUnit);
 		
@@ -118,8 +129,7 @@ public class CodeParser extends FileASTRequestor{
 		
 	}
 
-	private void cacheCompilationUnit(String sourceFilePath,
-			CompilationUnit compilationUnit) {
+	private void cacheCompilationUnit(String sourceFilePath, CompilationUnit compilationUnit) throws IOException{
 		
 		String pkgFQN = getPackageName(compilationUnit);		
 		Package pkg = pkgMap.get(pkgFQN);
@@ -127,12 +137,16 @@ public class CodeParser extends FileASTRequestor{
 		String absolutePath = sourceFilePath.replaceAll("\\\\", "/");
 		String relativePath = StringUtils.substringAfter(absolutePath, projectDir + "/");
 		
-		String compUnitSourceCode = null;		
+		String rawSourceCode = null;		
 		if(recoverSourceCode){
-			compUnitSourceCode = codeLocator.getStandardizedCompUnitCode();
+			rawSourceCode = FileUtils.readFileToString(new File(sourceFilePath), Charset.forName("UTF-8"));
+			rawSourceCode = rawSourceCode.replaceAll(EOL_REGEX, "\n");
 		}
 		
-		CompUnit compUnit = new CompUnit(pkg, absolutePath, relativePath, compUnitSourceCode);
+		CompUnit compUnit = recoverSourceCode ? 
+				new CompUnit(pkg, absolutePath, relativePath, rawSourceCode) : 
+				new CompUnit(pkg, absolutePath, relativePath);
+				
 		compUnitMap.put(compilationUnit,compUnit);
 	}
 	
@@ -142,37 +156,54 @@ public class CodeParser extends FileASTRequestor{
 		typeStack.addAll(compilationUnit.types());
 
 		while(!typeStack.isEmpty()){
+			
 			AbstractTypeDeclaration abstractTypeDecl = typeStack.pop();
 			
-			//FIXME: Add support for enums (EnumDeclaration)
+			//TODO: Add support for enums (EnumDeclaration)
 			if(abstractTypeDecl.getNodeType() == ASTNode.TYPE_DECLARATION){
 				
 				TypeDeclaration typeDeclaration = (TypeDeclaration) abstractTypeDecl;
 				String typeFQN = getTypeFQN(typeDeclaration);
 				
 				int[] sourceCodeLocation = null;
+				int[] javaDocLocation = null;
 				if(recoverSourceCode){
-					String typeSourceCode = typeDeclaration.toString();
-					sourceCodeLocation = codeLocator.locateCode(typeSourceCode);		
+					
+					int start = typeDeclaration.getStartPosition();
+					int end = start + typeDeclaration.getLength();
+					sourceCodeLocation = new int[]{start,end};
+					
+					Javadoc javadoc = typeDeclaration.getJavadoc();
+					if(javadoc != null) {
+						start = javadoc.getStartPosition();
+						end = start + javadoc.getLength();
+						javaDocLocation = new int[]{start,end};
+					}
 				}
-				
-				Type type;
 				
 				if(typeDeclaration.isInterface()){
-					Interface interf = new Interface(typeFQN, sourceCodeLocation);
+					
+					CompUnit compUnit = compUnitMap.get(compilationUnit);
+					
+					Interface interf = recoverSourceCode ? 
+							new Interface(typeFQN, javaDocLocation, sourceCodeLocation,compUnit) : 
+							new Interface(typeFQN,compUnit);
+							
 					interfaceMap.put(typeDeclaration, interf);
 					interfaceNameMap.put(typeFQN, interf);
-					type = interf;
+					compUnit.addType(interf);
 				}
 				else{
-					Clazz clazz = new Clazz(typeFQN, sourceCodeLocation);
+					CompUnit compUnit = compUnitMap.get(compilationUnit);
+					
+					Clazz clazz = recoverSourceCode ? 
+							new Clazz(typeFQN, javaDocLocation, sourceCodeLocation,compUnit) : 
+							new Clazz(typeFQN,compUnit);
+							
 					clazzMap.put(typeDeclaration, clazz);
 					clazzNameMap.put(typeFQN, clazz);
-					type = clazz;
+					compUnit.addType(clazz);
 				}
-				
-				CompUnit compUnit = compUnitMap.get(compilationUnit);
-				compUnit.addType(type);
 				
 				for(TypeDeclaration subType : getSubTypes(typeDeclaration)){
 					typeStack.push(subType);
@@ -229,21 +260,27 @@ public class CodeParser extends FileASTRequestor{
 				returnType = methodDeclaration.getReturnType2().toString();
 			}
 			
-			int[] methodCodeLocation = null;
-			String javaDoc = new String();
+			int[] codeLocation = null;
+			int[] javaDocLocation = null;
 			
 			if(recoverSourceCode){
 				
-				String methodCode = methodDeclaration.toString();
-				if(methodDeclaration.getJavadoc() != null) {
-					javaDoc = methodDeclaration.getJavadoc().toString().replaceAll(EOL_REGEX, "\n");
-				}
+				int start = methodDeclaration.getStartPosition();
+				int end = start + methodDeclaration.getLength();
+				codeLocation = new int[]{start,end};			
 				
-				methodCodeLocation = codeLocator.locateCode(methodCode);				
+				Javadoc javadoc = methodDeclaration.getJavadoc();
+				if(javadoc != null) {
+					start = javadoc.getStartPosition();
+					end = start + javadoc.getLength();
+					javaDocLocation = new int[]{start,end};
+				}
+					
 			}
 			
-			Method method = new Method(javaDoc,	methodName, parameterTypes, returnType, 
-					methodCodeLocation, isConstructor);
+			Method method = recoverSourceCode ? 
+				new Method(methodName, parameterTypes, returnType, isConstructor, javaDocLocation, codeLocation, type) :
+				new Method(methodName, parameterTypes, returnType,	isConstructor, type);
 						
 			type.addMethod(method);
 			methodDeclarationMap.put(methodDeclaration, method);
@@ -252,10 +289,7 @@ public class CodeParser extends FileASTRequestor{
 		//Add implicit constructor when no explicit constructors exist
 		if(type.getConstructors().isEmpty()){
 			
-			Method constructor = new Method(new String(), type.getName(), 
-					new ArrayList<String>(), type.getName(), 
-					new String(), true);
-			
+			Method constructor = new Method(type.getName(), new ArrayList<String>(), type.getName(), true, type);			
 			type.addMethod(constructor);
 		}
 		
@@ -268,10 +302,7 @@ public class CodeParser extends FileASTRequestor{
 		String attributes = attributesBuilder.toString();
 		
 		//Adding artificial "attrib<>" method
-		Method attribMethod = new Method(
-				new String(),
-				"attrib<>", new ArrayList<String>(), new String(), 
-				attributes, false);
+		Method attribMethod = new Method("attrib<>", new ArrayList<String>(), new String(), false, attributes, type);
 		
 		type.addMethod(attribMethod);
 	}
@@ -351,33 +382,30 @@ public class CodeParser extends FileASTRequestor{
 	private List<TypeDeclaration> getSubTypes(TypeDeclaration typeDeclaration) {
 		List<TypeDeclaration> subTypes = new ArrayList<>();
 
-		try{
-			//Recovers static nested classes and "regular" inner classes
-			Collections.addAll(subTypes, typeDeclaration.getTypes());
 
-			//Recovers local classes
-			for(MethodDeclaration methodDecl : typeDeclaration.getMethods()){
-				Block block = methodDecl.getBody();
-				if (block != null) {
-					List<Statement> statements = block.statements();
-					for(Statement statement : statements){
-						if (statement.getNodeType() 
-								== ASTNode.TYPE_DECLARATION_STATEMENT){
-							
-							TypeDeclarationStatement tds = 
-									(TypeDeclarationStatement)statement;
-							
-							AbstractTypeDeclaration atd = tds.getDeclaration();
-							if (atd instanceof TypeDeclaration){								
-								subTypes.add((TypeDeclaration)atd);
-							}
+		//Recovers static nested classes and "regular" inner classes
+		Collections.addAll(subTypes, typeDeclaration.getTypes());
+
+		//Recovers local classes
+		for(MethodDeclaration methodDecl : typeDeclaration.getMethods()){
+			Block block = methodDecl.getBody();
+			if (block != null) {
+				List<Statement> statements = block.statements();
+				for(Statement statement : statements){
+					if (statement.getNodeType() == ASTNode.TYPE_DECLARATION_STATEMENT){
+
+						TypeDeclarationStatement tds = 
+								(TypeDeclarationStatement)statement;
+
+						AbstractTypeDeclaration atd = tds.getDeclaration();
+						if (atd instanceof TypeDeclaration){								
+							subTypes.add((TypeDeclaration)atd);
 						}
 					}
-				}									
-			}
-		}catch(Exception e){
-			e.printStackTrace();
+				}
+			}									
 		}
+		
 		return subTypes;
 	}
 

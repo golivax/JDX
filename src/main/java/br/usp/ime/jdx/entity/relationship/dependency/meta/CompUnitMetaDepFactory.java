@@ -23,8 +23,8 @@ public class CompUnitMetaDepFactory {
 		//Type Meta Dependencies
 		for(TypeMetaDependency typeMetaDep : depReport.getTypeMetaDependencies()){
 						
-			CompUnit clientCU = typeMetaDep.getClient().getCompUnit();
-			CompUnit supplierCU = typeMetaDep.getSupplier().getCompUnit();
+			CompUnit clientCU = typeMetaDep.getClient().getParentCompUnit();
+			CompUnit supplierCU = typeMetaDep.getSupplier().getParentCompUnit();
 			
 			Set<Dependency<? extends JavaElement, ? extends JavaElement>> deps = 
 					typeMetaDep.getDependencies();
@@ -39,7 +39,7 @@ public class CompUnitMetaDepFactory {
 			depReport.getTypeImportDependencies()){
 			
 			CompUnit clientCU = typeImportDep.getClient();
-			CompUnit supplierCU = typeImportDep.getSupplier().getCompUnit();
+			CompUnit supplierCU = typeImportDep.getSupplier().getParentCompUnit();
 			
 			Set<Dependency<? extends JavaElement, ? extends JavaElement>> deps = 
 					new HashSet<>();
@@ -56,7 +56,7 @@ public class CompUnitMetaDepFactory {
 				depReport.getMethodImportDependencies()){
 			
 			CompUnit clientCU = methodImportDep.getClient();
-			CompUnit supplierCU = methodImportDep.getSupplier().getContainingCompUnit();
+			CompUnit supplierCU = methodImportDep.getSupplier().getParentCompUnit();
 			
 			Set<Dependency<? extends JavaElement, ? extends JavaElement>> deps = 
 					new HashSet<>();

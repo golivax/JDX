@@ -13,25 +13,35 @@ public abstract class Type implements Serializable, JavaElement{
 	private static final long serialVersionUID = -7126906063529157990L;
 
 	private String fqn;
-	private String sourceCode;
-	private int[] sourceCodeLocation;
-	private CompUnit compUnit;
+	private SourceCode javaDoc;
+	private SourceCode sourceCode;
+	private CompUnit parentCompUnit;
 	private Set<Method> methods;
 	
-	public Type(String fqn, int[] sourceCodeLocation) {
+	public Type(String fqn, CompUnit parentCompUnit) {
 		this.fqn = fqn;
-		this.sourceCodeLocation = sourceCodeLocation;
+		this.parentCompUnit = parentCompUnit;
 		this.methods = new HashSet<Method>();
 	}
 	
-	public Type(String fqn, String sourceCode){
-		this.fqn = fqn;
-		this.sourceCode = sourceCode;
-		this.methods = new HashSet<Method>();
+	public Type(String fqn, int[] javaDocLocation, int[] sourceCodeLocation, CompUnit parentCompUnit) {
+		this(fqn,parentCompUnit);
+		
+		if(javaDocLocation != null) {
+			this.javaDoc = new SourceCode(javaDocLocation, parentCompUnit);
+		}
+		
+		this.sourceCode = new SourceCode(sourceCodeLocation, parentCompUnit);
+	}
+	
+	public Type(String fqn, String rawJavaDoc, String rawSourceCode, CompUnit parentCompUnit){
+		this(fqn,parentCompUnit);
+		this.javaDoc = new SourceCode(rawJavaDoc);
+		this.sourceCode = new SourceCode(rawSourceCode);
 	}
 	
 	public String getFullName() {
-		return StringUtils.substringAfter(fqn, this.getCompUnit().getPackage().getFQN() + ".");
+		return StringUtils.substringAfter(fqn, this.getParentCompUnit().getPackage().getFQN() + ".");
 	}
 	
 	public String getName(){
@@ -42,25 +52,30 @@ public abstract class Type implements Serializable, JavaElement{
 		return fqn;
 	}
 	
-	public String getSourceCode(){
-		if(sourceCode != null) return sourceCode;
-		
-		String compUnitSourceCode = this.getCompUnit().getSourceCode();
-		String sourceCode = compUnitSourceCode.substring(sourceCodeLocation[0], sourceCodeLocation[1]);
+	public SourceCode getSourceCode(){
 		return sourceCode;
 	}
 	
-	public CompUnit getCompUnit(){
-		return compUnit;
+	public SourceCode getSourceCodeWithoutJavaDoc() {
+		if(javaDoc == null) return sourceCode;
+		
+		//end of javadoc + 1
+		int start = javaDoc.getCodeLocation()[1] + 1;
+		
+		//end of source code		
+		int end = sourceCode.getCodeLocation()[1];
+		
+		int[] codeLocation = new int[] {start,end};		
+		SourceCode sourceCodeWithoutJavaDoc = new SourceCode(codeLocation, parentCompUnit);
+		return sourceCodeWithoutJavaDoc;
 	}
 	
-	public void setCompUnit(CompUnit compUnit){
-		this.compUnit = compUnit;
+	public CompUnit getParentCompUnit(){
+		return parentCompUnit;
 	}
 	
 	public void addMethod(Method method){
 		this.methods.add(method);
-		method.setContainingType(this);
 	}
 
 	@Override
@@ -106,12 +121,16 @@ public abstract class Type implements Serializable, JavaElement{
 	public Method getAttribMethod() {
 		return getMethod("attrib<>", new ArrayList<String>());
 	}
+	
+	public SourceCode getJavaDoc() {
+		return javaDoc;
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((compUnit == null) ? 0 : compUnit.hashCode());
+		result = prime * result + ((parentCompUnit == null) ? 0 : parentCompUnit.hashCode());
 		result = prime * result + ((fqn == null) ? 0 : fqn.hashCode());
 		return result;
 	}
@@ -125,10 +144,10 @@ public abstract class Type implements Serializable, JavaElement{
 		if (getClass() != obj.getClass())
 			return false;
 		Type other = (Type) obj;
-		if (compUnit == null) {
-			if (other.compUnit != null)
+		if (parentCompUnit == null) {
+			if (other.parentCompUnit != null)
 				return false;
-		} else if (!compUnit.equals(other.compUnit))
+		} else if (!parentCompUnit.equals(other.parentCompUnit))
 			return false;
 		if (fqn == null) {
 			if (other.fqn != null)

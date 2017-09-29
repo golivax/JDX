@@ -22,10 +22,10 @@ public class TypeMetaDepFactory {
 				depReport.getMethodToMethodDependencies()){
 			
 			Type clientType = 
-					m2mDep.getClient().getContainingType();
+					m2mDep.getClient().getParentType();
 						
 			Type supplierType = 
-					m2mDep.getSupplier().getContainingType();
+					m2mDep.getSupplier().getParentType();
 			
 			addTypeMetaDep(typeMetaDepsMap, clientType, supplierType, m2mDep);
 		}
@@ -34,7 +34,7 @@ public class TypeMetaDepFactory {
 			depReport.getMethodToTypeDependencies()){
 		
 			Type clientType = 
-					m2tDep.getClient().getContainingType();
+					m2tDep.getClient().getParentType();
 						
 			Type supplierType = 
 					m2tDep.getSupplier();
@@ -42,7 +42,7 @@ public class TypeMetaDepFactory {
 			if(supplierType == null){
 				System.out.println("m2t - Null supplier");
 				System.out.println(m2tDep);
-				System.out.println(clientType.getCompUnit().getRelativePath());
+				System.out.println(clientType.getParentCompUnit().getRelativePath());
 			}
 			
 			addTypeMetaDep(typeMetaDepsMap, clientType, supplierType, m2tDep);
@@ -57,7 +57,7 @@ public class TypeMetaDepFactory {
 			if(supplierType == null){
 				System.out.println("t2t - Null supplier");
 				System.out.println(t2tDep);
-				System.out.println(clientType.getCompUnit().getRelativePath());
+				System.out.println(clientType.getParentCompUnit().getRelativePath());
 			}
 			
 			addTypeMetaDep(typeMetaDepsMap, clientType, supplierType, t2tDep);

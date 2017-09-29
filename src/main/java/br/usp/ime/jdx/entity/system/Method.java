@@ -3,69 +3,70 @@ package br.usp.ime.jdx.entity.system;
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 //TODO: getAnnotations()
 public class Method implements Serializable, JavaElement{
 
 	private static final long serialVersionUID = -4865185051823887456L;
 
-	private String javaDoc;
+	private SourceCode javaDoc;
 	private String name;
 	private List<String> parameters;
 	private String returnType;
-	
-	private int[] sourceCodeLocation;
-	private String sourceCode;
-	
-	private Type containingType;
-	private boolean isConstructor = false;
-	
-	public Method(String javaDoc, String name, List<String> parameters, String returnType,
-			int[] sourceCodeLocation) {
-		
-		this.javaDoc = javaDoc;
-		this.name = name;
-		this.parameters = parameters;
-		this.returnType = returnType;
-		this.sourceCodeLocation = sourceCodeLocation;	
-	}
-	
-	public Method(String javaDoc, String name, List<String> parameters, String returnType,
-			int[] sourceCodeLocation, boolean isConstructor) {
-		
-		this(javaDoc, name, parameters, returnType, sourceCodeLocation);
-		this.isConstructor = isConstructor;
-	}
 
-	public Method(String javaDoc, String name, List<String> parameters, String returnType, 
-			String sourceCode){
+	private boolean isConstructor = false;	
+	private SourceCode sourceCode;
+	
+	private Type parentType;
+	
+	public Method(String name, List<String> parameters, String returnType, boolean isConstructor, 
+			Type parentType) {
 		
-		this.javaDoc = javaDoc;
 		this.name = name;
 		this.parameters = parameters;
 		this.returnType = returnType;
-		this.sourceCode = sourceCode;	
-	}
-	
-	public Method(String javaDoc, String name, List<String> parameters, String returnType, 
-			String sourceCode, boolean isConstructor){
-		
-		this(javaDoc, name, parameters, returnType, sourceCode);
 		this.isConstructor = isConstructor;
+		this.parentType = parentType;
+		
 	}
 	
+	public Method(String name, List<String> parameters, String returnType, boolean isConstructor, 
+			String rawSourceCode, Type parentType) {
+		
+		this(name,parameters,returnType,isConstructor,parentType);
+		this.sourceCode = new SourceCode(rawSourceCode);		
+	}
+	
+	public Method(String name, List<String> parameters, String returnType, boolean isConstructor,
+			int[] javaDocLocation, int[] codeLocation, Type parentType) {
+		
+		this(name,parameters,returnType,isConstructor,parentType);
+		
+		if(javaDocLocation != null) {
+			this.javaDoc = new SourceCode(javaDocLocation, parentType.getParentCompUnit());
+		}
+		
+		this.sourceCode = new SourceCode(codeLocation, parentType.getParentCompUnit());
+	}
 	
 	public String getReturnType() {
 		return returnType;
 	}
 	
-	public String getSourceCodeWithoutJavaDoc() {
-		String sourceWithoutJavaDoc = StringUtils.substringAfter(this.getSourceCode(), this.getJavaDoc()).trim();
-		return sourceWithoutJavaDoc;
+	public SourceCode getSourceCodeWithoutJavaDoc() {
+		if(javaDoc == null) return sourceCode;
+		
+		//end of javadoc + 1
+		int start = javaDoc.getCodeLocation()[1] + 1;
+		
+		//end of source code		
+		int end = sourceCode.getCodeLocation()[1];
+		
+		int[] codeLocation = new int[] {start,end};		
+		SourceCode sourceCodeWithoutJavaDoc = new SourceCode(codeLocation, parentType.getParentCompUnit());
+		return sourceCodeWithoutJavaDoc;
 	}
 
-	public String getBody() {
+	public SourceCode getBody() {
 		
 		//FIXME: for now, null bodies (e.g. from abstract methods) and
 		//empty bodies will be treated as if they were the same thing.
@@ -74,11 +75,17 @@ public class Method implements Serializable, JavaElement{
 		//more elegant solution like a NullBody or a Body class that answers
 		//if its NULL or not, whatever.
 		
-		String body = new String();
+		SourceCode body = new SourceCode("");
 		
-		String sourceWithoutJavaDoc = this.getSourceCodeWithoutJavaDoc();
-		if(sourceWithoutJavaDoc.contains("{")) {
-			body = "{" + StringUtils.substringAfter(sourceWithoutJavaDoc, "{");
+		SourceCode sourceWithoutJavaDoc = this.getSourceCodeWithoutJavaDoc();
+		int indexOfBraces = sourceWithoutJavaDoc.getRawVersion().indexOf('{');
+		
+		//If method has body
+		if(indexOfBraces != -1) {
+			int start = sourceWithoutJavaDoc.getCodeLocation()[0] + indexOfBraces;
+			int end = sourceWithoutJavaDoc.getCodeLocation()[1];
+			int[] codeLocation = new int[]{start,end};
+			body = new SourceCode(codeLocation, parentType.getParentCompUnit());
 		}				
 		
 		return body;
@@ -102,35 +109,29 @@ public class Method implements Serializable, JavaElement{
 		return signature;
 	}
 	
-	public String getSourceCode(){
-	
-		//Lazy loading for source code
-		if(sourceCode != null) return sourceCode;
-				
-		String compUnitSourceCode = this.getContainingCompUnit().getSourceCode();
-		this.sourceCode = compUnitSourceCode.substring(sourceCodeLocation[0], sourceCodeLocation[1]);
+	public SourceCode getSourceCode(){	
 		return sourceCode;
 	}
 	
 	public String toString(){
-		String s = new String();
-		if (containingType != null) s= containingType.getFQN() + "[" + containingType.getClass().getSimpleName() + "].";
-		s += getSignature();
-		return s;
+		StringBuilder idBuilder = new StringBuilder();
+		idBuilder.append("[");
+		idBuilder.append(this.getParentCompUnit().getRelativePath());
+		idBuilder.append("]");
+		idBuilder.append(this.getParentType().getFullName());
+		idBuilder.append(".");
+		idBuilder.append(this.getSignature());
+		return idBuilder.toString();
 	}
 	
-	public CompUnit getContainingCompUnit(){
-		return getContainingType().getCompUnit();
+	public CompUnit getParentCompUnit(){
+		return getParentType().getParentCompUnit();
 	}
 	
-	public Type getContainingType(){
-		return containingType;
+	public Type getParentType(){
+		return parentType;
 	}
 	
-	public void setContainingType(Type containingType){
-		this.containingType = containingType;
-	}
-
 	public List<String> getParameters() {
 		return parameters;
 	}
@@ -139,10 +140,7 @@ public class Method implements Serializable, JavaElement{
 		return isConstructor;
 	}
 	
-	/*
-	 * If there is no JavaDoc, this returns an empty string
-	 */
-	public String getJavaDoc() {
+	public SourceCode getJavaDoc() {
 		return javaDoc;
 	}
 
@@ -151,7 +149,7 @@ public class Method implements Serializable, JavaElement{
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ ((containingType == null) ? 0 : containingType.hashCode());
+				+ ((parentType == null) ? 0 : parentType.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((parameters == null) ? 0 : parameters.hashCode());
@@ -167,10 +165,10 @@ public class Method implements Serializable, JavaElement{
 		if (getClass() != obj.getClass())
 			return false;
 		Method other = (Method) obj;
-		if (containingType == null) {
-			if (other.containingType != null)
+		if (parentType == null) {
+			if (other.parentType != null)
 				return false;
-		} else if (!containingType.equals(other.containingType))
+		} else if (!parentType.equals(other.parentType))
 			return false;
 		if (name == null) {
 			if (other.name != null)
@@ -184,4 +182,5 @@ public class Method implements Serializable, JavaElement{
 			return false;
 		return true;
 	}
+
 }

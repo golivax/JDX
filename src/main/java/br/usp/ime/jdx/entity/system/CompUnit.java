@@ -11,18 +11,24 @@ public class CompUnit implements Serializable, JavaElement{
 	private Package pkg;
 	private String absolutePath;
 	private String relativePath;
-	private String sourceCode;
+	private String rawSourceCode;
+	private SourceCode sourceCode;
 	private Set<Type> types;
 	
-	public CompUnit(Package pkg, String absolutePath, String relativePath, String sourceCode){
+	public CompUnit(Package pkg, String absolutePath, String relativePath){
 		
 		this.pkg = pkg;
 		this.absolutePath = absolutePath;
 		this.relativePath = relativePath;
 		
-		this.sourceCode = sourceCode;
+		this.types = new HashSet<Type>();
+	}
+	
+	public CompUnit(Package pkg, String absolutePath, String relativePath, String rawSourceCode){
 		
-		types = new HashSet<Type>();
+		this(pkg,absolutePath,relativePath);
+		this.rawSourceCode = rawSourceCode;
+		this.sourceCode = new SourceCode(rawSourceCode);
 	}
 	
 	public Package getPackage(){
@@ -31,7 +37,6 @@ public class CompUnit implements Serializable, JavaElement{
 	
 	public void addType(Type type){
 		this.types.add(type);
-		type.setCompUnit(this);
 	}
 	
 	public Set<Type> getTypes(){
@@ -46,11 +51,6 @@ public class CompUnit implements Serializable, JavaElement{
 		}
 		return false;
 	}
-	
-	public String getSourceCode(){
-		return sourceCode;
-	}
-	
 	
 	public Set<Method> getMethods(){
 
@@ -96,5 +96,13 @@ public class CompUnit implements Serializable, JavaElement{
 	
 	public String toString() {
 		return relativePath;
+	}
+	
+	public SourceCode getSourceCode() {
+		return sourceCode;
+	}
+	
+	String getRawSourceCode() {
+		return rawSourceCode;
 	}
 }
