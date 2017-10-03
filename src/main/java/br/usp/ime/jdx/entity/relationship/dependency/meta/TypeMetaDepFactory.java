@@ -3,6 +3,8 @@ package br.usp.ime.jdx.entity.relationship.dependency.meta;
 import java.util.Collection;
 
 import org.apache.commons.collections4.map.MultiKeyMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import br.usp.ime.jdx.entity.relationship.dependency.Dependency;
 import br.usp.ime.jdx.entity.relationship.dependency.DependencyReport;
@@ -13,6 +15,8 @@ import br.usp.ime.jdx.entity.system.JavaElement;
 import br.usp.ime.jdx.entity.system.Type;
 
 public class TypeMetaDepFactory {
+	
+	private static final Logger logger = LogManager.getLogger();
 	
 	public Collection<TypeMetaDependency> getTypeMetaDependencies(DependencyReport depReport){
 	
@@ -40,9 +44,9 @@ public class TypeMetaDepFactory {
 					m2tDep.getSupplier();
 			
 			if(supplierType == null){
-				System.out.println("m2t - Null supplier");
-				System.out.println(m2tDep);
-				System.out.println(clientType.getParentCompUnit().getRelativePath());
+				logger.error("m2t - Null supplier");
+				logger.error("Dependency {}", m2tDep);
+				logger.error("Client Comp Unit {}",clientType.getParentCompUnit().getRelativePath());
 			}
 			
 			addTypeMetaDep(typeMetaDepsMap, clientType, supplierType, m2tDep);
@@ -55,9 +59,9 @@ public class TypeMetaDepFactory {
 			Type supplierType = t2tDep.getSupplier();
 			
 			if(supplierType == null){
-				System.out.println("t2t - Null supplier");
-				System.out.println(t2tDep);
-				System.out.println(clientType.getParentCompUnit().getRelativePath());
+				logger.error("t2t - Null supplier");
+				logger.error("Dependency {}", t2tDep);
+				logger.error("Client Comp Unit {}",clientType.getParentCompUnit().getRelativePath());
 			}
 			
 			addTypeMetaDep(typeMetaDepsMap, clientType, supplierType, t2tDep);
