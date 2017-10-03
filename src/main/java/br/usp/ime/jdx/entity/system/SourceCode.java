@@ -18,7 +18,7 @@ public class SourceCode implements Serializable{
 	private String formattedVersion;
 
 	public SourceCode(int[] codeLocation, CompUnit compUnit) {
-	String compUnitRawSourceCode = compUnit.getRawSourceCode();
+		String compUnitRawSourceCode = compUnit.getRawSourceCode();
 		this.rawVersion = compUnitRawSourceCode.substring(codeLocation[0], codeLocation[1]);
 		this.codeLocation = codeLocation;
 	}
@@ -52,5 +52,35 @@ public class SourceCode implements Serializable{
 	public String toString() {
 		return rawVersion;
 	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((formattedVersion == null) ? 0 : formattedVersion.hashCode());
+		return result;
+	}
+
+	@Override
+	/**
+	 * This is an important design decision. Pieces of source code are compared using their formatted version.
+	 * This means that indentation and layout changes are not enough to make methods be deemed different 
+	 */
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SourceCode other = (SourceCode) obj;
+		if (formattedVersion == null) {
+			if (other.formattedVersion != null)
+				return false;
+		} else if (!formattedVersion.equals(other.formattedVersion))
+			return false;
+		return true;
+	}
 		
+	
 }

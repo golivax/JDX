@@ -41,8 +41,8 @@ public class CodeParser extends FileASTRequestor{
 	
 	private static final Logger logger = LogManager.getLogger();
 	
-	private String EOL_REGEX = "\r\n|\r|\n";
-	private String adoptedLineSeparator = "\n";
+	//Unix style EOL
+	private String UNIX_EOL = "\n";
 	
 	private String projectDir;
 	private boolean recoverSourceCode;
@@ -140,7 +140,6 @@ public class CodeParser extends FileASTRequestor{
 		String rawSourceCode = null;		
 		if(recoverSourceCode){
 			rawSourceCode = FileUtils.readFileToString(new File(sourceFilePath), Charset.forName("UTF-8"));
-			rawSourceCode = rawSourceCode.replaceAll(EOL_REGEX, "\n");
 		}
 		
 		CompUnit compUnit = recoverSourceCode ? 
@@ -195,7 +194,6 @@ public class CodeParser extends FileASTRequestor{
 				}
 				else{
 					CompUnit compUnit = compUnitMap.get(compilationUnit);
-					
 					Clazz clazz = recoverSourceCode ? 
 							new Clazz(typeFQN, javaDocLocation, sourceCodeLocation,compUnit) : 
 							new Clazz(typeFQN,compUnit);
@@ -297,12 +295,13 @@ public class CodeParser extends FileASTRequestor{
 		StringBuilder attributesBuilder = new StringBuilder();
 		for(FieldDeclaration fieldDeclaration : typeDeclaration.getFields()){
 			attributesBuilder.append(fieldDeclaration.toString().trim());
-			attributesBuilder.append(adoptedLineSeparator);
+			attributesBuilder.append(UNIX_EOL);
 		}
 		String attributes = attributesBuilder.toString();
 		
 		//Adding artificial "attrib<>" method
-		Method attribMethod = new Method("attrib<>", new ArrayList<String>(), new String(), false, attributes, type);
+		Method attribMethod = new Method(
+				"attrib<>", new ArrayList<String>(), new String(), false, null, attributes, type);
 		
 		type.addMethod(attribMethod);
 	}

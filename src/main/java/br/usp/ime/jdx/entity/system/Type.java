@@ -8,7 +8,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-public abstract class Type implements Serializable, JavaElement{
+public abstract class Type extends JavaDocableElement implements Serializable, JavaElement{
 
 	private static final long serialVersionUID = -7126906063529157990L;
 
@@ -36,7 +36,11 @@ public abstract class Type implements Serializable, JavaElement{
 	
 	public Type(String fqn, String rawJavaDoc, String rawSourceCode, CompUnit parentCompUnit){
 		this(fqn,parentCompUnit);
-		this.javaDoc = new SourceCode(rawJavaDoc);
+		
+		if(rawJavaDoc != null) {
+			this.javaDoc = new SourceCode(rawJavaDoc);
+		}
+		
 		this.sourceCode = new SourceCode(rawSourceCode);
 	}
 	
@@ -50,28 +54,6 @@ public abstract class Type implements Serializable, JavaElement{
 	
 	public String getFQN(){
 		return fqn;
-	}
-	
-	public SourceCode getSourceCode(){
-		return sourceCode;
-	}
-	
-	public SourceCode getSourceCodeWithoutJavaDoc() {
-		if(javaDoc == null) return sourceCode;
-		
-		//end of javadoc + 1
-		int start = javaDoc.getCodeLocation()[1] + 1;
-		
-		//end of source code		
-		int end = sourceCode.getCodeLocation()[1];
-		
-		int[] codeLocation = new int[] {start,end};		
-		SourceCode sourceCodeWithoutJavaDoc = new SourceCode(codeLocation, parentCompUnit);
-		return sourceCodeWithoutJavaDoc;
-	}
-	
-	public CompUnit getParentCompUnit(){
-		return parentCompUnit;
 	}
 	
 	public void addMethod(Method method){
@@ -122,6 +104,17 @@ public abstract class Type implements Serializable, JavaElement{
 		return getMethod("attrib<>", new ArrayList<String>());
 	}
 	
+	@Override
+	public CompUnit getParentCompUnit(){
+		return parentCompUnit;
+	}
+
+	@Override
+	public SourceCode getSourceCode(){
+		return sourceCode;
+	}
+	
+	@Override
 	public SourceCode getJavaDoc() {
 		return javaDoc;
 	}

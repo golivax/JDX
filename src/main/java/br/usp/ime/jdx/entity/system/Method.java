@@ -4,16 +4,17 @@ import java.io.Serializable;
 import java.util.List;
 
 //TODO: getAnnotations()
-public class Method implements Serializable, JavaElement{
+public class Method extends JavaDocableElement implements Serializable, JavaElement{
 
 	private static final long serialVersionUID = -4865185051823887456L;
 
-	private SourceCode javaDoc;
 	private String name;
 	private List<String> parameters;
 	private String returnType;
 
 	private boolean isConstructor = false;	
+
+	private SourceCode javaDoc;
 	private SourceCode sourceCode;
 	
 	private Type parentType;
@@ -30,9 +31,14 @@ public class Method implements Serializable, JavaElement{
 	}
 	
 	public Method(String name, List<String> parameters, String returnType, boolean isConstructor, 
-			String rawSourceCode, Type parentType) {
+			String rawJavaDoc, String rawSourceCode, Type parentType) {
 		
 		this(name,parameters,returnType,isConstructor,parentType);
+		
+		if(rawJavaDoc != null) {
+			this.javaDoc = new SourceCode(rawJavaDoc);	
+		}
+		
 		this.sourceCode = new SourceCode(rawSourceCode);		
 	}
 	
@@ -52,20 +58,14 @@ public class Method implements Serializable, JavaElement{
 		return returnType;
 	}
 	
-	public SourceCode getSourceCodeWithoutJavaDoc() {
-		if(javaDoc == null) return sourceCode;
-		
-		//end of javadoc + 1
-		int start = javaDoc.getCodeLocation()[1] + 1;
-		
-		//end of source code		
-		int end = sourceCode.getCodeLocation()[1];
-		
-		int[] codeLocation = new int[] {start,end};		
-		SourceCode sourceCodeWithoutJavaDoc = new SourceCode(codeLocation, parentType.getParentCompUnit());
-		return sourceCodeWithoutJavaDoc;
+	/**
+	 * Ugly hack!
+	 * @return
+	 */
+	public boolean isAttributeCollection() {
+		return this.name.equals("attrib<>");
 	}
-
+	
 	public SourceCode getBody() {
 		
 		//FIXME: for now, null bodies (e.g. from abstract methods) and
@@ -75,18 +75,37 @@ public class Method implements Serializable, JavaElement{
 		//more elegant solution like a NullBody or a Body class that answers
 		//if its NULL or not, whatever.
 		
+		if(isAttributeCollection()) {
+			return this.sourceCode;
+		}
+		
 		SourceCode body = new SourceCode("");
 		
-		SourceCode sourceWithoutJavaDoc = this.getSourceCodeWithoutJavaDoc();
-		int indexOfBraces = sourceWithoutJavaDoc.getRawVersion().indexOf('{');
+		//Implicit constructors don't even have a source code, so that's why we have this if
+		SourceCode sourceWithoutJavaDoc = this.getSourceCodeWithoutJavaDoc();	
+		if(sourceWithoutJavaDoc != null) {
 		
-		//If method has body
-		if(indexOfBraces != -1) {
-			int start = sourceWithoutJavaDoc.getCodeLocation()[0] + indexOfBraces;
-			int end = sourceWithoutJavaDoc.getCodeLocation()[1];
-			int[] codeLocation = new int[]{start,end};
-			body = new SourceCode(codeLocation, parentType.getParentCompUnit());
-		}				
+			int indexOfBraces = sourceWithoutJavaDoc.getRawVersion().indexOf('{');
+	
+			//If method has body
+			if(indexOfBraces != -1) {
+	
+				//If it has a location, we return the body with its location relative to the parent comp unit
+				if(sourceWithoutJavaDoc.getCodeLocation() != null) {
+					
+					int start = sourceWithoutJavaDoc.getCodeLocation()[0] + indexOfBraces;
+					int end = sourceWithoutJavaDoc.getCodeLocation()[1];
+					int[] codeLocation = new int[]{start,end};
+					body = new SourceCode(codeLocation, parentType.getParentCompUnit());
+				
+				}
+				//If it does not have a location, we return the body without any location
+				else {
+					String startingAtCurlyBraces = sourceWithoutJavaDoc.getRawVersion().substring(indexOfBraces);
+					body = new SourceCode(startingAtCurlyBraces);
+				}
+			}		
+		}
 		
 		return body;
 	}
@@ -109,23 +128,23 @@ public class Method implements Serializable, JavaElement{
 		return signature;
 	}
 	
-	public SourceCode getSourceCode(){	
-		return sourceCode;
-	}
 	
 	public String toString(){
 		StringBuilder idBuilder = new StringBuilder();
 		idBuilder.append("[");
-		idBuilder.append(this.getParentCompUnit().getRelativePath());
+		
+		if(!this.getParentCompUnit().getRelativePath().isEmpty()) {
+			idBuilder.append(this.getParentCompUnit().getRelativePath());	
+		}
+		else {
+			idBuilder.append(this.getParentCompUnit().getAbsolutePath());
+		}
+		
 		idBuilder.append("]");
 		idBuilder.append(this.getParentType().getFullName());
 		idBuilder.append(".");
 		idBuilder.append(this.getSignature());
 		return idBuilder.toString();
-	}
-	
-	public CompUnit getParentCompUnit(){
-		return getParentType().getParentCompUnit();
 	}
 	
 	public Type getParentType(){
@@ -139,9 +158,24 @@ public class Method implements Serializable, JavaElement{
 	public boolean isConstructor(){
 		return isConstructor;
 	}
+
+	@Override
+	public SourceCode getSourceCode(){	
+		return sourceCode;
+	}
 	
+	@Override
 	public SourceCode getJavaDoc() {
 		return javaDoc;
+	}
+	
+	public boolean hasJavaDoc() {
+		return javaDoc != null;
+	}
+	
+	@Override
+	public CompUnit getParentCompUnit(){
+		return getParentType().getParentCompUnit();
 	}
 
 	@Override

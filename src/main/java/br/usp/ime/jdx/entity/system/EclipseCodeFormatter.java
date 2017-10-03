@@ -12,7 +12,7 @@ import org.eclipse.text.edits.TextEdit;
 public class EclipseCodeFormatter {
 
 	private static CodeFormatter cf = ToolFactory.createCodeFormatter(null);
-	private static String LINE_TERMINATOR = "\n";
+	private static String UNIX_EOL = "\n";
 	
 	public static String format(String sourceCode) throws MalformedTreeException, BadLocationException {
 
@@ -27,13 +27,13 @@ public class EclipseCodeFormatter {
 		String compUnitCode = stringBuilder.toString();
 		
 		TextEdit te = cf.format(
-				CodeFormatter.K_COMPILATION_UNIT, compUnitCode, 0, compUnitCode.length(), 0, LINE_TERMINATOR);
+				CodeFormatter.K_COMPILATION_UNIT, compUnitCode, 0, compUnitCode.length(), 0, UNIX_EOL);
 		
 		IDocument dc = new Document(compUnitCode);
 		te.apply(dc);
 		String formattedCode = dc.get();
-		formattedCode = StringUtils.substringAfter(formattedCode, LINE_TERMINATOR);
-		formattedCode = StringUtils.substringBeforeLast(formattedCode, LINE_TERMINATOR);
+		formattedCode = StringUtils.substringAfter(formattedCode, UNIX_EOL);
+		formattedCode = StringUtils.substringBeforeLast(formattedCode, UNIX_EOL);
 		return formattedCode;
 	}
 	
