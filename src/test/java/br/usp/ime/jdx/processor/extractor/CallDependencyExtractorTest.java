@@ -39,8 +39,8 @@ public class CallDependencyExtractorTest {
 		assertEquals(3, depReport.getMethodCallDependencies().size());
 		
 		for(MethodCallDependency callDep : callDeps){
-			assertEquals(callDep.getClient().getContainingType(),
-					callDep.getSupplier().getContainingType());
+			assertEquals(callDep.getClient().getParentType(),
+					callDep.getSupplier().getParentType());
 		}				
 	}
 	
@@ -314,9 +314,9 @@ public class CallDependencyExtractorTest {
 		assertNotNull(dep);
 		
 		//checking that it is from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getCompUnit().getAbsolutePath());
+		assertEquals(rootDir + "/A.java", dep.getClient().getParentCompUnit().getAbsolutePath());
 		//checking that it is to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getCompUnit().getAbsolutePath());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getParentCompUnit().getAbsolutePath());
 		//with 1 call (instantiation of B)
 		assertEquals(new Integer(1), dep.getStrength());
 		
@@ -330,9 +330,9 @@ public class CallDependencyExtractorTest {
 		assertNotNull(dep);
 				
 		//checking that it is from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getCompUnit().getAbsolutePath());
+		assertEquals(rootDir + "/A.java", dep.getClient().getParentCompUnit().getAbsolutePath());
 		//checking that it is to C
-		assertEquals(rootDir + "/C.java", dep.getSupplier().getCompUnit().getAbsolutePath());
+		assertEquals(rootDir + "/C.java", dep.getSupplier().getParentCompUnit().getAbsolutePath());
 		//with 1 call (the chained call is evaluated as a single statement, i.e.
 		//it is treated as a direct call from A to C)
 		assertEquals(new Integer(1), dep.getStrength());
@@ -347,9 +347,9 @@ public class CallDependencyExtractorTest {
 		assertNotNull(dep);
 
 		//checking that it is from B
-		assertEquals(rootDir + "/B.java", dep.getClient().getCompUnit().getAbsolutePath());
+		assertEquals(rootDir + "/B.java", dep.getClient().getParentCompUnit().getAbsolutePath());
 		//checking that it is to C
-		assertEquals(rootDir + "/C.java", dep.getSupplier().getCompUnit().getAbsolutePath());
+		assertEquals(rootDir + "/C.java", dep.getSupplier().getParentCompUnit().getAbsolutePath());
 		//with 1 call (instantiation)
 		assertEquals(new Integer(1), dep.getStrength());
 	}
@@ -378,9 +378,9 @@ public class CallDependencyExtractorTest {
 		assertNotNull(dep);
 		
 		//checking that it is from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getCompUnit().getAbsolutePath());
+		assertEquals(rootDir + "/A.java", dep.getClient().getParentCompUnit().getAbsolutePath());
 		//checking that it is to B
-		assertEquals(rootDir + "/B.java", dep.getSupplier().getCompUnit().getAbsolutePath());
+		assertEquals(rootDir + "/B.java", dep.getSupplier().getParentCompUnit().getAbsolutePath());
 		//with 2 calls (instantiation of B, b.getC())
 		assertEquals(new Integer(2), dep.getStrength());
 		
@@ -394,9 +394,9 @@ public class CallDependencyExtractorTest {
 		assertNotNull(dep);
 				
 		//checking that it is from A
-		assertEquals(rootDir + "/A.java", dep.getClient().getCompUnit().getAbsolutePath());
+		assertEquals(rootDir + "/A.java", dep.getClient().getParentCompUnit().getAbsolutePath());
 		//checking that it is to C
-		assertEquals(rootDir + "/C.java", dep.getSupplier().getCompUnit().getAbsolutePath());
+		assertEquals(rootDir + "/C.java", dep.getSupplier().getParentCompUnit().getAbsolutePath());
 		//with 1 call (c.bar())
 		assertEquals(new Integer(1), dep.getStrength());
 		
@@ -410,9 +410,9 @@ public class CallDependencyExtractorTest {
 		assertNotNull(dep);
 
 		//checking that it is from B
-		assertEquals(rootDir + "/B.java", dep.getClient().getCompUnit().getAbsolutePath());
+		assertEquals(rootDir + "/B.java", dep.getClient().getParentCompUnit().getAbsolutePath());
 		//checking that it is to C
-		assertEquals(rootDir + "/C.java", dep.getSupplier().getCompUnit().getAbsolutePath());
+		assertEquals(rootDir + "/C.java", dep.getSupplier().getParentCompUnit().getAbsolutePath());
 		//with 1 call (instantiation)
 		assertEquals(new Integer(1), dep.getStrength());
 	}
