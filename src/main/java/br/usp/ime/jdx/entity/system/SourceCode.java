@@ -57,7 +57,7 @@ public class SourceCode implements Serializable{
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((formattedVersion == null) ? 0 : formattedVersion.hashCode());
+		result = prime * result + ((this.getFormattedVersion() == null) ? 0 : this.getFormattedVersion().hashCode());
 		return result;
 	}
 
@@ -74,10 +74,10 @@ public class SourceCode implements Serializable{
 		if (getClass() != obj.getClass())
 			return false;
 		SourceCode other = (SourceCode) obj;
-		if (formattedVersion == null) {
-			if (other.formattedVersion != null)
+		if (this.getFormattedVersion() == null) {
+			if (other.getFormattedVersion() != null)
 				return false;
-		} else if (!formattedVersion.equals(other.formattedVersion))
+		} else if (!this.getFormattedVersion().equals(other.getFormattedVersion()))
 			return false;
 		return true;
 	}
