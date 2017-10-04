@@ -11,7 +11,6 @@ import org.eclipse.text.edits.TextEdit;
 
 public class EclipseCodeFormatter {
 
-	private static CodeFormatter cf = ToolFactory.createCodeFormatter(null);
 	private static String UNIX_EOL = "\n";
 	
 	public static String format(String sourceCode) throws MalformedTreeException, BadLocationException {
@@ -26,7 +25,7 @@ public class EclipseCodeFormatter {
 		stringBuilder.append(footer);
 		String compUnitCode = stringBuilder.toString();
 		
-		TextEdit te = cf.format(
+		TextEdit te = ToolFactory.createCodeFormatter(null).format(
 				CodeFormatter.K_COMPILATION_UNIT, compUnitCode, 0, compUnitCode.length(), 0, UNIX_EOL);
 		
 		IDocument dc = new Document(compUnitCode);
