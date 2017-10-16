@@ -285,9 +285,14 @@ public class CodeParser extends FileASTRequestor{
 		}
 
 		//Add implicit constructor when no explicit constructors exist
+		//For now, we assume they have an empty source code (not 'null'), which is wrong, because it does not take
+		//the signature into account. 
+		//FIXME: To fix this, check: http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.9
 		if(type.getConstructors().isEmpty()){
 			
-			Method constructor = new Method(type.getName(), new ArrayList<String>(), type.getName(), true, type);			
+			Method constructor = new Method(type.getName(), new ArrayList<String>(), type.getName(), true, 
+					null, new String(), type);
+			
 			type.addMethod(constructor);
 		}
 		

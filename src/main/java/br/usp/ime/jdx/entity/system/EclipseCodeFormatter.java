@@ -31,8 +31,10 @@ public class EclipseCodeFormatter {
 		IDocument dc = new Document(compUnitCode);
 		te.apply(dc);
 		String formattedCode = dc.get();
-		formattedCode = StringUtils.substringAfter(formattedCode, UNIX_EOL);
-		formattedCode = StringUtils.substringBeforeLast(formattedCode, UNIX_EOL);
+		formattedCode = StringUtils.substringAfter(formattedCode, header);
+		formattedCode = StringUtils.substringBeforeLast(formattedCode, footer);
+		if(formattedCode.startsWith(UNIX_EOL)) formattedCode = formattedCode.substring(1);
+		if(formattedCode.endsWith(UNIX_EOL)) formattedCode = formattedCode.substring(0, formattedCode.length()-1);
 		return formattedCode;
 	}
 	

@@ -80,32 +80,29 @@ public class Method extends JavaDocableElement implements Serializable, JavaElem
 		}
 		
 		SourceCode body = new SourceCode("");
-		
-		//Implicit constructors don't even have a source code, so that's why we have this if
 		SourceCode sourceWithoutJavaDoc = this.getSourceCodeWithoutJavaDoc();	
-		if(sourceWithoutJavaDoc != null) {
-		
-			int indexOfBraces = sourceWithoutJavaDoc.getRawVersion().indexOf('{');
-	
-			//If method has body
-			if(indexOfBraces != -1) {
-	
-				//If it has a location, we return the body with its location relative to the parent comp unit
-				if(sourceWithoutJavaDoc.getCodeLocation() != null) {
-					
-					int start = sourceWithoutJavaDoc.getCodeLocation()[0] + indexOfBraces;
-					int end = sourceWithoutJavaDoc.getCodeLocation()[1];
-					int[] codeLocation = new int[]{start,end};
-					body = new SourceCode(codeLocation, parentType.getParentCompUnit());
-				
-				}
-				//If it does not have a location, we return the body without any location
-				else {
-					String startingAtCurlyBraces = sourceWithoutJavaDoc.getRawVersion().substring(indexOfBraces);
-					body = new SourceCode(startingAtCurlyBraces);
-				}
-			}		
-		}
+
+		int indexOfBraces = sourceWithoutJavaDoc.getRawVersion().indexOf('{');
+
+		//If method has body
+		if(indexOfBraces != -1) {
+
+			//If it has a location, we return the body with its location relative to the parent comp unit
+			if(sourceWithoutJavaDoc.getCodeLocation() != null) {
+
+				int start = sourceWithoutJavaDoc.getCodeLocation()[0] + indexOfBraces;
+				int end = sourceWithoutJavaDoc.getCodeLocation()[1];
+				int[] codeLocation = new int[]{start,end};
+				body = new SourceCode(codeLocation, parentType.getParentCompUnit());
+
+			}
+			//If it does not have a location, we return the body without any location
+			else {
+				String startingAtCurlyBraces = sourceWithoutJavaDoc.getRawVersion().substring(indexOfBraces);
+				body = new SourceCode(startingAtCurlyBraces);
+			}
+		}		
+
 		
 		return body;
 	}

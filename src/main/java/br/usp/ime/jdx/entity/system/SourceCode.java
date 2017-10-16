@@ -37,10 +37,22 @@ public class SourceCode implements Serializable{
 		try {
 			this.formattedVersion = EclipseCodeFormatter.format(rawVersion);
 		} catch (MalformedTreeException | BadLocationException e) {
-			logger.error("Error while formatting the following code with the Eclipse Code Formatter");
+			logger.error("Eclipse Code Formatter threw an exception while formatting the following code");
 			logger.error(rawVersion);
+			logger.error("The raw version of the source code will be returned");
 			logger.error("Stacktrace as follows:",e);
-		}	  
+			
+			return rawVersion;
+		//This will take care of NullPointerException or any other unexpected exception. The idea is to always return 
+		//the raw code in case anything goes bad.
+		} catch (Exception e) {
+			logger.error("Some weird error occurred while formatting the following code with Eclipse Code Formatter");
+			logger.error(rawVersion);
+			logger.error("The raw version of the source code will be returned");
+			logger.error("Stacktrace as follows:",e);
+			
+			return rawVersion;
+		}
 		
 		return formattedVersion;
 	}
@@ -50,7 +62,7 @@ public class SourceCode implements Serializable{
 	}
 	
 	public String toString() {
-		return rawVersion;
+		return getFormattedVersion();
 	}
 	
 	@Override
