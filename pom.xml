@@ -5,7 +5,7 @@
 
     <groupId>br.usp.ime</groupId>
     <artifactId>JDX</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <name>JDX</name>
@@ -32,6 +32,8 @@
 	</build>
 
     <dependencies>
+    
+    	<!-- Apache Commons Collections--> 
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -39,25 +41,28 @@
             <scope>test</scope>
         </dependency>
         
+        <!-- Apache Commons Collections 4--> 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
             <version>4.1</version>
         </dependency>
         
+        <!-- Apache Commons IO--> 
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
         </dependency>
 		
+		<!-- Apache Commons Lang--> 
 		<dependency>
 		    <groupId>org.apache.commons</groupId>
 		    <artifactId>commons-lang3</artifactId>
 		    <version>3.3.2</version>
 		</dependency>
 		
-		<!-- Log4j 2.x --> 
+		<!-- Apache Log4j 2.x --> 
 	    <dependency>
 	      <groupId>org.apache.logging.log4j</groupId>
 	      <artifactId>log4j-api</artifactId>
